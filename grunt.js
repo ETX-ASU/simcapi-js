@@ -152,6 +152,18 @@ module.exports = function(grunt) {
       }
     },
 
+    compress: {
+      zip: {
+        options: {
+          rootDir: 'api',
+          basePath: 'api'
+        },
+        files: {
+          'dist/prod/simcapi.zip': 'temp/local/scripts/api/**/*'
+        }
+      }
+    },
+
     // Hashing of resources
     hashres: {
       prod: {
