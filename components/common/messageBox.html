@@ -1,0 +1,19 @@
+<%
+  switch (message.get('type')) {
+    case 'INFO': print('<div class="messageBoxView modal hide infoMessage small">'); break;
+    case 'WARNING': print('<div class="messageBoxView modal hide warningMessage small">'); break;
+    case 'ERROR': print('<div class="messageBoxView modal hide errorMessage small">'); break;
+  }
+%>
+<% if (message.get('title')) { %>
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+    <h3><%= message.get('title') %></h3>
+  </div>
+<% } %>
+  <div class="modal-body">
+    <div class="type"></div>
+    <div class='message'><%= message.get('message') %></div>
+  </div>
+  <div class="modal-footer"></div>
+</div>

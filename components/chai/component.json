@@ -1,0 +1,8 @@
+{
+  "name": "chai",
+  "version": "1.3.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/chaijs/chai.git"
+  }
+}

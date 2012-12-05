@@ -1,0 +1,24 @@
+{
+  "name": "mocha",
+  "repo": "visionmedia/mocha",
+  "version": "1.6.0",
+  "description": "simple, flexible, fun test framework",
+  "keywords": [
+    "test",
+    "mocha",
+    "bdd",
+    "tdd"
+  ],
+  "styles": [
+    "mocha.css"
+  ],
+  "scripts": [],
+  "gitHead": "64e0709b7f543898a0eb1208dbcdca636d1f329a",
+  "readme": " [![Build Status](https://secure.travis-ci.org/visionmedia/mocha.png)](http://travis-ci.org/visionmedia/mocha)\r\n\r\n  [![Mocha test framework](http://f.cl.ly/items/3l1k0n2A1U3M1I1L210p/Screen%20Shot%202012-02-24%20at%202.21.43%20PM.png)](http://visionmedia.github.com/mocha)\r\n\r\n  Mocha is a simple, flexible, fun JavaScript test framework for node.js and the browser. For more information view the [documentation](http://visionmedia.github.com/mocha).\r\n\r\n## Contributors\r\n\r\n```\r\nproject: mocha\r\ncommits: 502\r\nfiles  : 86\r\nauthors: \r\n  352\tTj Holowaychuk          70.1%\r\n   98\tTJ Holowaychuk          19.5%\r\n   21\tGuillermo Rauch         4.2%\r\n    6\tJames Carr              1.2%\r\n    4\tJoshua Krall            0.8%\r\n    3\tBen Lindsey             0.6%\r\n    3\tNathan Rajlich          0.6%\r\n    2\tFARKAS Máté           0.4%\r\n    2\tQuang Van               0.4%\r\n    1\tSteve Mason             0.2%\r\n    1\tYuest Wang              0.2%\r\n    1\thokaccha                0.2%\r\n    1\tDavid Henderson         0.2%\r\n    1\tFedor Indutny           0.2%\r\n    1\tFredrik Lindin          0.2%\r\n    1\tHarry Brundage          0.2%\r\n    1\tKonstantin Käfer      0.2%\r\n    1\tMaciej Małecki         0.2%\r\n    1\tRaynos                  0.2%\r\n    1\tRyunosuke SATO          0.2%\r\n```\r\n\r\n## Links\r\n\r\n  - [Chai](https://github.com/chaijs/chai) - BDD, TDD, and assert for node & the browser\r\n  - [Should.js](http://github.com/visionmedia/should.js) - BDD style assertions for node\r\n  - [Expect.js](https://github.com/LearnBoost/expect.js) - BDD style assertions for node & the browser\r\n  - [Google Group](http://groups.google.com/group/mochajs)",
+  "readmeFilename": "Readme.md",
+  "_id": "mocha@1.6.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/visionmedia/mocha.git"
+  }
+}
