@@ -18,8 +18,9 @@
     "grunt-contrib": "",
     "grunt-coffee": "",
     "grunt-coffeelint": "",
-    "grunt-mocha": "",
-    "grunt-hashres": ""
+    "grunt-jasmine-runner": "~0.6.0",
+    "grunt-hashres": "",
+    "grunt-shell": "~0.1.4"
   },
   "keywords": []
 }

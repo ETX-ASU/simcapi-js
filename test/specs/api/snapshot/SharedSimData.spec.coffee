@@ -11,7 +11,7 @@ define (require) ->
       log.stop()
 
     it 'returns same object in two getInstance() invocations', ->
-      expect(SharedSimData.getInstance()).to.equal(SharedSimData.getInstance())
+      expect(SharedSimData.getInstance()).toEqual(SharedSimData.getInstance())
 
     it 'updates the shared state', ->
       sharedSimData = new SharedSimData()
@@ -20,6 +20,6 @@ define (require) ->
       eventBus.trigger 'simData:viewerServiceEndpoint', 'urlToViewerService'
 
       data = sharedSimData.getData()
-      expect(data.authToken).to.equal 'whatAToken'
-      expect(data.lessonId).to.equal '123'
-      expect(data.viewerServiceEndpoint).to.equal 'urlToViewerService'
+      expect(data.authToken).toEqual 'whatAToken'
+      expect(data.lessonId).toEqual '123'
+      expect(data.viewerServiceEndpoint).toEqual 'urlToViewerService'

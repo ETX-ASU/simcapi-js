@@ -54,25 +54,6 @@ module.exports = function(grunt) {
     },
 
     // Compile
-    less: {
-      local: {
-        options: {
-          paths: ['app/styles', 'components/bootstrap/less']
-        },
-        files: {
-          'temp/local/styles/simcapi.css': 'app/styles/start-local.less'
-        }
-      },
-      prod: {
-        options: {
-          paths   : ['app/styles', 'components/bootstrap/less'],
-          compress: true
-        },
-        files: {
-          'dist/prod/styles/simcapi.css': 'app/styles/start-prod.less'
-        }
-      }
-    },
     coffee: {
       local: {
         options: {
@@ -138,16 +119,17 @@ module.exports = function(grunt) {
         // Removing the lint task temporarily
         // tasks: 'lint copy:local copy:test test'
         tasks: 'copy:local copy:test test'
-      },
-      styles: {
-        files: ['<config:less.local.options.paths>', 'app/styles/**'],
-        tasks: 'less:local'
       }
     },
 
     // Tests
-    mocha: {
-      all: ['test/**/*.html']
+    shell: {
+      jasmine: {
+        command: 'phantomjs testRunner.coffee index.html',
+        execOptions: {
+          cwd: 'test'
+        }
+      }
     },
 
     // Dist
@@ -181,17 +163,17 @@ module.exports = function(grunt) {
   // Default task
   grunt.registerTask('default', 'lint coffeelint coffee co test');
   // Custom tasks
-  grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test less:local coffee:local coffee:test test');
-  grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test less:prod  coffee:prod  coffee:test test requirejs:prod hashres:prod');
-  grunt.registerTask('dist:all',   'clean       lint coffeelint copy                 less       coffee       coffee:test test requirejs');
-  // Aliasing 'mocha' task
-  grunt.registerTask('test', 'mocha');
+  grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test test');
+  grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test test requirejs:prod hashres:prod');
+  grunt.registerTask('dist:all',   'clean       lint coffeelint copy                 coffee       coffee:test test requirejs');
+  // Aliasing 'jasmine' task
+  grunt.registerTask('test', 'shell:jasmine');
 
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-coffee');
   grunt.loadNpmTasks('grunt-coffeelint');
-  grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-hashres');
 
 };

@@ -1,65 +1,42 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+  "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <meta charset="utf-8">
-  <title></title>
-  <link rel="stylesheet" href="../components/mocha/mocha.css" type="text/css" media="screen" title="Tests for simcapi" charset="utf-8">
-</head>
-<body>
-  <div id="mocha"></div>
-  <script src="../components/mocha/mocha.js" type="text/javascript" charset="utf-8"></script>
-  <script src="../components/chai/chai.js" type="text/javascript" charset="utf-8"></script>
-  <script src="libs/sinon-1.4.2.js" type="text/javascript" charset="utf-8"></script>
+  <title>Tests for the spr-haystack-js project</title>
 
-  <script src="../components/requirejs/require.js" type="text/javascript" charset="utf-8"></script>
+  <link rel="shortcut icon" type="image/png" href="../components/jasmine/images/jasmine_favicon.png">
+  <link rel="stylesheet" type="text/css" href="../components/jasmine/lib/jasmine-core/jasmine.css">
+  <script type="text/javascript" src="../components/jasmine/lib/jasmine-core/jasmine.js"></script>
+  <script type="text/javascript" src="../components/jasmine/lib/jasmine-core/jasmine-html.js"></script>
+
+  <script type="text/javascript" src="js/consoleReporter.js"></script>
+  <script type="text/javascript" src="js/junitReporter.js"></script>
+
+    <!-- Jasmine jquery setup -->
+  <script type="text/javascript"
+      src="../components/jasmine-jquery/lib/jasmine-jquery.js"></script>
+
+  <!-- External Libraries -->
+  <script src="../components/requirejs/require.js"></script>
+  <script src="../components/jquery/jquery.js"></script>
+
   <!-- Requirejs configuration -->
   <script src="../app/scripts/config.js" type="text/javascript" charset="utf-8"></script>
 
-  <script type="text/javascript" charset="utf-8">
+  <script type="text/javascript">
     require.config({
       baseUrl: "../temp/local/scripts",
-      shim: {
-        'chai-jquery': {
-          deps: ['jquery']
-        }
-      },
       paths: {
-        // Aliasing path to find the specs
-        'specs': '../../specs',
-        'chai-jquery': '../../../components/chai-jquery/chai-jquery'
+        specs: '../../specs'
       }
     });
 
-    // Ensuring that jquery and chai-jquery are loaded
-    require(['jquery', 'chai-jquery'], function($, jqueryChai) {
-      // Registering testing style in globals for easy access
-      window.expect = chai.expect;
-      chai.use(jqueryChai);
-
-      mocha.setup({
-        ui: 'bdd',
-        ignoreLeaks: true
-      });
-
-      // Protect from barfs
-      console = window.console || function() {};
-
-      // Don't track
-      window.notrack = true;
-
-      // Helper... not really needed but in case we want to do something fancy
-      var runMocha = function() {
-        mocha.run();
-      };
-
-      // Heads up! Using 'specs' as defined in above require.config()
-      require([
-        'specs/api/snapshot/SharedSimData.spec',
-        'specs/api/snapshot/SimCapi.spec',
-        'specs/api/snapshot/SimCapiHandler.spec'
-        // Add other tests here
-      ], function() { mocha.run() });
-    });
+    // Ensuring that jquery is loaded
+    require(['../../../test/js/jasmineRunner']);
   </script>
+
+</head>
+
+<body>
 </body>
 </html>

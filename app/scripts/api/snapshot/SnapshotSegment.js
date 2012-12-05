@@ -3,7 +3,7 @@ define(function(require){
     var check = require('common/check');
 
     var SnapshotSegment = function(fullPath, value) {
-        check.verifyArg(fullPath, String);
+        check(fullPath).isString();
 
         this.fullPath = fullPath;
         this.value = value;
