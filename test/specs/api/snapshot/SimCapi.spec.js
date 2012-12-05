@@ -1,3 +1,4 @@
+/*global window */
 define(function(require){
 
     var SimCapi = require('api/snapshot/SimCapi').SimCapi;

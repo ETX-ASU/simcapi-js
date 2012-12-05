@@ -14,14 +14,14 @@ define(function(require){
         do {
             var end = fullPath.indexOf('.', start + 1);
 
-            if (end != -1) {
+            if (end !== -1) {
                 this.path.push(fullPath.substring(start, end));
             } else {
                 this.path.push(fullPath.substring(start));
             }
 
             start = end + 1;
-        } while (start != 0)
+        } while (start !== 0);
     };
 
     return SnapshotSegment;

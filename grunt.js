@@ -33,11 +33,15 @@ module.exports = function(grunt) {
         eqnull : true
       },
       globals: {
-        exports : true,
-        module  : false,
-        define  : false,
-        describe: false,
-        it      : false
+        exports   : true,
+        module    : false,
+        define    : false,
+        describe  : false,
+        it        : false,
+        beforeEach: false,
+        afterEach : false,
+        expect    : false,
+        spyOn     : false
       }
     },
     lint: {
@@ -111,14 +115,12 @@ module.exports = function(grunt) {
       cscripts: {
         files: '<config:coffeelint.files>',
         // Removing the lint task temporarily
-        // tasks: 'lint coffeelint coffee:local copy:local coffee:test test'
-        tasks: 'coffeelint coffee:local copy:local coffee:test test'
+        tasks: 'lint coffeelint coffee:local copy:local coffee:test test'
       },
       jsscripts: {
         files: '<config:lint.files>',
         // Removing the lint task temporarily
-        // tasks: 'lint copy:local copy:test test'
-        tasks: 'copy:local copy:test test'
+        tasks: 'lint copy:local copy:test test'
       }
     },
 

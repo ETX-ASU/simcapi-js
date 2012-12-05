@@ -1,3 +1,4 @@
+/*global window */
 define(function (require){
 
     var _               = require('underscore');
@@ -88,7 +89,7 @@ define(function (require){
 
             // filter out the segments for the given iframe.
             _.each(pendingApplySnapshot, function(segment, index){
-                if (segment.path[1] != id) {
+                if (segment.path[1] !== id) {
                     remaining.push(segment);
                 } else {
                     segmentsToSend.push(segment);
@@ -185,7 +186,7 @@ define(function (require){
                     var variable = _.rest(segment.path, 2).join('.');
                     messages[iframeId].values[variable] = new SimCapiValue({
                         type: SimCapiValue.TYPES.STRING,
-                        value: segment.value,
+                        value: segment.value
                     });
 
                 } else {
@@ -220,7 +221,7 @@ define(function (require){
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
             _.each(snapshot, function(value, path){
-                if (path.indexOf(targetPath) != -1) {
+                if (path.indexOf(targetPath) !== -1) {
                     result[path] = value;
                 }
             });

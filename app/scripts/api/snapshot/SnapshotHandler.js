@@ -1,20 +1,22 @@
+/*global ComponentType */
 /*
- * Adaptive E-Learning api. © Smart Sparrow
+ * Adaptive E-Learning api. (c) Smart Sparrow
  */
 define(function(require) {
 
-    var _ = require('underscore');
-    var check = require('common/check');
+    var $               = require('jquery');
+    var _               = require('underscore');
+    var check           = require('common/check');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
 
     // snapshot handlers
     var shortTextInputHandler = require('api/component/shortInputTextHandler');
-    var longInputTextHandler = require('api/component/longInputTextHandler');
-    var numberInputHandler = require('api/component/numberInputHandler');
-    var mcqInputHandler = require('api/component/mcqInputHandler');
-    var sliderInputHandler = require('api/component/sliderInputHandler');
-    var dropdownInputHandler = require('api/component/dropdownInputHandler');
-    var booleanInputHandler = require('api/component/booleanInputHandler');
+    var longInputTextHandler  = require('api/component/longInputTextHandler');
+    var numberInputHandler    = require('api/component/numberInputHandler');
+    var mcqInputHandler       = require('api/component/mcqInputHandler');
+    var sliderInputHandler    = require('api/component/sliderInputHandler');
+    var dropdownInputHandler  = require('api/component/dropdownInputHandler');
+    var booleanInputHandler   = require('api/component/booleanInputHandler');
 
     var SnapshotHandler = function(options) {
 
@@ -22,7 +24,7 @@ define(function(require) {
         check(options.$container).isOfType($);
 
         var $container = options.$container;
-        
+
         // we can only have one instance of this
         var simCapiHandler = options.simCapiHandler;
 
@@ -36,10 +38,10 @@ define(function(require) {
             });
             return result;
         };
-        
+
         /**
          * store/retrieve STAGE snapshot from elements on the stage
-         * 
+         *
          * @param {snapshotSegment}
          *            A snapshotSegment.
          * @param {componentType}
@@ -62,23 +64,23 @@ define(function(require) {
             case ComponentType.MCQ_INPUT:
                 _.extend(snapshot, mcqInputHandler.snapshot($container, snapshotSegment));
                 break;
-            
+
             case ComponentType.SLIDER_INPUT:
                 _.extend(snapshot, sliderInputHandler.snapshot($container, snapshotSegment));
                 break;
-            
+
             case ComponentType.BOOLEAN_INPUT:
                 _.extend(snapshot, booleanInputHandler.snapshot($container, snapshotSegment));
                 break;
-                
+
             case ComponentType.DROPDOWN_INPUT:
                 _.extend(snapshot, dropdownInputHandler.snapshot($container, snapshotSegment));
                 break;
-                
+
             case ComponentType.LONG_TEXT_INPUT:
                 _.extend(snapshot, longInputTextHandler.snapshot($container, snapshotSegment));
                 break;
-            
+
             case ComponentType.IFRAME_INPUT:
                 _.extend(snapshot, simCapiHandler.getSnapshot(snapshotSegment));
                 break;
@@ -88,7 +90,7 @@ define(function(require) {
 
         /**
          * store/retrieve snapshot for the given question.
-         * 
+         *
          * @param {fullPath}
          *            The full path of the target. eg : stage.text1.text or session.timeOnQuestion. It also accepts
          *            component paths eg. stage.text1 which refer to the textinput component with id text1.

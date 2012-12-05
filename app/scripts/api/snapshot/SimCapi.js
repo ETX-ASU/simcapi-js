@@ -1,13 +1,16 @@
+/*global window, document */
 /*
  * Adaptive E-Learning api.
- * © Smart Sparrow
+ * (c) Smart Sparrow
  */
 define(function(require){
 
-    var Math = require('api/snapshot/util/Math.uuid');
+    var $              = require('jquery');
+    var _              = require('underscore');
+    var Math           = require('api/snapshot/util/Math.uuid');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-    var SimCapiValue = require('api/snapshot/SimCapiValue');
-    var check = require('common/check');
+    var SimCapiValue   = require('api/snapshot/SimCapiValue');
+    var check          = require('common/check');
 
     var SimCapi = function(options) {
 
@@ -162,7 +165,7 @@ define(function(require){
         // Helper to send message to viewer
         this.sendMessage = function(message) {
             // window.parent can be itself if it's not inside an iframe
-            if (window != window.parent) {
+            if (window !== window.parent) {
                 window.parent.postMessage(JSON.stringify(message), '*');
             }
         };
@@ -221,6 +224,6 @@ define(function(require){
     // in reality, we want a singleton but not for testing.
     return {
         getInstance: getInstance,
-        SimCapi    : SimCapi,
+        SimCapi    : SimCapi
     };
 });

@@ -1,9 +1,11 @@
+/*global window, document */
 define(function(require){
 
-    var $ = require('jquery');
-    var SimCapiHandler = require('api/snapshot/SimCapiHandler');
-    var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-    var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var $               = require('jquery');
+    var _               = require('underscore');
+    var SimCapiHandler  = require('api/snapshot/SimCapiHandler');
+    var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
+    var SimCapiValue    = require('api/snapshot/SimCapiValue');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
 
     $(document).ready(function(){
@@ -31,7 +33,7 @@ define(function(require){
             });
 
             handler = new SimCapiHandler({
-                $container : $container,
+                $container : $container
             });
 
             // make sure it doesn't send any messages to iframe3 because it has display:none
@@ -169,7 +171,7 @@ define(function(require){
                         authToken : authToken
                     },
                     values : {
-                        value1 : new SimCapiValue({value: 'value1'}),
+                        value1 : new SimCapiValue({value: 'value1'})
                     }
                 });
 
