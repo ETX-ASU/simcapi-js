@@ -147,7 +147,7 @@ module.exports = function(grunt) {
           name          : '../../../components/almond/almond',
           include       : 'api/snapshot/SimCapi',
           out           : 'dist/prod/scripts/simcapi.js',
-          wrap          : true
+          wrap          : false
         }
       }
     },
