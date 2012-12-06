@@ -147,6 +147,8 @@ module.exports = function(grunt) {
           name          : '../../../components/almond/almond',
           include       : 'api/snapshot/SimCapi',
           out           : 'dist/prod/scripts/simcapi.js',
+          // No wrapping to 'pollute' the global scope with requirejs,
+          // so external javascript can make use of simcapi.
           wrap          : false
         }
       }
