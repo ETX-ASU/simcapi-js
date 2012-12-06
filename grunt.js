@@ -100,7 +100,8 @@ module.exports = function(grunt) {
       prod: {
         // No need to copy the other files because the 'requirejs' task will take care of it
         files: {
-          'dist/prod/index.html': 'dist-index.html'
+          'dist/prod/index.html': 'dist-index.html',
+          'temp/prod/scripts/' : 'app/scripts/**/*.!(coffee)'
         }
       },
       test: {
@@ -140,12 +141,11 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          // optimize: "none"
+          // optimize: "none",
           baseUrl       : 'temp/prod/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../components/almond/almond',
-          include       : 'main',
-          insertRequire : ['main'],
+          include       : 'api/snapshot/SimCapi',
           out           : 'dist/prod/scripts/simcapi.js',
           wrap          : true
         }
@@ -153,13 +153,16 @@ module.exports = function(grunt) {
     },
 
     compress: {
-      zip: {
+      viewer: {
         options: {
           rootDir: 'api',
           basePath: 'api'
         },
         files: {
-          'dist/prod/simcapi.zip': 'temp/local/scripts/api/**/*'
+          'dist/prod/simcapi-viewer.zip':
+            ['temp/local/scripts/api/**/SimCapi.js',
+             'temp/local/scripts/api/**/SimCapiMessage.js',
+             'temp/local/scripts/api/**/SimCapiValue.js']
         }
       }
     },
@@ -178,7 +181,7 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'lint coffeelint coffee co test');
   // Custom tasks
   grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test test');
-  grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test test requirejs:prod hashres:prod');
+  grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test test requirejs:prod compress');
   grunt.registerTask('dist:all',   'clean       lint coffeelint copy                 coffee       coffee:test test requirejs compress');
   // Aliasing 'jasmine' task
   grunt.registerTask('test', 'shell:jasmine');
