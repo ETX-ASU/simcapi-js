@@ -206,11 +206,7 @@ define(function (require){
         this.sendMessage = function(message, iframeid, allowVisible) {
             // allow visible is needed for the flash side of things when the iframe begins as hidden
             // but still need to perform a handshake.
-            if (allowVisible) {
-                $container.find('#' + iframeid)[0].contentWindow.postMessage(JSON.stringify(message), '*');
-            } else {
-                $container.find('#' + iframeid + 'visible')[0].contentWindow.postMessage(JSON.stringify(message), '*');
-            }
+            $container.find('#' + iframeid)[0].contentWindow.postMessage(JSON.stringify(message), '*');
         };
 
         /*
