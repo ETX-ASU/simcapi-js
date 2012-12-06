@@ -141,11 +141,11 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          optimize: "none",
+          // optimize: "none",
           baseUrl       : 'temp/prod/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../components/almond/almond',
-          include       : 'api/snapshot/SimCapi',
+          include       : 'api/snapshot/SimCapiHandler',
           out           : 'dist/prod/scripts/simcapi.js',
           // No wrapping to 'pollute' the global scope with requirejs,
           // so external javascript can make use of simcapi.
