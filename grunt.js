@@ -141,7 +141,7 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          // optimize: "none",
+          optimize: "none",
           baseUrl       : 'temp/prod/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../components/almond/almond',
