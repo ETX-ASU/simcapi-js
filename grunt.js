@@ -137,6 +137,21 @@ module.exports = function(grunt) {
 
     // Dist
     requirejs: {
+      local: {
+        options: {
+          // Need to debug the release code? Uncomment the optimize flag
+          // to get a readable javascript output
+          // optimize: "none",
+          baseUrl       : 'temp/local/scripts',
+          mainConfigFile: 'app/scripts/config.js',
+          name          : '../../../components/almond/almond',
+          include       : 'api/snapshot/SimCapiHandler',
+          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js',
+          // No wrapping to 'pollute' the global scope with requirejs,
+          // so external javascript can make use of simcapi.
+          wrap          : false
+        }
+      },
       prod: {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
@@ -177,7 +192,6 @@ module.exports = function(grunt) {
       }
     }
   });
-
 
   // Default task
   grunt.registerTask('default', 'lint coffeelint coffee co test');
