@@ -148,13 +148,18 @@ define(function(require){
 
             // populate the message with the values of the entire model
             _.each(outgoingMap, function(attrParams, attrName) {
-                valueChangeMsg.values[attrName] = new SimCapiValue({
-
-                    // everything is going to be a string from the viewer's perspective
-                    type : SimCapiValue.TYPES.STRING,
-                    value : attrParams.parent.get(attrName).toString(),
-                    readOnly : attrParams.readonly
-                });
+                // Not passing attributes that don't exist in the ref model
+                if (attrParams.parent.has(attrName)) {
+                    var value = attrParams.parent.get(attrName);
+                    if (value) {
+                        valueChangeMsg.values[attrName] = new SimCapiValue({
+                            // everything is going to be a string from the viewer's perspective
+                            type    : SimCapiValue.TYPES.STRING,
+                            value   : value.toString(),
+                            readOnly: attrParams.readonly
+                        });
+                    }
+                }
             });
 
             // send the message to the viewer
