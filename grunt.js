@@ -1,4 +1,4 @@
-/*global require */
+/*global require, process */
 module.exports = function(grunt) {
 
   // Project configuration.
