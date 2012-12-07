@@ -148,12 +148,18 @@ define(function(require){
 
             // populate the message with the values of the entire model
             _.each(outgoingMap, function(attrParams, attrName) {
-                valueChangeMsg.values[attrName] = new SimCapiValue({
+                // Property 'attrName' may be null
+                var attr = attrParams.parent.get(attrName);
+                var value = null;
+                if (attr) {
+                    value = attr.toString();
+                }
 
+                valueChangeMsg.values[attrName] = new SimCapiValue({
                     // everything is going to be a string from the viewer's perspective
-                    type : SimCapiValue.TYPES.STRING,
-                    value : attrParams.parent.get(attrName).toString(),
-                    readOnly : attrParams.readonly
+                    type    : SimCapiValue.TYPES.STRING,
+                    value   : value,
+                    readOnly: attrParams.readonly
                 });
             });
 
