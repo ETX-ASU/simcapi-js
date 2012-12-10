@@ -15,6 +15,7 @@ define(function (require){
         //check(options.$container).isOfType($);
 
         var $container = options.$container;
+        var ignoreHidden = options.ignoreHidden || false;
         var self = this;
         var tokenToId = {};
         var idToToken = {};
@@ -112,8 +113,13 @@ define(function (require){
         var replyToHandshake = function(handshake) {
             if (handshake.requestToken) {
 
+                var frames = $container.find('iframe');
+                if (ignoreHidden) {
+                    frames = $container.find('iframe:visible');
+                }
+                
                 // go through all iframes and send a reply if needed
-                _.each($container.find('iframe'), function(iframe, index){
+                _.each(frames, function(iframe, index){
                     var $iframe = $(iframe);
                     var id = $iframe.attr('id');
 
@@ -137,7 +143,7 @@ define(function (require){
                     };
 
                     // send the response
-                    self.sendMessage(response, id, true);
+                    self.sendMessage(response, id);
                 });
             }
         };
@@ -207,10 +213,14 @@ define(function (require){
         };
 
         // can't mock postMessage in ie9 so we wrap it and mock the wrap :D
-        this.sendMessage = function(message, iframeid, allowVisible) {
+        this.sendMessage = function(message, iframeid) {
             // allow visible is needed for the flash side of things when the iframe begins as hidden
             // but still need to perform a handshake.
-            $container.find('#' + iframeid)[0].contentWindow.postMessage(JSON.stringify(message), '*');
+            var frame = $container.find('#' + iframeid)[0]; 
+            if (ignoreHidden) {
+                frame = $container.find('#' + iframeid + ':visible')[0];
+            }
+            frame.contentWindow.postMessage(JSON.stringify(message), '*');
         };
 
         /*
