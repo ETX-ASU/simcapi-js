@@ -15,11 +15,9 @@ define (require) ->
 
     it 'updates the shared state', ->
       sharedSimData = new SharedSimData()
-      eventBus.trigger 'simData:authToken', 'whatAToken'
       eventBus.trigger 'simData:lessonId', '123'
-      eventBus.trigger 'simData:viewerServiceEndpoint', 'urlToViewerService'
+      eventBus.trigger 'simData:servicesBaseUrl', 'baseUrl'
 
       data = sharedSimData.getData()
-      expect(data.authToken).toEqual 'whatAToken'
       expect(data.lessonId).toEqual '123'
-      expect(data.viewerServiceEndpoint).toEqual 'urlToViewerService'
+      expect(data.servicesBaseUrl).toEqual 'baseUrl'
