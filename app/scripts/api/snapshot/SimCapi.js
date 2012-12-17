@@ -1,5 +1,17 @@
 /*global window, document */
 /*
+ * How to use SimCapi:
+ *
+ * // Get an instance of simcapi
+ * var s = SimCapi.getInstance();
+ *
+ * // Register your model properties. (The model must be a Backbone.Model.
+ * // Yeah this sucks and should change)
+ * s.watch("massE", {parent:model, type: SimCapi.TYPES.NUMBER, readonly: false});
+ *
+ * // tell the viewer that the sim is ready
+ * s.notifyOnReady();
+ *
  * Adaptive E-Learning api.
  * (c) Smart Sparrow
  */
@@ -159,6 +171,13 @@ define(function(require){
                             readOnly: attrParams.readonly
                         });
                     }
+                } else {
+                    valueChangeMsg.values[attrName] = new SimCapiValue({
+                        // everything is going to be a string from the viewer's perspective
+                        type    : SimCapiValue.TYPES.STRING,
+                        value   : null,
+                        readOnly: attrParams.readonly
+                    });
                 }
             });
 

@@ -196,7 +196,7 @@ module.exports = function(grunt) {
   // Default task
   grunt.registerTask('default', 'lint coffeelint coffee co test');
   // Custom tasks
-  grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test test');
+  grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test test requirejs:local');
   grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test test requirejs:prod compress');
   grunt.registerTask('dist:all',   'clean       lint coffeelint copy                 coffee       coffee:test test requirejs compress');
   // Aliasing 'jasmine' task
