@@ -6,6 +6,7 @@ define(function(require){
     var SimCapiHandler  = require('api/snapshot/SimCapiHandler');
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
+    var SimCapi         = require('api/snapshot/SimCapi');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
 
     $(document).ready(function(){
@@ -33,7 +34,8 @@ define(function(require){
             });
 
             handler = new SimCapiHandler({
-                $container : $container
+                $container : $container,
+                ignoreHidden : true
             });
 
             // make sure it doesn't send any messages to iframe3 because it has display:none
@@ -146,21 +148,51 @@ define(function(require){
                         value3 : new SimCapiValue({value: 'value3'})
                     }
                 });
-
+    
                 // send the message to the handler
                 handler.capiMessageHandler(valueChangeMsg);
-
+    
                 // retrieve the snapshot from the handler
                 var snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
-
+    
                 // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
                 expect(_.size(snapshot)).toBe(3);
                 expect(snapshot['iframe1.value1']).toBe('value1');
                 expect(snapshot['iframe1.value2']).toBe('value2');
                 expect(snapshot['iframe1.value3']).toBe('value3');
-
+    
             });
 
+            it('should return the descriptors remembered from a VALUE_CHANGE event', function(){
+
+                // create a VALUE_CHANGE message with three values
+                var valueChangeMsg = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake : {
+                        requestToken : null,
+                        authToken : authToken
+                    },
+                    values : {
+                        value1 : new SimCapiValue({value: 'value1'}),
+                        value2 : new SimCapiValue({value: 'value2'}),
+                        value3 : new SimCapiValue({value: 'value3'})
+                    }
+                });
+  
+                // send the message to the handler
+                handler.capiMessageHandler(valueChangeMsg);
+  
+                // retrieve the snapshot from the handler
+                var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1'));
+  
+                // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
+                expect(_.size(descriptors)).toBe(3);
+                expect(descriptors['iframe1.value1']).toBe(valueChangeMsg.values.value1);
+                expect(descriptors['iframe1.value2']).toBe(valueChangeMsg.values.value2);
+                expect(descriptors['iframe1.value3']).toBe(valueChangeMsg.values.value3);
+  
+            });
+            
             it('should overwrite snapshot with the latest values retrieve from VALUE_CHANGE', function(){
 
                 // create a VALUE_CHANGE message with one value
@@ -220,7 +252,7 @@ define(function(require){
                     expect(response.handshake.authToken).toBe(authToken);
                     expect(_.size(response.values)).toBe(1);
                     expect(response.values['value'].value).toBe('1');
-                    expect(response.values['value'].type).toBe(SimCapiValue.TYPES.STRING);
+                    expect(response.values['value'].type).toBe(SimCapi.TYPES.STRING);
 
                     expect(iframeid).toBe('iframe1');
 
@@ -276,7 +308,7 @@ define(function(require){
                     expect(response.handshake.authToken).toBe(authToken);
                     expect(_.size(response.values)).toBe(1);
                     expect(response.values['value2'].value).toBe('1');
-                    expect(response.values['value2'].type).toBe(SimCapiValue.TYPES.STRING);
+                    expect(response.values['value2'].type).toBe(SimCapi.TYPES.STRING);
 
                     expect(iframeid).toBe('iframe2');
 

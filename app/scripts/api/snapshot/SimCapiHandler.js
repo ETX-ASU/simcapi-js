@@ -6,6 +6,7 @@ define(function (require){
     var check           = require('common/check');
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
+    var SimCapi         = require('api/snapshot/SimCapi');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
     var SharedSimData   = require('api/snapshot/SharedSimData');
     var Math            = require('api/snapshot/util/Math.uuid');
@@ -23,6 +24,8 @@ define(function (require){
 
         // Most up to date state of iframe capi values;
         var snapshot = {};
+        // Most up to date descriptors of iframe properties.
+        var descriptors = {};
 
         /*
          * A list of snapshots that have not been applied to a sim.
@@ -65,8 +68,9 @@ define(function (require){
                 var iframeId = tokenToId[authToken];
 
                 // enumerate through all value changes and update accordingly
-                _.each(values, function(capiValue, key){
-                    snapshot[iframeId + '.' + key] = capiValue.value;
+                _.each(values, function(simCapiValue, key){
+                    snapshot[iframeId + '.' + key] = simCapiValue.value;
+                    descriptors[iframeId + '.' + key] = simCapiValue;
                 });
             }
         };
@@ -195,7 +199,7 @@ define(function (require){
 
                     var variable = _.rest(segment.path, 2).join('.');
                     messages[iframeId].values[variable] = new SimCapiValue({
-                        type: SimCapiValue.TYPES.STRING,
+                        type: SimCapi.TYPES.STRING,
                         value: segment.value
                     });
 
@@ -237,6 +241,29 @@ define(function (require){
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
             _.each(snapshot, function(value, path){
+                if (path.indexOf(targetPath) !== -1) {
+                    result[path] = value;
+                }
+            });
+
+            return result;
+        };
+        
+        /*
+         * Returns descriptors for the properties that match the given path.
+         * A descriptor is a SimCapiValue.
+         */
+        this.getDescriptors = function(snapshotSegment) {
+            check(snapshotSegment).isOfType(SnapshotSegment);
+
+            var result = {};
+
+            // target path looks something like this : iframeid[.var]*
+            var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+
+            // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
+            // contained in iframe1
+            _.each(descriptors, function(value, path){
                 if (path.indexOf(targetPath) !== -1) {
                     result[path] = value;
                 }

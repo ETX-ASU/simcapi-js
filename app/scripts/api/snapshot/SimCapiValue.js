@@ -23,13 +23,5 @@ define(function(require){
         this.readOnly = options.readOnly || false;
     };
 
-    /*
-     * Define value type enums as a class variable.
-     * Next number is 2.
-     */
-    SimCapiValue.TYPES = {
-        STRING : 1
-    };
-
     return SimCapiValue;
 });

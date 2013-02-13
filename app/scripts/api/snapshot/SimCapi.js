@@ -91,6 +91,9 @@ define(function(require){
             case SimCapi.TYPES.STRING:
                 attrParams.parent.set(key, value);
                 break;
+            default:
+                attrParams.parent.set(key, value);
+                break;
             }
         };
 
@@ -160,24 +163,20 @@ define(function(require){
 
             // populate the message with the values of the entire model
             _.each(outgoingMap, function(attrParams, attrName) {
+              
+                valueChangeMsg.values[attrName] = new SimCapiValue({
+                    // everything is going to be a string from the viewer's perspective
+                    type    : attrParams.type,
+                    value   : null,
+                    readOnly: attrParams.readonly
+                });
+              
                 // Not passing attributes that don't exist in the ref model
                 if (attrParams.parent.has(attrName)) {
                     var value = attrParams.parent.get(attrName);
                     if (value) {
-                        valueChangeMsg.values[attrName] = new SimCapiValue({
-                            // everything is going to be a string from the viewer's perspective
-                            type    : SimCapiValue.TYPES.STRING,
-                            value   : value.toString(),
-                            readOnly: attrParams.readonly
-                        });
+                        valueChangeMsg.values[attrName].value = value.toString();
                     }
-                } else {
-                    valueChangeMsg.values[attrName] = new SimCapiValue({
-                        // everything is going to be a string from the viewer's perspective
-                        type    : SimCapiValue.TYPES.STRING,
-                        value   : null,
-                        readOnly: attrParams.readonly
-                    });
                 }
             });
 
@@ -231,10 +230,14 @@ define(function(require){
         });
     };
 
-    // Attribute types.
+    /*
+     * Attribute types.
+     */
     SimCapi.TYPES = {
-        NUMBER : 1,
-        STRING : 2
+        NUMBER  : 1,
+        STRING  : 2,
+        ARRAY   : 3,
+        BOOLEAN : 4
     };
 
     var _instance = null;
@@ -247,7 +250,8 @@ define(function(require){
 
     // in reality, we want a singleton but not for testing.
     return {
-        getInstance: getInstance,
-        SimCapi    : SimCapi
+        getInstance : getInstance,
+        SimCapi     : SimCapi,
+        TYPES       : SimCapi.TYPES
     };
 });

@@ -220,11 +220,11 @@ define(function(require){
                     // create two attribute changes as mentioned above
                     values : {
                         'attr1' : new SimCapiValue({
-                            type : SimCapiValue.TYPES.STRING,
+                            type : SimCapi.TYPES.STRING,
                             value : '0.222'
                         }),
                         'attr2' : new SimCapiValue({
-                            type : SimCapiValue.TYPES.STRING,
+                            type : SimCapi.TYPES.STRING,
                             value : 'value2'
                         })
                     }
