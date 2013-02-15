@@ -11,14 +11,15 @@ define (require) ->
   class SharedSimData
     constructor: ->
       eventBus.on 'simData:lessonId', (lessonId) -> data.lessonId = lessonId
+      eventBus.on 'simData:questionId', (questionId) -> data.questionId = questionId
       eventBus.on('simData:servicesBaseUrl', (endpoint) -> data.servicesBaseUrl = endpoint)
 
     # A new object is created to ensure that the data cannot be modified
     # outside this class.
     getData: ->
       {
-        authToken      : data.authToken,
-        lessonId       : data.lessonId,
+        lessonId       : data.lessonId
+        questionId     : data.questionId
         servicesBaseUrl: data.servicesBaseUrl
       }
 
