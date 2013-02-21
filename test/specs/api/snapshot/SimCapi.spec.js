@@ -170,14 +170,17 @@ define(function(require){
             beforeEach(function(){
 
                 outgoingMap = {
-                    // create two attributes (float and string types) with expected
+                    // create three attributes (float, string and boolean types) with expected
                     // updates of:
                     // attr1 -> value1
                     // attr2 -> value2
-                    // value1 and value2 are NOT the current values.
+                    // attr3 -> value3
+                    // values 1-3 are NOT the current values.
                     // @see createAttr for more details
                     attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222),
-                    attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2')
+                    attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2'),
+                    attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true)
+
                 };
 
                 // create a new instance with outgoingMap parameters
@@ -208,6 +211,7 @@ define(function(require){
              * create a value change message that performs the following changes:
              * attr1 -> value1
              * attr2 -> value2
+             * attr3 -> value3 
              */
             var createGoodValueChangeMessage = function() {
                 return new SimCapiMessage({
@@ -226,6 +230,10 @@ define(function(require){
                         'attr2' : new SimCapiValue({
                             type : SimCapi.TYPES.STRING,
                             value : 'value2'
+                        }),
+                        'attr3' : new SimCapiValue({
+                          type : SimCapi.TYPES.BOOLEAN,
+                          value : 'true'
                         })
                     }
                 });
@@ -239,12 +247,15 @@ define(function(require){
                 // performed @ createAttr
                 spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
                 spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
+                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+
 
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that there were two updates
                 expect(outgoingMap.attr1.parent.set).toHaveBeenCalled();
                 expect(outgoingMap.attr2.parent.set).toHaveBeenCalled();
+                expect(outgoingMap.attr3.parent.set).toHaveBeenCalled();
             });
 
             it('should ignore VALUE_CHANGE message if values is undefined', function(){
@@ -261,12 +272,15 @@ define(function(require){
 
                 spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
                 spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
+                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
 
                 // verify that nothing was updated
                 expect(outgoingMap.attr1.parent.set).not.toHaveBeenCalled();
                 expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
+                expect(outgoingMap.attr3.parent.set).not.toHaveBeenCalled();
             });
 
             it('should ignore VALUE_CHANGE when authToken does not match', function(){
@@ -283,12 +297,16 @@ define(function(require){
 
                 spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
                 spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
+                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
 
                 // verify that nothing was updated
                 expect(outgoingMap.attr1.parent.set).not.toHaveBeenCalled();
                 expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
+                expect(outgoingMap.attr3.parent.set).not.toHaveBeenCalled();
+
             });
 
             it('should not update readonly values', function(){
@@ -300,12 +318,15 @@ define(function(require){
 
                 spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
                 spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
+                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+
 
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that only attr1 is updated
                 expect(outgoingMap.attr1.parent.set).toHaveBeenCalled();
                 expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
+                expect(outgoingMap.attr3.parent.set).toHaveBeenCalled();
 
             });
 

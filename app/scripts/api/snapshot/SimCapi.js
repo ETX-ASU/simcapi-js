@@ -91,6 +91,9 @@ define(function(require){
             case SimCapi.TYPES.STRING:
                 attrParams.parent.set(key, value);
                 break;
+            case SimCapi.TYPES.BOOLEAN:
+                attrParams.parent.set(key, (value === "true" ? true : false));
+                break;                
             default:
                 attrParams.parent.set(key, value);
                 break;
