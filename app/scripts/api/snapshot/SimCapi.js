@@ -80,6 +80,19 @@ define(function(require){
         };
 
         /*
+         * Convert value to boolean primitive. If the value is unconvertable, 
+         * the original value is returned.
+         */
+        var parseBoolean = function(value) {
+            if (check(value, {dontThrow : true}).isBoolean()) {
+                return value;
+            } else if (check(value, {dontThrow : true}).isString()){
+                return value === 'true' ? true : false;
+            }
+            return value;
+        };
+        
+        /*
          * Helper to update the value of a model based on it's type.
          */
         var setValue = function(attrParams, key, value) {
@@ -92,7 +105,7 @@ define(function(require){
                 attrParams.parent.set(key, value);
                 break;
             case SimCapi.TYPES.BOOLEAN:
-                attrParams.parent.set(key, (value === "true" ? true : false));
+                attrParams.parent.set(key, parseBoolean(value));
                 break;                
             default:
                 attrParams.parent.set(key, value);
