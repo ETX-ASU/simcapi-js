@@ -162,6 +162,7 @@ define(function (require){
 
         this.resetSnapshot = function() {
             snapshot = {};
+            descriptors = {};
         };
 
         /*
