@@ -1,9 +1,12 @@
 /*global window */
 define(function(require){
 
+    var eventBus = require('eventBus');
+    var log = require('log');
     var SimCapi = require('api/snapshot/SimCapi').SimCapi;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
+    var SharedSimData = require('api/snapshot/SharedSimData');
 
     describe('SimCapi', function() {
 
@@ -12,6 +15,8 @@ define(function(require){
         var simCapi = null;
 
         beforeEach(function() {
+            log.start();
+            
             // mock out event registration on the window
             spyOn(window, 'addEventListener').andCallFake(function(eventType, callback){
                 expect(eventType).toBe('message');
@@ -21,6 +26,10 @@ define(function(require){
             simCapi = new SimCapi({
                 requestToken : requestToken
             });
+        });
+        
+        afterEach(function() {
+            log.stop();
         });
 
         /*
@@ -36,6 +45,29 @@ define(function(require){
             }
         };
 
+        /*
+         * Helper to perform fake handshake between sim/viewer
+         */
+        var doHandShake = function() {
+            var config = SharedSimData.getInstance();
+            eventBus.trigger('simData:lessonId', '1');
+            eventBus.trigger('simData:questionId', 'qid');
+            eventBus.trigger('simData:servicesBaseUrl', 'someurl');
+            
+            // create a handshakeResponse message
+            var handshakeResponse = new SimCapiMessage({
+                type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                handshake : {
+                    requestToken: requestToken,
+                    authToken: authToken,
+                    config :  config
+                }
+            });
+
+            // process handshake response so it remembers the auth token
+            simCapi.capiMessageHandler(handshakeResponse);
+        };
+        
         describe('HANDSHAKE_REQUEST', function(){
 
             it('should send a requestHandshake when trying to send ON_READY notification', function() {
@@ -56,6 +88,58 @@ define(function(require){
 
         });
 
+        describe('CONFIG_CHANGE', function() {
+            
+            beforeEach(function() {
+                doHandShake();
+                
+                // verify old config
+                var config = simCapi.getConfig();
+                expect(config.getData().lessonId).toBe('1');
+                expect(config.getData().questionId).toBe('qid');
+                expect(config.getData().servicesBaseUrl).toBe('someurl');
+            });
+            
+            var updateConfig = function(token) {
+                // update config
+                var newConfig = SharedSimData.getInstance();
+                eventBus.trigger('simData:lessonId', '2');
+                eventBus.trigger('simData:questionId', 'newqid');
+                eventBus.trigger('simData:servicesBaseUrl', 'newurl');
+                
+                // process change event
+                var configChangeMessage = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.CONFIG_CHANGE,
+                    handshake : {
+                        authToken : token,
+                        config : newConfig
+                    }
+                });
+                simCapi.capiMessageHandler(configChangeMessage);
+            };
+            
+            it('should ignore CONFIG_CHANGE when authToken does not match', function() {
+                updateConfig('bad token');
+                
+                // verify that the config has changed
+                var config = simCapi.getConfig();
+                expect(config.getData().lessonId).toBe('2');
+                expect(config.getData().questionId).toBe('newqid');
+                expect(config.getData().servicesBaseUrl).toBe('newurl');
+            });
+            
+            it('should update CONFIG_CHANGE when authToken matches', function() {
+                updateConfig(authToken);
+                
+                // verify that the config has changed
+                var config = simCapi.getConfig();
+                expect(config.getData().lessonId).toBe('2');
+                expect(config.getData().questionId).toBe('newqid');
+                expect(config.getData().servicesBaseUrl).toBe('newurl');
+            });
+            
+        });
+        
         describe('HANDSHAKE_RESPONSE', function() {
 
             it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function(){
@@ -84,17 +168,7 @@ define(function(require){
 
             it ('should send ON_READY followed by a VALUE_CHANGE message when told', function() {
 
-                // create a handshakeResponse message
-                var handshakeResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
-                    handshake : {
-                        requestToken: requestToken,
-                        authToken: authToken
-                    }
-                });
-
-                // process handshake response so it remembers the auth token
-                simCapi.capiMessageHandler(handshakeResponse);
+                doHandShake();
 
                 var invoked = 0;
                 var gotOnReady = -1;

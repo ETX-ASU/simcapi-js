@@ -5,6 +5,7 @@ define(function(require){
     var _               = require('underscore');
     var SimCapiHandler  = require('api/snapshot/SimCapiHandler');
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
+    var SharedSimData   = require('api/snapshot/SharedSimData');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
     var SimCapi         = require('api/snapshot/SimCapi');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
@@ -123,7 +124,50 @@ define(function(require){
 
             return authToken;
         };
+        
+        /*
+         * Helper to fake that the sim is ready
+         */
+        var setupOnReady = function(iframeId, authToken) {
+            // create an ON_READY messages
+            var onReadyMsg = new SimCapiMessage({
+                type : SimCapiMessage.TYPES.ON_READY,
+                handshake : {
+                    requestToken: null,
+                    authToken : authToken
+                }
+            });
 
+            handler.capiMessageHandler(onReadyMsg);
+        };
+
+        describe('notifyConfigChange', function() {
+            
+            var authToken = null;
+            
+            beforeEach(function() {
+                authToken = setupHandshake('iframe1', 'token1');
+                setupOnReady('ifram1', authToken);
+            });
+            
+            it('should broadcast a CONFIG_CHANGE message', function() {
+                mockPostMessage(function(response, id) {
+                    expect(response.type).toBe(SimCapiMessage.TYPES.CONFIG_CHANGE);
+                    expect(response.handshake.authToken).toBe(authToken);
+                    
+                    var exectedConfig = SharedSimData.getInstance().getData();
+                    expect(response.handshake.config.lessonId).toBe(exectedConfig.lessonId);
+                    expect(response.handshake.config.questionId).toBe(exectedConfig.questionId);
+                    expect(response.handshake.config.baseUrl).toBe(exectedConfig.baseUrl);
+                    expect(id).toBe('iframe1');
+                });
+                
+                handler.notifyConfigChange();
+                
+                expect(handler.sendMessage.calls.length).toBe(1);
+            });
+        });
+        
         describe('getSnapshot', function(){
 
             var authToken = null;
@@ -134,7 +178,7 @@ define(function(require){
             });
 
             it('should return the snapshot remembered from a VALUE_CHANGE event', function(){
-
+                
                 // create a VALUE_CHANGE message with three values
                 var valueChangeMsg = new SimCapiMessage({
                     type : SimCapiMessage.TYPES.VALUE_CHANGE,

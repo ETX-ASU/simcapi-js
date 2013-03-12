@@ -13,14 +13,12 @@ define(function (require){
 
     var SimCapiHandler = function(options) {
 
-        //check(options.$container).isOfType($);
-
         var $container = options.$container;
         var ignoreHidden = options.ignoreHidden || false;
         var self = this;
-        var tokenToId = {};
-        var idToToken = {};
-        var isReady = {};
+        var tokenToId = {}; // token -> iframeid
+        var idToToken = {}; // iframeid -> token
+        var isReady = {}; // token -> true/false
 
         // Most up to date state of iframe capi values;
         var snapshot = {};
@@ -58,7 +56,7 @@ define(function (require){
                 break;
             }
         };
-
+        
         /*
          * Update the snapshot with new values recieved from the appropriate iframe.
          */
@@ -270,6 +268,27 @@ define(function (require){
             });
 
             return result;
+        };
+        
+        /*
+         * Notify clients that configuration is updated. (eg. the question has changed)
+         */
+        this.notifyConfigChange = function() {
+            _.each(isReady, _.bind(function(ready, token) {
+                if (ready) {
+                    // create handshake response message
+                    var message = new SimCapiMessage();
+                    message.type = SimCapiMessage.TYPES.CONFIG_CHANGE;
+                    message.handshake = {
+                        authToken   : token,
+                        // Config object is used to pass relevant information to the sim
+                        // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
+                        config      : SharedSimData.getInstance().getData()
+                    };
+                    
+                    this.sendMessage(message, tokenToId[token]);
+                }
+            }, this));
         };
     };
 

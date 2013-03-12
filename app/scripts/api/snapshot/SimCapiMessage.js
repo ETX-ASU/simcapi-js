@@ -32,7 +32,8 @@ define(function (require){
         HANDSHAKE_REQUEST : 1,
         HANDSHAKE_RESPONSE : 2,
         ON_READY : 3,
-        VALUE_CHANGE : 4
+        VALUE_CHANGE : 4,
+        CONFIG_CHANGE : 5
     };
 
     return SimCapiMessage;
