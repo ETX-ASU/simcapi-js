@@ -55,9 +55,21 @@ define(function(require){
             case SimCapiMessage.TYPES.VALUE_CHANGE:
                 handleValueChangeMessage(message);
                 break;
+            case SimCapiMessage.TYPES.CONFIG_CHANGE:
+                handleConfigChangeMessage(message);
+                break;
             }
         };
 
+        /*
+         * Handles configuration changes to sharedsimdata
+         */
+        var handleConfigChangeMessage = function(message) {
+            if (message.handshake.authToken === handshake.authToken) {
+                handshake.config = message.handshake.config;
+            }
+        };
+        
         /*
          * Handles value change messages and update the model accordingly. If the
          * authToken doesn't match our authToken, we ignore the message.
