@@ -223,7 +223,22 @@ define(function (require){
             if (ignoreHidden) {
                 frame = $container.find('#' + iframeid + ':visible')[0];
             }
-            frame.contentWindow.postMessage(JSON.stringify(message), '*');
+            if (frame) {
+                frame.contentWindow.postMessage(JSON.stringify(message), '*');
+            } else {
+                // the frame has been removed
+                var token = idToToken[iframeid];
+                delete tokenToId[token]; // token -> iframeid
+                delete idToToken[iframeid]; // iframeid -> token
+                delete isReady[token]; // token -> true/false
+
+                _.each(snapshot, function(fullpath, value) {
+                    if (fullpath.indexOf('stage.' + iframeid) !== -1) {
+                        delete snapshot[iframeid];
+                        delete descriptors[iframeid];
+                    }
+                });
+            }
         };
 
         /*
