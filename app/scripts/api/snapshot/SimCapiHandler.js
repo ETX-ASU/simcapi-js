@@ -232,7 +232,7 @@ define(function (require){
                 delete idToToken[iframeid]; // iframeid -> token
                 delete isReady[token]; // token -> true/false
 
-                _.each(snapshot, function(fullpath, value) {
+                _.each(snapshot, function(value, fullpath) {
                     if (fullpath.indexOf('stage.' + iframeid) !== -1) {
                         delete snapshot[iframeid];
                         delete descriptors[iframeid];
