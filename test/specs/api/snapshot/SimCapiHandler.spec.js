@@ -282,6 +282,37 @@ define(function(require){
 
         });
 
+        describe('removeIFrame', function(){
+
+            var authToken = null;
+            
+            beforeEach(function() {
+                authToken = setupHandshake('iframe1', 'token1');
+                setupOnReady('ifram1', authToken);
+            });
+            
+            it('should remove knowledge of the given sim', function() {
+                mockPostMessage(function(response, iframeid) {});
+
+                // send a snapshot to check if the iframe is known
+                var segment = new SnapshotSegment('stage.iframe1.value', '1');
+                handler.setSnapshot([segment]);
+                expect(handler.sendMessage.calls.length).toBe(1);
+                
+                // remove knowledge of the sim and send another snapshot
+                handler.removeIFrame('iframe1');
+                handler.setSnapshot([segment]);
+                
+                // should not send a message to the sim because its no longer known
+                expect(handler.sendMessage.calls.length).toBe(1);
+                
+                // verify that the snapshots and descriptors for that sim are deleted
+                expect(Object.keys(handler.getSnapshot(segment)).length).toBe(0);
+                expect(Object.keys(handler.getDescriptors(segment)).length).toBe(0);
+            });
+            
+        });
+        
         describe('setSnapshot', function(){
 
             it('should keep things pending until an ON_READY message has been recieved', function() {

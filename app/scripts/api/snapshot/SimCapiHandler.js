@@ -162,6 +162,21 @@ define(function (require){
             snapshot = {};
             descriptors = {};
         };
+        
+        // Delete the given iframe from the list of known sims.
+        this.removeIFrame = function(iframeid) {
+          var token = idToToken[iframeid];
+          delete tokenToId[token]; // token -> iframeid
+          delete idToToken[iframeid]; // iframeid -> token
+          delete isReady[token]; // token -> true/false
+
+          _.each(snapshot, function(value, fullpath) {
+              if (fullpath.indexOf(iframeid + '.') !== -1) {
+                  delete snapshot[iframeid];
+                  delete descriptors[iframeid];
+              }
+          });
+        };
 
         /*
          * Send the snapshot.
