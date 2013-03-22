@@ -251,7 +251,7 @@ define(function(require){
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222),
+                    attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
                     attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2'),
                     attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true)
 
@@ -267,9 +267,11 @@ define(function(require){
 
             // helper to create entries in outgoing map. expectedKey and expectedValue represent
             // expected updates. Eg, the value of expectedKey changes to expectedValue.
-            var createAttr = function(type, readOnly, expectedKey, expectedValue) {
+            var createAttr = function(type, readOnly, expectedKey, expectedValue, alias) {
                 return {
                     type : type,
+                    alias: alias,
+                    originalName: expectedKey,
                     parent : {
                         set : function(key, value) {
                             // verify that the value is updated

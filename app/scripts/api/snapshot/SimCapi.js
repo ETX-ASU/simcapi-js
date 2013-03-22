@@ -85,7 +85,9 @@ define(function(require){
                     // check if the key exists in the mapping and is writeable
                     if (attrParams && !attrParams.readonly) {
                         // attempt to set update the model value
-                        setValue(outgoingMap[key], key, capiValue.value);
+                             
+                        setValue(outgoingMap[key], attrParams.originalName, capiValue.value);
+                        
                     }
                 });
             }
@@ -191,17 +193,17 @@ define(function(require){
 
             // populate the message with the values of the entire model
             _.each(outgoingMap, function(attrParams, attrName) {
-              
+                
                 valueChangeMsg.values[attrName] = new SimCapiValue({
                     // everything is going to be a string from the viewer's perspective
                     type    : attrParams.type,
                     value   : null,
                     readOnly: attrParams.readonly
                 });
-              
+                
                 // Not passing attributes that don't exist in the ref model
-                if (attrParams.parent.has(attrName)) {
-                    var value = attrParams.parent.get(attrName);
+                if (attrParams.parent.has(attrParams.originalName)) {
+                    var value = attrParams.parent.get(attrParams.originalName);
                     if (value) {
                         valueChangeMsg.values[attrName].value = value.toString();
                     }
@@ -231,18 +233,28 @@ define(function(require){
          * @param varName - The 'attribute name'
          * @param params : {
          *      parent : What the 'attribute' belongs to. Must also have a 'get' and 'set function.
+         *      alias  : alias of the attributeName 
          *      type : Type of the 'attribute'. @see SimCapi.TYPES below.
          *      readonly : True if and only if, the attribute can be changed.
          * }
          */
         this.watch = function(varName, params) {
-            outgoingMap[varName] = params;
+            params.alias = params.alias || varName;
+
+            //params.alias is the key on the map, but we must retain the original attrName of that attribute
+            //so that we can set the value on the parent model.
+            params.originalName = varName;
+
+            
+            outgoingMap[params.alias] = params;
+           
 
             // listen to the model by attaching event handler on the parent
             params.parent.on('change:' + varName, function(){
                 notifyValueChange();
             });
         };
+
 
         // handler for postMessages received from the viewer
         var messageEventHandler = function(event) {
