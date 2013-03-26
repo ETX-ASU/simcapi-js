@@ -7,14 +7,13 @@ define (require) ->
     beforeEach ->
       log.start()
     afterEach ->
-      eventBus.off null, null, null
       log.stop()
 
     it 'returns same object in two getInstance() invocations', ->
       expect(SharedSimData.getInstance()).toEqual(SharedSimData.getInstance())
 
     it 'updates the shared state', ->
-      sharedSimData = new SharedSimData()
+      sharedSimData = SharedSimData.getInstance()
       eventBus.trigger 'simData:lessonId', '123'
       eventBus.trigger 'simData:servicesBaseUrl', 'baseUrl'
 
