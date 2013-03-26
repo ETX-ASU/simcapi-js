@@ -29,7 +29,7 @@ define(function(require){
         });
         
         afterEach(function() {
-            log.stop();
+          log.stop();
         });
 
         /*
