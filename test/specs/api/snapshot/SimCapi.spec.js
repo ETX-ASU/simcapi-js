@@ -1,4 +1,4 @@
-/*global window */
+/*global window  */
 define(function(require){
 
     var eventBus = require('eventBus');
@@ -253,8 +253,8 @@ define(function(require){
                     // @see createAttr for more details
                     attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
                     attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2'),
-                    attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true)
-
+                    attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true),
+                    attr4 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
@@ -277,6 +277,12 @@ define(function(require){
                             // verify that the value is updated
                             expect(key).toBe(expectedKey);
                             expect(value).toBe(expectedValue);
+                        },
+                        has : function (key) {
+                            return true;
+                        },
+                        get : function (key) {
+                            return expectedValue;
                         }
                     },
                     readOnly : readOnly
@@ -308,8 +314,12 @@ define(function(require){
                             value : 'value2'
                         }),
                         'attr3' : new SimCapiValue({
-                          type : SimCapi.TYPES.BOOLEAN,
-                          value : 'true'
+                            type : SimCapi.TYPES.BOOLEAN,
+                            value : 'true'
+                        }),
+                        'attr4' : new SimCapiValue({
+                            type : SimCapi.TYPES.BOOLEAN,
+                            value : 'false' 
                         })
                     }
                 });
@@ -325,13 +335,22 @@ define(function(require){
                 spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
                 spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
 
-
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that there were two updates
                 expect(outgoingMap.attr1.parent.set).toHaveBeenCalled();
                 expect(outgoingMap.attr2.parent.set).toHaveBeenCalled();
                 expect(outgoingMap.attr3.parent.set).toHaveBeenCalled();
+            });
+
+            it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
+
+                var expectedValueChangeMsg = simCapi.notifyValueChange();
+
+                expect(expectedValueChangeMsg.values.attr1.value).toBe('0.222');
+                expect(expectedValueChangeMsg.values.attr2.value).toBe('value2');
+                expect(expectedValueChangeMsg.values.attr3.value).toBe('true');
+                expect(expectedValueChangeMsg.values.attr4.value).toBe('false');
             });
 
             it('should ignore VALUE_CHANGE message if values is undefined', function(){

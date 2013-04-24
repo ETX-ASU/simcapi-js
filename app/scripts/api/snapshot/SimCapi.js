@@ -176,14 +176,14 @@ define(function(require){
                 pendingOnReady = false;
 
                 // send initial value snapshot
-                notifyValueChange();
+                self.notifyValueChange();
             }
         };
 
         /*
          * Send a VALUE_CHANGE message to the viewer with a dump of the model.
          */
-        var notifyValueChange = function() {
+        this.notifyValueChange = function() {
 
             // initialize a VALUE_CHANGE message
             var valueChangeMsg = new SimCapiMessage({
@@ -204,7 +204,7 @@ define(function(require){
                 // Not passing attributes that don't exist in the ref model
                 if (attrParams.parent.has(attrParams.originalName)) {
                     var value = attrParams.parent.get(attrParams.originalName);
-                    if (value) {
+                    if (value !== undefined && value !== null) {
                         valueChangeMsg.values[attrName].value = value.toString();
                     }
                 }
@@ -213,6 +213,7 @@ define(function(require){
             // send the message to the viewer
             self.sendMessage(valueChangeMsg);
 
+            return valueChangeMsg;
         };
 
         // Helper to send message to viewer
@@ -251,7 +252,7 @@ define(function(require){
 
             // listen to the model by attaching event handler on the parent
             params.parent.on('change:' + varName, function(){
-                notifyValueChange();
+                self.notifyValueChange();
             });
         };
 
