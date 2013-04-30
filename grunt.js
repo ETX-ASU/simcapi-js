@@ -194,7 +194,7 @@ module.exports = function(grunt) {
   });
 
   // Default task
-  grunt.registerTask('default', 'lint coffeelint coffee test');
+  grunt.registerTask('default', 'lint coffeelint coffee');
   // Custom tasks
   grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test requirejs:local');
   grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test requirejs:prod');
