@@ -40,7 +40,9 @@ requirejs.config({
     log     : '../../../components/common/log',
 
     // Thrift services
-    thrift            : '../../../components/spr-thrift-js/thift',
+    thrift    : 'util/thriftWrapper',
+    realThrift: '../../../libs/thrift',
+    
     tf_logServiceTypes: '../../../components/spr-thrift-js/LogService_types'
   }
 });

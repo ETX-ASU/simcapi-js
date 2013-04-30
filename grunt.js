@@ -183,6 +183,15 @@ module.exports = function(grunt) {
         }
       }
     },
+    
+    // compile spr-thrift into javascript files and copies them to components
+    thrift : {
+      compile : {
+        src : ['./../spr-thrift/src/main/thrift/*.thrift'],
+        languages : ['js:jquery'],
+        out : 'components/spr-thrift-js'
+      }
+    },
 
     // Hashing of resources
     hashres: {
@@ -196,9 +205,9 @@ module.exports = function(grunt) {
   // Default task
   grunt.registerTask('default', 'lint coffeelint coffee');
   // Custom tasks
-  grunt.registerTask('dist:local', 'clean:local lint coffeelint copy:local copy:test coffee:local coffee:test requirejs:local');
-  grunt.registerTask('dist:prod',  'clean:prod  lint coffeelint copy:prod  copy:test coffee:prod  coffee:test requirejs:prod');
-  grunt.registerTask('dist:all',   'clean       lint coffeelint copy                 coffee       coffee:test requirejs');
+  grunt.registerTask('dist:local', 'clean:local lint thrift coffeelint copy:local copy:test coffee:local coffee:test requirejs:local');
+  grunt.registerTask('dist:prod',  'clean:prod  lint thrift coffeelint copy:prod  copy:test coffee:prod  coffee:test requirejs:prod');
+  grunt.registerTask('dist:all',   'clean       lint thrift coffeelint copy                 coffee       coffee:test requirejs');
 
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
@@ -206,5 +215,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-coffeelint');
   grunt.loadNpmTasks('grunt-shell');
   grunt.loadNpmTasks('grunt-hashres');
+  grunt.loadTasks('grunt-lib');
 
 };
