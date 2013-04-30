@@ -12,6 +12,7 @@
     "node": "*"
   },
   "scripts": {
+    "preinstall": "npm install unzip@0.1.6-alpha",
     "test": "grunt test"
   },
   "devDependencies": {
