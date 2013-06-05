@@ -152,7 +152,7 @@ define(function (require){
 
         // clears the state machine
         this.resetState = function() {
-            snapshot = {};
+            this.resetSnapshot();
             tokenToId = {};
             idToToken = {};
             isReady = {};
