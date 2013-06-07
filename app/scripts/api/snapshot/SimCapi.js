@@ -209,9 +209,11 @@ define(function(require){
                     }
                 }
             });
-
-            // send the message to the viewer
-            self.sendMessage(valueChangeMsg);
+            
+            if (!pendingOnReady) {
+              // send the message to the viewer
+              self.sendMessage(valueChangeMsg);
+            }
 
             return valueChangeMsg;
         };
