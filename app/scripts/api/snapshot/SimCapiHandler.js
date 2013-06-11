@@ -225,7 +225,7 @@ define(function (require){
             });
 
             // send message to each respective iframes
-            _.each(messages, function(message, iframeid){
+            $.each(messages, function(iframeid, message){
                 self.sendMessage(message, iframeid);
             });
         };
