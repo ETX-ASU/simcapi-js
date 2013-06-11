@@ -184,38 +184,39 @@ define(function(require){
          * Send a VALUE_CHANGE message to the viewer with a dump of the model.
          */
         this.notifyValueChange = function() {
+          
+            if (handshake.authToken) {
 
-            // initialize a VALUE_CHANGE message
-            var valueChangeMsg = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                handshake : handshake
-            });
-
-            // populate the message with the values of the entire model
-            _.each(outgoingMap, function(attrParams, attrName) {
-                
-                valueChangeMsg.values[attrName] = new SimCapiValue({
-                    // everything is going to be a string from the viewer's perspective
-                    type    : attrParams.type,
-                    value   : null,
-                    readOnly: attrParams.readonly
-                });
-                
-                // Not passing attributes that don't exist in the ref model
-                if (attrParams.parent.has(attrParams.originalName)) {
-                    var value = attrParams.parent.get(attrParams.originalName);
-                    if (value !== undefined && value !== null) {
-                        valueChangeMsg.values[attrName].value = value.toString();
-                    }
-                }
-            });
-            
-            if (!pendingOnReady) {
+              // initialize a VALUE_CHANGE message
+              var valueChangeMsg = new SimCapiMessage({
+                  type : SimCapiMessage.TYPES.VALUE_CHANGE,
+                  handshake : handshake
+              });
+  
+              // populate the message with the values of the entire model
+              _.each(outgoingMap, function(attrParams, attrName) {
+                  
+                  valueChangeMsg.values[attrName] = new SimCapiValue({
+                      // everything is going to be a string from the viewer's perspective
+                      type    : attrParams.type,
+                      value   : null,
+                      readOnly: attrParams.readonly
+                  });
+                  
+                  // Not passing attributes that don't exist in the ref model
+                  if (attrParams.parent.has(attrParams.originalName)) {
+                      var value = attrParams.parent.get(attrParams.originalName);
+                      if (value !== undefined && value !== null) {
+                          valueChangeMsg.values[attrName].value = value.toString();
+                      }
+                  }
+              });
+              
               // send the message to the viewer
-              self.sendMessage(valueChangeMsg);
+              self.sendMessage(valueChangeMsg);            
+              return valueChangeMsg;            
             }
-
-            return valueChangeMsg;
+            return null;
         };
 
         // Helper to send message to viewer
@@ -256,6 +257,8 @@ define(function(require){
             params.parent.on('change:' + varName, function(){
                 self.notifyValueChange();
             });
+            
+            self.notifyValueChange();
         };
 
 
