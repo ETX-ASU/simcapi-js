@@ -25,7 +25,9 @@ define(function(require){
     var check          = require('common/check');
 
     var SimCapi = function(options) {
-
+        // current version of SimCapi
+        var version = 0.1;
+      
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
         options = options || {};
@@ -38,7 +40,8 @@ define(function(require){
         // Authentication handshake used for communicating to viewer
         var handshake = {
             requestToken : options.requestToken || Math.uuid(),
-            authToken : options.authToken || null
+            authToken : options.authToken || null,
+            version : version
         };
 
         // True if and only if we have a pending on ready message.
@@ -58,6 +61,9 @@ define(function(require){
             case SimCapiMessage.TYPES.CONFIG_CHANGE:
                 handleConfigChangeMessage(message);
                 break;
+            case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
+                handleValueChangeRequestMessage(message);
+                break;
             }
         };
 
@@ -67,6 +73,15 @@ define(function(require){
         var handleConfigChangeMessage = function(message) {
             if (message.handshake.authToken === handshake.authToken) {
                 handshake.config = message.handshake.config;
+            }
+        };
+        
+        /*
+         * Handles request to report about value changes
+         */
+        var handleValueChangeRequestMessage = function(message) {
+            if (message.handshake.authToken === handshake.authToken) {
+                self.notifyValueChange();
             }
         };
         

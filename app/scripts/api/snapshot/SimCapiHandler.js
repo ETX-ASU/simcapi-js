@@ -131,6 +131,7 @@ define(function (require){
                         tokenToId[token] = id;
                         idToToken[id] = token;
                         isReady[token] = false;
+                        idToSimVersion[id] = handshake.version ? handshake.version : 0;
                     }
 
                     // create handshake response message
@@ -156,6 +157,7 @@ define(function (require){
             tokenToId = {};
             idToToken = {};
             isReady = {};
+            idToSimVersion = {};
         };
 
         this.resetSnapshot = function() {
@@ -169,6 +171,7 @@ define(function (require){
           delete tokenToId[token]; // token -> iframeid
           delete idToToken[iframeid]; // iframeid -> token
           delete isReady[token]; // token -> true/false
+          delete idToSimVersion[iframeid]; // iframeid -> simVersion
 
           _.each(snapshot, function(value, fullpath) {
               if (fullpath.indexOf(iframeid + '.') !== -1) {
@@ -302,6 +305,28 @@ define(function (require){
         };
         
         /*
+         * Requests value change message 
+         * @since 0.1
+         */
+        this.requestValueChange = function(iframeId) {
+            if (!(idToSimVersion[iframeId] && idToSimVersion[iframeId] >= 0.1)) {
+                throw new Error("Method requestValueChange is not supported by sim");
+            }
+            
+            // create a message
+            var message = new SimCapiMessage();
+            message.type = SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST;
+            message.handshake = {
+                authToken   : idToToken[iframeId],
+                // Config object is used to pass relevant information to the sim
+                // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
+                config      : SharedSimData.getInstance().getData()
+            };
+  
+            this.sendMessage(message, iframeId);
+        };
+        
+        /*
          * Notify clients that configuration is updated. (eg. the question has changed)
          */
         this.notifyConfigChange = function() {
@@ -320,6 +345,13 @@ define(function (require){
                     this.sendMessage(message, tokenToId[token]);
                 }
             }, this));
+        };
+        
+        /*
+         * Returns version of SimCapi, used by the iframe
+         */
+        this.getSimCapiVersion = function (iframeId) {
+            return idToSimVersion[iframeId];
         };
     };
 

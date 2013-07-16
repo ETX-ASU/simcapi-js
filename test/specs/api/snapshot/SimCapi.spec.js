@@ -426,6 +426,25 @@ define(function(require){
             });
 
         });
+        
+        describe('VALUE_CHANGE_REQUEST', function(){
+          
+            // process change event
+            var valueChangeRequestMessage = new SimCapiMessage({
+                type : SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST,
+                handshake : {
+                    authToken : authToken
+                }
+            });
+
+            it('should send value change notification', function(){
+                doHandShake();
+                spyOn(simCapi, 'notifyValueChange').andCallFake(function () {});
+                simCapi.capiMessageHandler(valueChangeRequestMessage);
+                expect(simCapi.notifyValueChange).toHaveBeenCalled();
+            });
+
+        });
 
     });
 
