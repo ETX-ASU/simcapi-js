@@ -3,7 +3,7 @@ define(function (require){
 
     var _               = require('underscore');
     var $               = require('jquery');
-    var check           = require('common/check');
+    var check           = require('check');
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
     var SimCapi         = require('api/snapshot/SimCapi');
@@ -38,9 +38,13 @@ define(function (require){
         var pendingApplySnapshot = [];
 
         var windowEventHandler = function(event) {
-            var message = JSON.parse(event.data);
-
-            self.capiMessageHandler(message);
+            var message;
+            try {
+              message = JSON.parse(event.data);
+              self.capiMessageHandler(message);
+            } catch (error) {
+              // do nothing if data is not json
+            }
         };
 
         // attach event listener to postMessages

@@ -22,12 +22,12 @@ define(function(require){
     var Math           = require('api/snapshot/util/Math.uuid');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SimCapiValue   = require('api/snapshot/SimCapiValue');
-    var check          = require('common/check');
+    var check          = require('check');
 
     var SimCapi = function(options) {
         // current version of SimCapi
         var version = 0.1;
-      
+
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
         options = options || {};
@@ -113,9 +113,9 @@ define(function(require){
          * the original value is returned.
          */
         var parseBoolean = function(value) {
-            if (check(value, {dontThrow : true}).isBoolean()) {
+            if (check(value).passive().isBoolean()) {
                 return value;
-            } else if (check(value, {dontThrow : true}).isString()){
+            } else if (check(value).passive().isString()){
                 return value === 'true' ? true : false;
             }
             return value;
@@ -199,39 +199,39 @@ define(function(require){
          * Send a VALUE_CHANGE message to the viewer with a dump of the model.
          */
         this.notifyValueChange = function() {
-          
-            if (handshake.authToken) {
 
-              // initialize a VALUE_CHANGE message
-              var valueChangeMsg = new SimCapiMessage({
-                  type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                  handshake : handshake
-              });
-  
-              // populate the message with the values of the entire model
-              _.each(outgoingMap, function(attrParams, attrName) {
-                  
-                  valueChangeMsg.values[attrName] = new SimCapiValue({
-                      // everything is going to be a string from the viewer's perspective
-                      type    : attrParams.type,
-                      value   : null,
-                      readOnly: attrParams.readonly
-                  });
-                  
-                  // Not passing attributes that don't exist in the ref model
-                  if (attrParams.parent.has(attrParams.originalName)) {
-                      var value = attrParams.parent.get(attrParams.originalName);
-                      if (value !== undefined && value !== null) {
-                          valueChangeMsg.values[attrName].value = value.toString();
-                      }
-                  }
-              });
-              
-              // send the message to the viewer
-              self.sendMessage(valueChangeMsg);            
-              return valueChangeMsg;            
-            }
-            return null;
+          if (handshake.authToken) {
+
+            // initialize a VALUE_CHANGE message
+            var valueChangeMsg = new SimCapiMessage({
+                type : SimCapiMessage.TYPES.VALUE_CHANGE,
+                handshake : handshake
+            });
+
+            // populate the message with the values of the entire model
+            _.each(outgoingMap, function(attrParams, attrName) {
+                
+                valueChangeMsg.values[attrName] = new SimCapiValue({
+                    // everything is going to be a string from the viewer's perspective
+                    type    : attrParams.type,
+                    value   : null,
+                    readOnly: attrParams.readonly
+                });
+                
+                // Not passing attributes that don't exist in the ref model
+                if (attrParams.parent.has(attrParams.originalName)) {
+                    var value = attrParams.parent.get(attrParams.originalName);
+                    if (value !== undefined && value !== null) {
+                        valueChangeMsg.values[attrName].value = value.toString();
+                    }
+                }
+            });
+            
+            // send the message to the viewer
+            self.sendMessage(valueChangeMsg);            
+            return valueChangeMsg;            
+          }
+          return null;
         };
 
         // Helper to send message to viewer

@@ -1,26 +1,27 @@
-/*global window  */
+/*global window sinon */
 define(function(require){
 
     var eventBus = require('eventBus');
-    var log = require('log');
     var SimCapi = require('api/snapshot/SimCapi').SimCapi;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
+    require('sinon');
 
     describe('SimCapi', function() {
 
         var requestToken = 'requestToken';
         var authToken = 'testToken';
         var simCapi = null;
+        var sandbox = null;
 
-        beforeEach(function() {
-            log.start();
+        beforeEach(function() {          
+            sandbox = sinon.sandbox.create();
             
             // mock out event registration on the window
-            spyOn(window, 'addEventListener').andCallFake(function(eventType, callback){
-                expect(eventType).toBe('message');
-                expect(callback).toBeTruthy();
+            sandbox.stub(window, 'addEventListener', function(eventType, callback) {
+                expect(eventType).to.be('message');
+                expect(callback).to.be.ok();
             });
 
             simCapi = new SimCapi({
@@ -29,20 +30,14 @@ define(function(require){
         });
         
         afterEach(function() {
-          log.stop();
+          sandbox.restore();
         });
 
         /*
          * Helper to mock out PostMessage on the window object.
          */
         var mockPostMessage = function(assertCallback) {
-            // mock out postMessage on the window object
-            if (simCapi.sendMessage.isSpy) {
-                simCapi.sendMessage.reset();
-                simCapi.sendMessage.andCallFake(assertCallback);
-            } else {
-                spyOn(simCapi, 'sendMessage').andCallFake(assertCallback);
-            }
+            sandbox.stub(simCapi, 'sendMessage', assertCallback);
         };
 
         /*
@@ -75,15 +70,15 @@ define(function(require){
                 // mock out handshake request upon initialization
                 mockPostMessage(function(message){
                     // verify that the handshake request has a request token
-                    expect(message.type).toBe(SimCapiMessage.TYPES.HANDSHAKE_REQUEST);
-                    expect(message.handshake.requestToken).toBe(requestToken);
-                    expect(message.handshake.authToken).toBe(null);
+                    expect(message.type).to.be(SimCapiMessage.TYPES.HANDSHAKE_REQUEST);
+                    expect(message.handshake.requestToken).to.be(requestToken);
+                    expect(message.handshake.authToken).to.be(null);
                 });
 
                 simCapi.notifyOnReady();
 
-                expect(window.addEventListener).toHaveBeenCalled();
-                expect(simCapi.sendMessage).toHaveBeenCalled();
+                expect(window.addEventListener.called).to.be(true);
+                expect(simCapi.sendMessage.called).to.be(true);
             });
 
         });
@@ -95,9 +90,9 @@ define(function(require){
                 
                 // verify old config
                 var config = simCapi.getConfig();
-                expect(config.getData().lessonId).toBe('1');
-                expect(config.getData().questionId).toBe('qid');
-                expect(config.getData().servicesBaseUrl).toBe('someurl');
+                expect(config.getData().lessonId).to.be('1');
+                expect(config.getData().questionId).to.be('qid');
+                expect(config.getData().servicesBaseUrl).to.be('someurl');
             });
             
             var updateConfig = function(token) {
@@ -123,9 +118,9 @@ define(function(require){
                 
                 // verify that the config has changed
                 var config = simCapi.getConfig();
-                expect(config.getData().lessonId).toBe('2');
-                expect(config.getData().questionId).toBe('newqid');
-                expect(config.getData().servicesBaseUrl).toBe('newurl');
+                expect(config.getData().lessonId).to.be('2');
+                expect(config.getData().questionId).to.be('newqid');
+                expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
             
             it('should update CONFIG_CHANGE when authToken matches', function() {
@@ -133,9 +128,9 @@ define(function(require){
                 
                 // verify that the config has changed
                 var config = simCapi.getConfig();
-                expect(config.getData().lessonId).toBe('2');
-                expect(config.getData().questionId).toBe('newqid');
-                expect(config.getData().servicesBaseUrl).toBe('newurl');
+                expect(config.getData().lessonId).to.be('2');
+                expect(config.getData().questionId).to.be('newqid');
+                expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
             
         });
@@ -159,7 +154,7 @@ define(function(require){
                 simCapi.capiMessageHandler(handshakeResponse);
 
                 // verify that the message was not called
-                expect(simCapi.sendMessage).not.toHaveBeenCalled();
+                expect(simCapi.sendMessage.called).to.be(false);
             });
 
         });
@@ -185,15 +180,15 @@ define(function(require){
                     }
 
                     // verify that the tokens are remembered
-                    expect(message.handshake.requestToken).toBe(requestToken);
-                    expect(message.handshake.authToken).toBe(authToken);
+                    expect(message.handshake.requestToken).to.be(requestToken);
+                    expect(message.handshake.authToken).to.be(authToken);
                 });
 
                 simCapi.notifyOnReady();
 
                 // verify that a message was sent
-                expect(simCapi.sendMessage).toHaveBeenCalled();
-                expect(gotOnReady < gotValueChange).toBe(true);
+                expect(simCapi.sendMessage.called).to.be(true);
+                expect(gotOnReady < gotValueChange).to.be(true);
             });
 
             it('should remember pending ON_READY notification and send it after a succesfull HANDSHAKE_RESPONSE', function(){
@@ -216,7 +211,7 @@ define(function(require){
                 simCapi.notifyOnReady();
 
                 // verify that the notification was not sent
-                expect(gotOnReady === gotValueChange).toBe(true);
+                expect(gotOnReady === gotValueChange).to.be(true);
 
                 // create a handshakeResponse message
                 var handshakeResponse = new SimCapiMessage({
@@ -231,8 +226,8 @@ define(function(require){
                 simCapi.capiMessageHandler(handshakeResponse);
 
                 // verify that a message was sent
-                expect(simCapi.sendMessage).toHaveBeenCalled();
-                expect(gotOnReady < gotValueChange).toBe(true);
+                expect(simCapi.sendMessage.called).to.be(true);
+                expect(gotOnReady < gotValueChange).to.be(true);
             });
 
         });
@@ -275,8 +270,8 @@ define(function(require){
                     parent : {
                         set : function(key, value) {
                             // verify that the value is updated
-                            expect(key).toBe(expectedKey);
-                            expect(value).toBe(expectedValue);
+                            expect(key).to.be(expectedKey);
+                            expect(value).to.be(expectedValue);
                         },
                         has : function (key) {
                             return true;
@@ -331,26 +326,26 @@ define(function(require){
 
                 // spy on simCapi to verify that values are updated. Verifying that the updates are correct are
                 // performed @ createAttr
-                spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+                sandbox.spy(outgoingMap.attr1.parent, 'set');
+                sandbox.spy(outgoingMap.attr2.parent, 'set');
+                sandbox.spy(outgoingMap.attr3.parent, 'set');
 
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that there were two updates
-                expect(outgoingMap.attr1.parent.set).toHaveBeenCalled();
-                expect(outgoingMap.attr2.parent.set).toHaveBeenCalled();
-                expect(outgoingMap.attr3.parent.set).toHaveBeenCalled();
+                expect(outgoingMap.attr1.parent.set.called).to.be(true);
+                expect(outgoingMap.attr2.parent.set.called).to.be(true);
+                expect(outgoingMap.attr3.parent.set.called).to.be(true);
             });
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
 
                 var expectedValueChangeMsg = simCapi.notifyValueChange();
 
-                expect(expectedValueChangeMsg.values.attr1.value).toBe('0.222');
-                expect(expectedValueChangeMsg.values.attr2.value).toBe('value2');
-                expect(expectedValueChangeMsg.values.attr3.value).toBe('true');
-                expect(expectedValueChangeMsg.values.attr4.value).toBe('false');
+                expect(expectedValueChangeMsg.values.attr1.value).to.be('0.222');
+                expect(expectedValueChangeMsg.values.attr2.value).to.be('value2');
+                expect(expectedValueChangeMsg.values.attr3.value).to.be('true');
+                expect(expectedValueChangeMsg.values.attr4.value).to.be('false');
             });
 
             it('should ignore VALUE_CHANGE message if values is undefined', function(){
@@ -365,17 +360,17 @@ define(function(require){
                     values : undefined
                 });
 
-                spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+                sandbox.spy(outgoingMap.attr1.parent, 'set');
+                sandbox.spy(outgoingMap.attr2.parent, 'set');
+                sandbox.spy(outgoingMap.attr3.parent, 'set');
 
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
 
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set).not.toHaveBeenCalled();
-                expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
-                expect(outgoingMap.attr3.parent.set).not.toHaveBeenCalled();
+                expect(outgoingMap.attr1.parent.set.called).to.be(false);
+                expect(outgoingMap.attr2.parent.set.called).to.be(false);
+                expect(outgoingMap.attr3.parent.set.called).to.be(false);
             });
 
             it('should ignore VALUE_CHANGE when authToken does not match', function(){
@@ -390,17 +385,17 @@ define(function(require){
                     values : undefined
                 });
 
-                spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+                sandbox.spy(outgoingMap.attr1.parent, 'set');
+                sandbox.spy(outgoingMap.attr2.parent, 'set');
+                sandbox.spy(outgoingMap.attr3.parent, 'set');
 
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
 
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set).not.toHaveBeenCalled();
-                expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
-                expect(outgoingMap.attr3.parent.set).not.toHaveBeenCalled();
+                expect(outgoingMap.attr1.parent.set.called).to.be(false);
+                expect(outgoingMap.attr2.parent.set.called).to.be(false);
+                expect(outgoingMap.attr3.parent.set.called).to.be(false);
 
             });
 
@@ -411,17 +406,17 @@ define(function(require){
                 // change attr2 to be readonly
                 outgoingMap.attr2.readonly = true;
 
-                spyOn(outgoingMap.attr1.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr2.parent, 'set').andCallThrough();
-                spyOn(outgoingMap.attr3.parent, 'set').andCallThrough();
+                sandbox.spy(outgoingMap.attr1.parent, 'set');
+                sandbox.spy(outgoingMap.attr2.parent, 'set');
+                sandbox.spy(outgoingMap.attr3.parent, 'set');
 
 
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that only attr1 is updated
-                expect(outgoingMap.attr1.parent.set).toHaveBeenCalled();
-                expect(outgoingMap.attr2.parent.set).not.toHaveBeenCalled();
-                expect(outgoingMap.attr3.parent.set).toHaveBeenCalled();
+                expect(outgoingMap.attr1.parent.set.called).to.be(true);
+                expect(outgoingMap.attr2.parent.set.called).to.be(false);
+                expect(outgoingMap.attr3.parent.set.called).to.be(true);
 
             });
 
@@ -436,12 +431,12 @@ define(function(require){
                     authToken : authToken
                 }
             });
-
+  
             it('should send value change notification', function(){
                 doHandShake();
-                spyOn(simCapi, 'notifyValueChange').andCallFake(function () {});
+                sandbox.stub(simCapi, 'notifyValueChange', function () {});
                 simCapi.capiMessageHandler(valueChangeRequestMessage);
-                expect(simCapi.notifyValueChange).toHaveBeenCalled();
+                expect(simCapi.notifyValueChange.called).to.be(true);
             });
 
         });

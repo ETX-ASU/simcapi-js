@@ -1,42 +1,39 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
-  "http://www.w3.org/TR/html4/loose.dtd">
+<!DOCTYPE html>
 <html>
 <head>
-  <title>Tests for the spr-haystack-js project</title>
-
-  <link rel="shortcut icon" type="image/png" href="../components/jasmine/images/jasmine_favicon.png">
-  <link rel="stylesheet" type="text/css" href="../components/jasmine/lib/jasmine-core/jasmine.css">
-  <script type="text/javascript" src="../components/jasmine/lib/jasmine-core/jasmine.js"></script>
-  <script type="text/javascript" src="../components/jasmine/lib/jasmine-core/jasmine-html.js"></script>
-
-  <script type="text/javascript" src="js/consoleReporter.js"></script>
-  <script type="text/javascript" src="js/junitReporter.js"></script>
-
-    <!-- Jasmine jquery setup -->
-  <script type="text/javascript"
-      src="../components/jasmine-jquery/lib/jasmine-jquery.js"></script>
-
-  <!-- External Libraries -->
-  <script src="../components/requirejs/require.js"></script>
-  <script src="../components/jquery/jquery.js"></script>
-
-  <!-- Requirejs configuration -->
-  <script src="../app/scripts/config.js" type="text/javascript" charset="utf-8"></script>
-
-  <script type="text/javascript">
-    require.config({
-      baseUrl: "../temp/local/scripts",
-      paths: {
-        specs: '../../specs'
-      }
-    });
-
-    // Ensuring that jquery is loaded
-    require(['../../../test/js/jasmineRunner']);
-  </script>
-
+<meta charset="utf-8">
+<title></title>
+<link rel="stylesheet" href="../components/mocha/mocha.css" type="text/css"
+    media="screen" title="no title" charset="utf-8">
 </head>
-
 <body>
+    <script src="../components/requirejs/require.js" type="text/javascript"
+        charset="utf-8"></script>
+    <script src="../components/mocha/mocha.js" type="text/javascript"
+        charset="utf-8"></script>
+    <script src="../components/expect/expect.js" type="text/javascript"
+        charset="utf-8"></script>
+    <!-- Common config -->
+    <script src="../app/scripts/config.js" type="text/javascript" charset="utf-8"></script>
+    <script type="text/javascript" charset="utf-8">
+                    require.config({
+                        baseUrl : '../temp/local/scripts/'
+                    })
+                    mocha.setup({
+                        ui : 'bdd',
+                        // ignore jquery global leak
+                        globals : [ 'jQuery*', 'check*', 'FileReader', 'yt', 'YT', 'addEventListener', '_gaq' ]
+                    });
+                    var runMocha = function() {
+                        mocha.run();
+                    };
+                    require([ '../specs/test' ],
+                            runMocha);
+                </script>
+    <div id="title">
+      <span>Normal Report - </span>
+      <a href="index-cov.html">Switch to Code Coverage</a>
+    </div>
+    <div id="mocha"></div>
 </body>
 </html>
