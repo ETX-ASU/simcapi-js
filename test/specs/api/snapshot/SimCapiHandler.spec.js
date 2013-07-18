@@ -1,4 +1,4 @@
-/*global window, document */
+/*global window, document sinon*/
 define(function(require){
 
     var $               = require('jquery');
@@ -9,14 +9,18 @@ define(function(require){
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
     var SimCapi         = require('api/snapshot/SimCapi');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
+    require('sinon');
 
     $(document).ready(function(){
-    describe('CapiHandler', function(){
+    describe('SimCapiHandler', function(){
 
         var $container = null;
         var handler = null;
+        var sandbox = null;
 
         beforeEach(function() {
+            sandbox = sinon.sandbox.create();
+          
             $container = $(
                     '<div>' +
                         '<iframe id="iframe1"></iframe>' +
@@ -29,9 +33,9 @@ define(function(require){
             $('body').append($container);
 
             // stub out event registration
-            spyOn(window, 'addEventListener').andCallFake(function(type, callback){
-                expect(type).toBe('message');
-                expect(callback).toBeTruthy();
+            sandbox.stub(window, 'addEventListener', function(type, callback){
+                expect(type).to.be('message');
+                expect(callback).to.be.ok();
             });
 
             handler = new SimCapiHandler({
@@ -41,13 +45,12 @@ define(function(require){
 
             // make sure it doesn't send any messages to iframe3 because it has display:none
             mockPostMessage('#iframe3', function(){
-                expect(false).toBe(true);
+                expect(false).to.be(true);
             });
         });
 
         afterEach(function() {
-            // remove spies
-            window.addEventListener.reset();
+            sandbox.restore();
 
             // remove from the dom
             $container.remove();
@@ -57,16 +60,14 @@ define(function(require){
         var mockPostMessage = function(assertCallback) {
 
             var callback = function(message, id) {
-                expect(id).not.toBe('iframe3');
+                expect(id).not.to.be('iframe3');
                 assertCallback(message, id);
             };
-
-            if (handler.sendMessage.isSpy) {
-                handler.sendMessage.reset();
-                handler.sendMessage.andCallFake(callback);
-            } else {
-                spyOn(handler, 'sendMessage').andCallFake(callback);
+            
+            if (handler.sendMessage.hasOwnProperty('restore')) {
+              handler.sendMessage.restore();
             }
+            sandbox.stub(handler, 'sendMessage', callback);
         };
 
         it('should broadcast a reply to an HANDSHAKE_REQUEST message with a HANDSHAKE_RESPONSE', function() {
@@ -83,8 +84,8 @@ define(function(require){
 
             // mock out postMessage for all iframe windows
             mockPostMessage(function(response, id){
-                expect(response.type).toBe(SimCapiMessage.TYPES.HANDSHAKE_RESPONSE);
-                expect(response.handshake.requestToken).toBe('token1');
+                expect(response.type).to.be(SimCapiMessage.TYPES.HANDSHAKE_RESPONSE);
+                expect(response.handshake.requestToken).to.be('token1');
 
                 // remember which token is assigned to which frame
                 iframe1Token = id === 'iframe1' ? response.handshake.authToken : iframe1Token;
@@ -94,10 +95,10 @@ define(function(require){
             handler.capiMessageHandler(message);
 
             // verify that all iframe tokens are different
-            expect(iframe1Token).toBeTruthy();
-            expect(iframe2Token).toBeTruthy();
-            expect(iframe1Token !== iframe2Token).toBe(true);
-            expect(handler.sendMessage.calls.length).toBe(2);
+            expect(iframe1Token).to.be.ok();
+            expect(iframe2Token).to.be.ok();
+            expect(iframe1Token !== iframe2Token).to.be(true);
+            expect(handler.sendMessage.callCount).to.be(2);
         });
 
         /*
@@ -152,19 +153,19 @@ define(function(require){
             
             it('should broadcast a CONFIG_CHANGE message', function() {
                 mockPostMessage(function(response, id) {
-                    expect(response.type).toBe(SimCapiMessage.TYPES.CONFIG_CHANGE);
-                    expect(response.handshake.authToken).toBe(authToken);
+                    expect(response.type).to.be(SimCapiMessage.TYPES.CONFIG_CHANGE);
+                    expect(response.handshake.authToken).to.be(authToken);
                     
                     var exectedConfig = SharedSimData.getInstance().getData();
-                    expect(response.handshake.config.lessonId).toBe(exectedConfig.lessonId);
-                    expect(response.handshake.config.questionId).toBe(exectedConfig.questionId);
-                    expect(response.handshake.config.baseUrl).toBe(exectedConfig.baseUrl);
-                    expect(id).toBe('iframe1');
+                    expect(response.handshake.config.lessonId).to.be(exectedConfig.lessonId);
+                    expect(response.handshake.config.questionId).to.be(exectedConfig.questionId);
+                    expect(response.handshake.config.baseUrl).to.be(exectedConfig.baseUrl);
+                    expect(id).to.be('iframe1');
                 });
                 
                 handler.notifyConfigChange();
                 
-                expect(handler.sendMessage.calls.length).toBe(1);
+                expect(handler.sendMessage.callCount).to.be(1);
             });
         });
         
@@ -200,10 +201,10 @@ define(function(require){
                 var snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
     
                 // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
-                expect(_.size(snapshot)).toBe(3);
-                expect(snapshot['iframe1.value1']).toBe('value1');
-                expect(snapshot['iframe1.value2']).toBe('value2');
-                expect(snapshot['iframe1.value3']).toBe('value3');
+                expect(_.size(snapshot)).to.be(3);
+                expect(snapshot['iframe1.value1']).to.be('value1');
+                expect(snapshot['iframe1.value2']).to.be('value2');
+                expect(snapshot['iframe1.value3']).to.be('value3');
     
             });
 
@@ -230,10 +231,10 @@ define(function(require){
                 var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1'));
   
                 // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
-                expect(_.size(descriptors)).toBe(3);
-                expect(descriptors['iframe1.value1']).toBe(valueChangeMsg.values.value1);
-                expect(descriptors['iframe1.value2']).toBe(valueChangeMsg.values.value2);
-                expect(descriptors['iframe1.value3']).toBe(valueChangeMsg.values.value3);
+                expect(_.size(descriptors)).to.be(3);
+                expect(descriptors['iframe1.value1']).to.be(valueChangeMsg.values.value1);
+                expect(descriptors['iframe1.value2']).to.be(valueChangeMsg.values.value2);
+                expect(descriptors['iframe1.value3']).to.be(valueChangeMsg.values.value3);
   
             });
             
@@ -258,8 +259,8 @@ define(function(require){
                 var snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
 
                 // verify the snapshot contains one value
-                expect(_.size(snapshot)).toBe(1);
-                expect(snapshot['iframe1.value1']).toBe('value1');
+                expect(_.size(snapshot)).to.be(1);
+                expect(snapshot['iframe1.value1']).to.be('value1');
 
                 // create another VALUE_CHANGE message with three values, one of which overrides value1
                 valueChangeMsg.values.value1 = new SimCapiValue({value: 'changed1'});
@@ -273,10 +274,10 @@ define(function(require){
                 snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
 
                 // verify that the update has taken affect
-                expect(_.size(snapshot)).toBe(3);
-                expect(snapshot['iframe1.value1']).toBe('changed1');
-                expect(snapshot['iframe1.value2']).toBe('value2');
-                expect(snapshot['iframe1.value3']).toBe('value3');
+                expect(_.size(snapshot)).to.be(3);
+                expect(snapshot['iframe1.value1']).to.be('changed1');
+                expect(snapshot['iframe1.value2']).to.be('value2');
+                expect(snapshot['iframe1.value3']).to.be('value3');
 
             });
 
@@ -297,18 +298,18 @@ define(function(require){
                 // send a snapshot to check if the iframe is known
                 var segment = new SnapshotSegment('stage.iframe1.value', '1');
                 handler.setSnapshot([segment]);
-                expect(handler.sendMessage.calls.length).toBe(1);
+                expect(handler.sendMessage.callCount).to.be(1);
                 
                 // remove knowledge of the sim and send another snapshot
                 handler.removeIFrame('iframe1');
                 handler.setSnapshot([segment]);
                 
                 // should not send a message to the sim because its no longer known
-                expect(handler.sendMessage.calls.length).toBe(1);
+                expect(handler.sendMessage.callCount).to.be(1);
                 
                 // verify that the snapshots and descriptors for that sim are deleted
-                expect(Object.keys(handler.getSnapshot(segment)).length).toBe(0);
-                expect(Object.keys(handler.getDescriptors(segment)).length).toBe(0);
+                expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
+                expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
             });
             
         });
@@ -323,13 +324,13 @@ define(function(require){
                 var invoked = 0;
                 mockPostMessage(function(response, iframeid){
                     // verify snapshot that is sent to the iframe
-                    expect(response.type).toBe(SimCapiMessage.TYPES.VALUE_CHANGE);
-                    expect(response.handshake.authToken).toBe(authToken);
-                    expect(_.size(response.values)).toBe(1);
-                    expect(response.values['value'].value).toBe('1');
-                    expect(response.values['value'].type).toBe(SimCapi.TYPES.STRING);
+                    expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
+                    expect(response.handshake.authToken).to.be(authToken);
+                    expect(_.size(response.values)).to.be(1);
+                    expect(response.values['value'].value).to.be('1');
+                    expect(response.values['value'].type).to.be(SimCapi.TYPES.STRING);
 
-                    expect(iframeid).toBe('iframe1');
+                    expect(iframeid).to.be('iframe1');
 
                     invoked++;
                 });
@@ -339,7 +340,7 @@ define(function(require){
                 handler.setSnapshot([segment]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(0);
+                expect(invoked).to.be(0);
 
                 // create an ON_READY messages
                 var onReadyMsg = new SimCapiMessage({
@@ -353,7 +354,7 @@ define(function(require){
                 handler.capiMessageHandler(onReadyMsg);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(1);
+                expect(invoked).to.be(1);
             });
 
             it('should NOT send snapshot immediately when a handshake has been established', function(){
@@ -369,7 +370,7 @@ define(function(require){
                 handler.setSnapshot([segment]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(0);
+                expect(invoked).to.be(0);
             });
 
             it('should send snapshot immediately when ON_READY has been established', function(){
@@ -379,13 +380,13 @@ define(function(require){
                 var invoked = 0;
                 mockPostMessage(function(response, iframeid){
                     // verify snapshot that is sent to the iframe
-                    expect(response.type).toBe(SimCapiMessage.TYPES.VALUE_CHANGE);
-                    expect(response.handshake.authToken).toBe(authToken);
-                    expect(_.size(response.values)).toBe(1);
-                    expect(response.values['value2'].value).toBe('1');
-                    expect(response.values['value2'].type).toBe(SimCapi.TYPES.STRING);
+                    expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
+                    expect(response.handshake.authToken).to.be(authToken);
+                    expect(_.size(response.values)).to.be(1);
+                    expect(response.values['value2'].value).to.be('1');
+                    expect(response.values['value2'].type).to.be(SimCapi.TYPES.STRING);
 
-                    expect(iframeid).toBe('iframe2');
+                    expect(iframeid).to.be('iframe2');
 
                     invoked++;
                 });
@@ -402,13 +403,13 @@ define(function(require){
                 handler.capiMessageHandler(onReadyMsg);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(0);
+                expect(invoked).to.be(0);
 
                 var segment = new SnapshotSegment('stage.iframe2.value2', '1');
                 handler.setSnapshot([segment]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(1);
+                expect(invoked).to.be(1);
             });
 
             it('should handle multiple snapshots in a single call', function(){
@@ -418,11 +419,11 @@ define(function(require){
                 var invoked = 0;
                 mockPostMessage(function(response, iframeid){
                     // verify snapshot that is sent to the iframe
-                    expect(response.type).toBe(SimCapiMessage.TYPES.VALUE_CHANGE);
-                    expect(response.handshake.authToken).toBe(authToken);
-                    expect(_.size(response.values)).toBe(3);
+                    expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
+                    expect(response.handshake.authToken).to.be(authToken);
+                    expect(_.size(response.values)).to.be(3);
 
-                    expect(iframeid).toBe('iframe2');
+                    expect(iframeid).to.be('iframe2');
 
                     invoked++;
                 });
@@ -443,7 +444,7 @@ define(function(require){
                                      new SnapshotSegment('stage.iframe2.value3', '3')]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(invoked).toBe(1);
+                expect(invoked).to.be(1);
             });
 
         });

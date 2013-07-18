@@ -3,7 +3,7 @@ define(function (require){
 
     var _               = require('underscore');
     var $               = require('jquery');
-    var check           = require('common/check');
+    var check           = require('check');
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
     var SimCapi         = require('api/snapshot/SimCapi');
@@ -26,15 +26,25 @@ define(function (require){
         var descriptors = {};
 
         /*
+         * SimCapi versions:
+         * 0.1 - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
+         */
+        var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
+        
+        /*
          * A list of snapshots that have not been applied to a sim.
          * This can occur, when the sim is not ready.
          */
         var pendingApplySnapshot = [];
 
         var windowEventHandler = function(event) {
-            var message = JSON.parse(event.data);
-
-            self.capiMessageHandler(message);
+            var message;
+            try {
+              message = JSON.parse(event.data);
+              self.capiMessageHandler(message);
+            } catch (error) {
+              // do nothing if data is not json
+            }
         };
 
         // attach event listener to postMessages
@@ -131,6 +141,7 @@ define(function (require){
                         tokenToId[token] = id;
                         idToToken[id] = token;
                         isReady[token] = false;
+                        idToSimVersion[id] = handshake.version ? handshake.version : 0;
                     }
 
                     // create handshake response message
@@ -156,6 +167,7 @@ define(function (require){
             tokenToId = {};
             idToToken = {};
             isReady = {};
+            idToSimVersion = {};
         };
 
         this.resetSnapshot = function() {
@@ -169,6 +181,7 @@ define(function (require){
           delete tokenToId[token]; // token -> iframeid
           delete idToToken[iframeid]; // iframeid -> token
           delete isReady[token]; // token -> true/false
+          delete idToSimVersion[iframeid]; // iframeid -> simVersion
 
           _.each(snapshot, function(value, fullpath) {
               if (fullpath.indexOf(iframeid + '.') !== -1) {
@@ -302,6 +315,28 @@ define(function (require){
         };
         
         /*
+         * Requests value change message 
+         * @since 0.1
+         */
+        this.requestValueChange = function(iframeId) {
+            if (!(idToSimVersion[iframeId] && idToSimVersion[iframeId] >= 0.1)) {
+                throw new Error("Method requestValueChange is not supported by sim");
+            }
+            
+            // create a message
+            var message = new SimCapiMessage();
+            message.type = SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST;
+            message.handshake = {
+                authToken   : idToToken[iframeId],
+                // Config object is used to pass relevant information to the sim
+                // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
+                config      : SharedSimData.getInstance().getData()
+            };
+  
+            this.sendMessage(message, iframeId);
+        };
+        
+        /*
          * Notify clients that configuration is updated. (eg. the question has changed)
          */
         this.notifyConfigChange = function() {
@@ -320,6 +355,13 @@ define(function (require){
                     this.sendMessage(message, tokenToId[token]);
                 }
             }, this));
+        };
+        
+        /*
+         * Returns version of SimCapi, used by the iframe
+         */
+        this.getSimCapiVersion = function (iframeId) {
+            return idToSimVersion[iframeId];
         };
     };
 

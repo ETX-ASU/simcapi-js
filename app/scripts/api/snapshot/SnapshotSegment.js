@@ -1,6 +1,6 @@
 define(function(require){
 
-    var check = require('common/check');
+    var check = require('check');
 
     var SnapshotSegment = function(fullPath, value) {
         check(fullPath).isString();
