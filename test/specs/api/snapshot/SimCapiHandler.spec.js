@@ -148,7 +148,7 @@ define(function(require){
             
             beforeEach(function() {
                 authToken = setupHandshake('iframe1', 'token1');
-                setupOnReady('ifram1', authToken);
+                setupOnReady('iframe1', authToken);
             });
             
             it('should broadcast a CONFIG_CHANGE message', function() {
