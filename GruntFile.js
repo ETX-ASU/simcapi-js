@@ -99,6 +99,34 @@ module.exports = function(grunt) {
           // so external javascript can make use of simcapi.
           wrap          : false
         }
+      },
+
+      exploded:{
+        options:{
+          optimize      : "none",
+          baseUrl       : 'temp/local/scripts',
+          mainConfigFile: 'app/scripts/config.js',
+          name          : '../../../bower_components/almond/almond',
+          include       : 'api/snapshot/SimCapi',
+          exclude       : ['backbone', 'jquery', 'underscore', 'check'],
+          out           : 'dist/simcapi-js.js',
+          // No wrapping to 'pollute' the global scope with requirejs,
+          // so external javascript can make use of simcapi.
+          wrap          : false
+        }
+      },
+      minified:{
+        options:{
+          baseUrl       : 'temp/local/scripts',
+          mainConfigFile: 'app/scripts/config.js',
+          name          : '../../../bower_components/almond/almond',
+          include       : 'api/snapshot/SimCapi',
+          exclude       : ['backbone', 'jquery', 'underscore', 'check'],
+          out           : 'dist/simcapi-js.min.js',
+          // No wrapping to 'pollute' the global scope with requirejs,
+          // so external javascript can make use of simcapi.
+          wrap          : false
+        }
       }
     }
   });
@@ -108,7 +136,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha']);
   
   // Custom tasks
-  grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs:local']);
+  grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs']);
 
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
