@@ -109,7 +109,7 @@ module.exports = function(grunt) {
           name          : '../../../bower_components/almond/almond',
           include       : 'api/snapshot/SimCapi',
           exclude       : ['backbone', 'jquery', 'underscore', 'check'],
-          out           : 'dist/simcapi-js.js',
+          out           : 'dist/simcapi.js',
           // No wrapping to 'pollute' the global scope with requirejs,
           // so external javascript can make use of simcapi.
           wrap          : false
@@ -122,7 +122,7 @@ module.exports = function(grunt) {
           name          : '../../../bower_components/almond/almond',
           include       : 'api/snapshot/SimCapi',
           exclude       : ['backbone', 'jquery', 'underscore', 'check'],
-          out           : 'dist/simcapi-js.min.js',
+          out           : 'dist/simcapi.min.js',
           // No wrapping to 'pollute' the global scope with requirejs,
           // so external javascript can make use of simcapi.
           wrap          : false
