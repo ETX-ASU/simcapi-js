@@ -18,7 +18,7 @@ Installation
 AMD compatible or use the folling script tag:
 
 ```
-<script src= "https://github.com/smartsparrow/sim-capi-js/bin/sim-capi-min.js">
+<script src= "https://github.com/SmartSparrow/simcapi-js/dist/simcapi-js.min.js">
 ```
 
 Sim CAPI Types
