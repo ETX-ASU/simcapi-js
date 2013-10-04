@@ -93,7 +93,7 @@ module.exports = function(grunt) {
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
-          include       : 'api/snapshot/SimCapiHandler',
+          include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel'],
           out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js',
           // No wrapping to 'pollute' the global scope with requirejs,
           // so external javascript can make use of simcapi.
