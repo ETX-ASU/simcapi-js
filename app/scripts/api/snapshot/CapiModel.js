@@ -54,15 +54,19 @@ define(function(require){
         return this.attributes[attrName] !== undefined;
       };
 
-      this.on = function(eventName, funct){
-        var array = this._eventsMap[eventName];
+      this.on = function(eventNames, funct){
+        var eventNamesArray = eventNames.split(" ");
 
-        if(array){
-          array.push(funct);
-        }
-        else{
-          this._eventsMap[eventName] = [funct];
-        }
+        _.each(eventNamesArray, function(eventName){
+          var array = this._eventsMap[eventName];
+
+          if(array){
+            array.push(funct);
+          }
+          else{
+            this._eventsMap[eventName] = [funct];
+          }
+        }, this);      
       };
 
       this.trigger = function(eventName){
@@ -72,6 +76,10 @@ define(function(require){
           }, this);
         }
       };
+
+      if(this.initialize){
+        this.initialize();
+      }
     };
 
     return CapiModel;
