@@ -21,8 +21,8 @@ AMD compatible or use the folling script tag:
 
 ## Sim CAPI Types ##
 
-Sim CAPI must know what is being exposed and its type. AELP communicates it’s data as strings through to SimCapi, so SimCapi must convert the data to its original type.  
-Currently there are 4 types in SimCapi:
+Sim CAPI must know what is being exposed and its type. AELP communicates it’s data as strings through to Sim CAPI, so Sim CAPI must convert the data to its original type.  
+Currently there are 4 types in Sim CAPI:
 
 - NUMBER
 - BOOLEAN
@@ -36,10 +36,19 @@ There are two phases to use Sim CAPI, _setup_ and _setup-completion_.
 
 ### Setup ###
 
-In the setup phase, you must tell Sim CAPI what you want the Sim to expose. This is done with the method _watch_
+In the setup phase, you must tell Sim CAPI what you want the Sim to expose. You first have to get a new instance of Sim CAPI to use in the simulation. This is done with the method _getInstance_.
 
 ```
-SimCapi.watch(propertyName, options);
+var simCapiInstance = SimCapi.getInstance();
+```
+
+You will use the Sim CAPI instance to interface with AELP.
+
+
+To expose the properties of the simulation, you use the method _watch_.
+
+```
+simCapiInstance.watch(propertyName, options);
 ```
 
 propertyName - String - name of the property on the model
@@ -55,7 +64,7 @@ This phase require you to tell Sim CAPI you have finished setting up the model. 
 
 
 ```
-SimCapi.notifyOnReady();
+simCapiInstance.notifyOnReady();
 ```
 
 This must be called when the model has finished being setup. It is to tell Sim CAPI that the Sim model is ready to recieve messages from AELP. If this is not called, AELP will not send any messages to the Sim because it thinks the Sim is not ready.
