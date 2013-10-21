@@ -29,7 +29,7 @@ define(function(require){
      */
     this.watch = function(varName, params) {
 
-    	if(params.parent.has(varName)){
+      if(params.parent.has(varName)){
 
         params.alias = params.alias || varName;
 
@@ -52,10 +52,10 @@ define(function(require){
     };
 
     this.watchModel = function(model){
-    	_.each(model.capiProperties, _.bind(function(params, varName){
-    		params.parent = model;
-    		this.watch(varName, params);
-    	}, this));
+      _.each(model.capiProperties, _.bind(function(params, varName){
+        params.parent = model;
+        this.watch(varName, params);
+      }, this));
     };
 
     this.notifyOnReady = function(){
