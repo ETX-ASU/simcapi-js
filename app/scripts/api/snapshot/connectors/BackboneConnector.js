@@ -8,7 +8,9 @@ define(function(require){
   var check          = require('check');
   var Backbone       = require('backbone');
 
-  var CapiConnector = function(options){
+  var BackboneConnector = function(options){
+    options = options || {};
+
     this._simCapi = options.simCapi || new SimCapi();
 
     this._simCapi.setConnector(this);
@@ -146,6 +148,6 @@ define(function(require){
 
 
   //Should be singleton
-  return CapiConnector;
+  return BackboneConnector;
 
 });

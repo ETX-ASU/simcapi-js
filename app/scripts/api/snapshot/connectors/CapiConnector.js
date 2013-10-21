@@ -8,6 +8,8 @@ define(function(require){
   var check          = require('check');
 
   var CapiConnector = function(options){
+    options = options || {};
+    
     this._simCapi = options.simCapi || new SimCapi();
 
     this._simCapi.setConnector(this);
