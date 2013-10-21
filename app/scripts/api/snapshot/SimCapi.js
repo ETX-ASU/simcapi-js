@@ -21,7 +21,6 @@ define(function(require){
     var _              = require('underscore');
     var Math           = require('api/snapshot/util/Math.uuid');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-    var SimCapiValue   = require('api/snapshot/SimCapiValue');
     var check          = require('check');
 
     var SimCapi = function(options) {
@@ -46,6 +45,17 @@ define(function(require){
 
         // True if and only if we have a pending on ready message.
         var pendingOnReady = options.pendingOnReady || false;
+
+        /*
+        * Sets reference to the current connector.
+        */
+        this.setConnector = function(connector){
+            self._connector = connector;
+        };
+
+        this.getHandshake = function(){
+            return handshake;
+        };
 
         /*
          * Helper to route messages to approvidate handlers
@@ -91,56 +101,12 @@ define(function(require){
          */
         var handleValueChangeMessage = function(message) {
             if (message.handshake.authToken === handshake.authToken) {
-
-                // enumerate through all received values @see SimCapiMessage.values
-                _.each(message.values, function(capiValue, key){
-
-                    var attrParams = outgoingMap[key];
-
-                    // check if the key exists in the mapping and is writeable
-                    if (attrParams && !attrParams.readonly) {
-                        // attempt to set update the model value
-                             
-                        setValue(outgoingMap[key], attrParams.originalName, capiValue.value);
-                        
-                    }
-                });
+                if(self._connector){
+                    self._connector.handleValueChange(message);
+                }
             }
         };
 
-        /*
-         * Convert value to boolean primitive. If the value is unconvertable, 
-         * the original value is returned.
-         */
-        var parseBoolean = function(value) {
-            if (check(value).passive().isBoolean()) {
-                return value;
-            } else if (check(value).passive().isString()){
-                return value === 'true' ? true : false;
-            }
-            return value;
-        };
-        
-        /*
-         * Helper to update the value of a model based on it's type.
-         */
-        var setValue = function(attrParams, key, value) {
-            switch (attrParams.type) {
-            case SimCapi.TYPES.NUMBER:
-                check(parseFloat(value)).isNumber();
-                attrParams.parent.set(key, parseFloat(value));
-                break;
-            case SimCapi.TYPES.STRING:
-                attrParams.parent.set(key, value);
-                break;
-            case SimCapi.TYPES.BOOLEAN:
-                attrParams.parent.set(key, parseBoolean(value));
-                break;                
-            default:
-                attrParams.parent.set(key, value);
-                break;
-            }
-        };
 
         /*
          * Handles handshake response by storing the authtoken and sending an ON_READY message
@@ -200,32 +166,10 @@ define(function(require){
          */
         this.notifyValueChange = function() {
 
-          if (handshake.authToken) {
+          if (handshake.authToken && self._connector) {
 
-            // initialize a VALUE_CHANGE message
-            var valueChangeMsg = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                handshake : handshake
-            });
-
-            // populate the message with the values of the entire model
-            _.each(outgoingMap, function(attrParams, attrName) {
-                
-                valueChangeMsg.values[attrName] = new SimCapiValue({
-                    // everything is going to be a string from the viewer's perspective
-                    type    : attrParams.type,
-                    value   : null,
-                    readOnly: attrParams.readonly
-                });
-                
-                // Not passing attributes that don't exist in the ref model
-                if (attrParams.parent.has(attrParams.originalName)) {
-                    var value = attrParams.parent.get(attrParams.originalName);
-                    if (value !== undefined && value !== null) {
-                        valueChangeMsg.values[attrName].value = value.toString();
-                    }
-                }
-            });
+            //retrieve the VALUE_CHANGE message
+            var valueChangeMsg = self._connector.createValueChangeMessage();
             
             // send the message to the viewer
             self.sendMessage(valueChangeMsg);            
@@ -245,35 +189,6 @@ define(function(require){
         // Returns the initial configuration passed in the handshake
         this.getConfig = function() {
             return handshake.config;
-        };
-
-        /*
-         * Allows the 'attributes' to be watched.
-         * @param varName - The 'attribute name'
-         * @param params : {
-         *      parent : What the 'attribute' belongs to. Must also have a 'get' and 'set function.
-         *      alias  : alias of the attributeName 
-         *      type : Type of the 'attribute'. @see SimCapi.TYPES below.
-         *      readonly : True if and only if, the attribute can be changed.
-         * }
-         */
-        this.watch = function(varName, params) {
-            params.alias = params.alias || varName;
-
-            //params.alias is the key on the map, but we must retain the original attrName of that attribute
-            //so that we can set the value on the parent model.
-            params.originalName = varName;
-
-            
-            outgoingMap[params.alias] = params;
-           
-
-            // listen to the model by attaching event handler on the parent
-            params.parent.on('change:' + varName, function(){
-                self.notifyValueChange();
-            });
-            
-            self.notifyValueChange();
         };
 
 

@@ -6,6 +6,7 @@ define(function(require){
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
+    var CapiConnector = require('api/snapshot/connectors/CapiConnector');
     require('sinon');
 
     describe('SimCapi', function() {
@@ -14,6 +15,7 @@ define(function(require){
         var authToken = 'testToken';
         var simCapi = null;
         var sandbox = null;
+        var connector = null;
 
         beforeEach(function() {          
             sandbox = sinon.sandbox.create();
@@ -27,6 +29,8 @@ define(function(require){
             simCapi = new SimCapi({
                 requestToken : requestToken
             });
+
+            connector = new CapiConnector({simCapi: simCapi});
         });
         
         afterEach(function() {
@@ -255,7 +259,11 @@ define(function(require){
                 // create a new instance with outgoingMap parameters
                 simCapi = new SimCapi({
                     requestToken : requestToken,
-                    authToken : authToken,
+                    authToken : authToken
+                });
+
+                connector = new CapiConnector({
+                    simCapi: simCapi,
                     outgoingMap : outgoingMap
                 });
             });
