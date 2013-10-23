@@ -1,25 +1,9 @@
 /*global window, document */
-/*
- * How to use SimCapi:
- *
- * // Get an instance of simcapi
- * var s = SimCapi.getInstance();
- *
- * // Register your model properties.
- * s.watch("massE", {parent:model, type: SimCapi.TYPES.NUMBER, readonly: false});
- *
- * // tell the viewer that the sim is ready
- * s.notifyOnReady();
- *
- * Adaptive E-Learning api.
- * (c) Smart Sparrow
- */
-define(function(require){
-
-    var $              = require('jquery');
-    var _              = require('underscore');
-    var Math           = require('api/snapshot/util/Math.uuid');
-    var SimCapiMessage = require('api/snapshot/SimCapiMessage');
+define(['jquery', 
+        'underscore',
+        'api/snapshot/util/Math.uuid',
+        'api/snapshot/SimCapiMessage'
+], function($, _, Math, SimCapiMessage){
 
     var SimCapi = function(options) {
         // current version of SimCapi
@@ -214,8 +198,5 @@ define(function(require){
         BOOLEAN : 4
     };
 
-    return {
-        SimCapi     : SimCapi,
-        TYPES       : SimCapi.TYPES
-    };
+    return SimCapi;
 });

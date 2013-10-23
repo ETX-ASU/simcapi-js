@@ -1,6 +1,4 @@
-define(function(require){
-
-    var check = require('check');
+define(['check'],function(check){
 
     var SnapshotSegment = function(fullPath, value) {
         check(fullPath).isString();

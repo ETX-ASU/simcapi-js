@@ -1,15 +1,15 @@
 /*global window */
-define(function (require){
-
-    var _               = require('underscore');
-    var $               = require('jquery');
-    var check           = require('check');
-    var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
-    var SimCapiValue    = require('api/snapshot/SimCapiValue');
-    var SimCapi         = require('api/snapshot/SimCapi');
-    var SnapshotSegment = require('api/snapshot/SnapshotSegment');
-    var SharedSimData   = require('api/snapshot/SharedSimData');
-    var Math            = require('api/snapshot/util/Math.uuid');
+define([
+	'underscore',
+	'jquery',
+	'check',
+	'api/snapshot/SimCapiMessage',
+	'api/snapshot/SimCapiValue',
+	'api/snapshot/SimCapi',
+	'api/snapshot/SnapshotSegment',
+	'api/snapshot/SharedSimData',
+	'api/snapshot/util/Math.uuid'
+],function (_, $, check, SimCapiMessage, SimCapiValue, SimCapi, SnapshotSegment, SharedSimData, Math){
 
     var SimCapiHandler = function(options) {
 

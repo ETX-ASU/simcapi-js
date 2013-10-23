@@ -1,11 +1,9 @@
-define(function(require){
-
-
-  var _ = require('underscore');
-  var SimCapi = require('api/snapshot/SimCapi');
-  var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-  var SimCapiValue   = require('api/snapshot/SimCapiValue');
-  var check          = require('check');
+define(['underscore', 
+        'api/snapshot/SimCapi',
+        'api/snapshot/SimCapiMessage',
+        'api/snapshot/SimCapiValue',
+        'check'
+], function(_, SimCapi, SimCapiMessage, SimCapiValue, check){
 
   var BackboneConnector = function(options){
     options = options || {};
@@ -146,16 +144,13 @@ define(function(require){
   };
 
 
-  var _instance = null;
-  var getInstance = function(options) {
-      if(!_instance) {
-          _instance = new BackboneConnector(options);
+  BackboneConnector._instance = null;
+  BackboneConnector.getInstance = function(options) {
+      if(!BackboneConnector._instance) {
+          BackboneConnector._instance = new BackboneConnector(options);
       }
-      return _instance;
+      return BackboneConnector._instance;
   };
 
-  return {
-    getInstance: getInstance
-  };
-
+  return BackboneConnector;
 });

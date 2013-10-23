@@ -1,37 +1,41 @@
+define([], function() {
 
-define(function(require) {
-  var SharedSimData, data, eventBus, _instance;
-  eventBus = require('eventBus');
-  _instance = null;
-  data = {};
-  return SharedSimData = (function() {
+  var SharedSimData = (function() {
 
-    function SharedSimData() {
-      eventBus.on('simData:lessonId', function(lessonId) {
-        return data.lessonId = lessonId;
-      });
-      eventBus.on('simData:questionId', function(questionId) {
-        return data.questionId = questionId;
-      });
-      eventBus.on('simData:servicesBaseUrl', function(endpoint) {
-        return data.servicesBaseUrl = endpoint;
-      });
-    }
+    function SharedSimData() {}
+
+    SharedSimData.prototype.setLessonId = function(lessonId) {
+      SharedSimData.data.lessonId = lessonId;
+    };
+
+    SharedSimData.prototype.setQuestionId = function(questionId) {
+      SharedSimData.data.questionId = questionId;
+    };
+
+    SharedSimData.prototype.setServicesBaseUrl = function(servicesBaseUrl) {
+      SharedSimData.data.servicesBaseUrl = servicesBaseUrl;
+    };
 
     SharedSimData.prototype.getData = function() {
       return {
-        lessonId: data.lessonId,
-        questionId: data.questionId,
-        servicesBaseUrl: data.servicesBaseUrl
+        lessonId: SharedSimData.data.lessonId,
+        questionId: SharedSimData.data.questionId,
+        servicesBaseUrl: SharedSimData.data.servicesBaseUrl
       };
     };
 
     SharedSimData.getInstance = function() {
-      _instance = _instance || new SharedSimData();
-      return _instance;
+      SharedSimData._instance = SharedSimData._instance || new SharedSimData();
+      return SharedSimData._instance;
     };
 
     return SharedSimData;
 
   })();
+
+  SharedSimData._instance = null;
+  SharedSimData.data = {};
+
+
+  return SharedSimData;
 });

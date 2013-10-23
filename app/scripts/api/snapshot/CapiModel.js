@@ -1,6 +1,4 @@
-define(function(require){
-
-  var _ = require('underscore');
+define(['underscore'], function(_){
 
   var CapiModel = function(attrs, methods){
       _.extend(this, methods);

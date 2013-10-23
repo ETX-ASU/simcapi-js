@@ -1,11 +1,9 @@
-define(function(require){
-
-
-  var _ = require('underscore');
-  var SimCapi = require('api/snapshot/SimCapi');
-  var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-  var SimCapiValue   = require('api/snapshot/SimCapiValue');
-  var check          = require('check');
+define(['underscore', 
+        'api/snapshot/SimCapi',
+        'api/snapshot/SimCapiMessage',
+        'api/snapshot/SimCapiValue',
+        'check'
+], function(_, SimCapi, SimCapiMessage, SimCapiValue, check){
 
   var CapiConnector = function(options){
     options = options || {};
@@ -137,16 +135,14 @@ define(function(require){
   };
 
 
-  var _instance = null;
+  CapiConnector._instance = null;
   var getInstance = function(options) {
-      if(!_instance) {
-          _instance = new CapiConnector(options);
+      if(!CapiConnector._instance) {
+          CapiConnector._instance = new CapiConnector(options);
       }
-      return _instance;
+      return CapiConnector._instance;
   };
 
-  return {
-    getInstance: getInstance
-  };
+  return CapiConnector;
 
 });
