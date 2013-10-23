@@ -55,7 +55,8 @@ connector.watch(propertyName, options);
 ```
 
 propertyName - String - name of the property on the model
-options      - Object - parent   - Object - the model ( not optional)
+options      - Object - 
+                        parent   - Object - the model ( not optional)
                         type     - SimCapi.TYPES  - the type of the property (not optional)
                         alias    - String         - nickname of the property that is only shown via AELP. Can __NOT__ contain '.'
                         readonly - Boolean        - if the property is readonly (not optional)
