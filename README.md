@@ -34,25 +34,28 @@ Currently there are 4 types in Sim CAPI:
 
 There are two phases to use Sim CAPI, _setup_ and _setup-completion_.
 
+You can not use Sim CAPI directly. You must use a `connector` to be able to interface with
+Sim CAPI. There exists two connectors, `CapiConnector` and `BackboneConnector`. 
+
 ### Setup ###
 
-In the setup phase, you must tell Sim CAPI what you want the Sim to expose. You first have to get a new instance of Sim CAPI to use in the simulation. This is done with the method _getInstance_.
+In the setup phase, you must tell Sim CAPI what you want the Sim to expose. You first have to get a new instance of Sim CAPI Connector to use in the simulation. This is done as shown below.
 
 ```
-var simCapiInstance = SimCapi.getInstance();
+var connector = CapiConnector.gettInstance();
 ```
 
-You will use the Sim CAPI instance to interface with AELP.
+You will use the connector instance to interface with AELP.
 
 
 To expose the properties of the simulation, you use the method _watch_.
 
 ```
-simCapiInstance.watch(propertyName, options);
+connector.watch(propertyName, options);
 ```
 
 propertyName - String - name of the property on the model
-options      - Object - parent   - Backbone.Model - the model ( not optional)
+options      - Object - parent   - Object - the model ( not optional)
                         type     - SimCapi.TYPES  - the type of the property (not optional)
                         alias    - String         - nickname of the property that is only shown via AELP. Can __NOT__ contain '.'
                         readonly - Boolean        - if the property is readonly (not optional)
@@ -64,7 +67,7 @@ This phase require you to tell Sim CAPI you have finished setting up the model. 
 
 
 ```
-simCapiInstance.notifyOnReady();
+connector.notifyOnReady();
 ```
 
 This must be called when the model has finished being setup. It is to tell Sim CAPI that the Sim model is ready to recieve messages from AELP. If this is not called, AELP will not send any messages to the Sim because it thinks the Sim is not ready.
