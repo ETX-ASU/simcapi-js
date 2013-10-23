@@ -5,8 +5,7 @@
  * // Get an instance of simcapi
  * var s = SimCapi.getInstance();
  *
- * // Register your model properties. (The model must be a Backbone.Model.
- * // Yeah this sucks and should change)
+ * // Register your model properties.
  * s.watch("massE", {parent:model, type: SimCapi.TYPES.NUMBER, readonly: false});
  *
  * // tell the viewer that the sim is ready
@@ -21,7 +20,6 @@ define(function(require){
     var _              = require('underscore');
     var Math           = require('api/snapshot/util/Math.uuid');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-    var check          = require('check');
 
     var SimCapi = function(options) {
         // current version of SimCapi
@@ -216,17 +214,7 @@ define(function(require){
         BOOLEAN : 4
     };
 
-    var _instance = null;
-    var getInstance = function() {
-        if(!_instance) {
-            _instance = new SimCapi();
-        }
-        return _instance;
-    };
-
-    // in reality, we want a singleton but not for testing.
     return {
-        getInstance : getInstance,
         SimCapi     : SimCapi,
         TYPES       : SimCapi.TYPES
     };

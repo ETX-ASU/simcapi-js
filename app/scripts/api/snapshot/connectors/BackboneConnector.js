@@ -6,7 +6,6 @@ define(function(require){
   var SimCapiMessage = require('api/snapshot/SimCapiMessage');
   var SimCapiValue   = require('api/snapshot/SimCapiValue');
   var check          = require('check');
-  var Backbone       = require('backbone');
 
   var BackboneConnector = function(options){
     options = options || {};
@@ -147,7 +146,16 @@ define(function(require){
   };
 
 
-  //Should be singleton
-  return BackboneConnector;
+  var _instance = null;
+  var getInstance = function(options) {
+      if(!_instance) {
+          _instance = new BackboneConnector(options);
+      }
+      return _instance;
+  };
+
+  return {
+    getInstance: getInstance
+  };
 
 });

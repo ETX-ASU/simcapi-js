@@ -9,7 +9,7 @@ define(function(require){
 
   var CapiConnector = function(options){
     options = options || {};
-    
+
     this._simCapi = options.simCapi || new SimCapi();
 
     this._simCapi.setConnector(this);
@@ -137,7 +137,16 @@ define(function(require){
   };
 
 
-  //Should be singleton
-  return CapiConnector;
+  var _instance = null;
+  var getInstance = function(options) {
+      if(!_instance) {
+          _instance = new CapiConnector(options);
+      }
+      return _instance;
+  };
+
+  return {
+    getInstance: getInstance
+  };
 
 });
