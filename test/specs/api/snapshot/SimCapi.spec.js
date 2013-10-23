@@ -1,11 +1,11 @@
 /*global window sinon */
 define(function(require){
 
-    var eventBus = require('eventBus');
     var SimCapi = require('api/snapshot/SimCapi').SimCapi;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
+    var CapiConnector = require('api/snapshot/connectors/CapiConnector');
     require('sinon');
 
     describe('SimCapi', function() {
@@ -14,6 +14,7 @@ define(function(require){
         var authToken = 'testToken';
         var simCapi = null;
         var sandbox = null;
+        var connector = null;
 
         beforeEach(function() {          
             sandbox = sinon.sandbox.create();
@@ -27,6 +28,8 @@ define(function(require){
             simCapi = new SimCapi({
                 requestToken : requestToken
             });
+
+            connector = new CapiConnector({simCapi: simCapi});
         });
         
         afterEach(function() {
@@ -45,9 +48,9 @@ define(function(require){
          */
         var doHandShake = function() {
             var config = SharedSimData.getInstance();
-            eventBus.trigger('simData:lessonId', '1');
-            eventBus.trigger('simData:questionId', 'qid');
-            eventBus.trigger('simData:servicesBaseUrl', 'someurl');
+            config.setLessonId('1');
+            config.setQuestionId('qid');
+            config.setServicesBaseUrl('someurl');
             
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
@@ -98,9 +101,9 @@ define(function(require){
             var updateConfig = function(token) {
                 // update config
                 var newConfig = SharedSimData.getInstance();
-                eventBus.trigger('simData:lessonId', '2');
-                eventBus.trigger('simData:questionId', 'newqid');
-                eventBus.trigger('simData:servicesBaseUrl', 'newurl');
+                newConfig.setLessonId('2');
+                newConfig.setQuestionId('newqid');
+                newConfig.setServicesBaseUrl('newurl');
                 
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
@@ -255,7 +258,11 @@ define(function(require){
                 // create a new instance with outgoingMap parameters
                 simCapi = new SimCapi({
                     requestToken : requestToken,
-                    authToken : authToken,
+                    authToken : authToken
+                });
+
+                connector = new CapiConnector({
+                    simCapi: simCapi,
                     outgoingMap : outgoingMap
                 });
             });

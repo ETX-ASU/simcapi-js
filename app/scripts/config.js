@@ -16,7 +16,7 @@ requirejs.config({
     jquery    : '../../../bower_components/jquery/jquery',
     underscore: '../../../bower_components/underscore/underscore',
     backbone  : '../../../bower_components/backbone/backbone',
-
+    almond    : '../../../bower_components/almond/almond',
     check: '../../../bower_components/check-js/check.min',
     
     // libs

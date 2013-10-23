@@ -1,4 +1,5 @@
 define([
+	'specs/api/snapshot/CapiModel.spec.js',
   // Snapshot
   'specs/api/snapshot/SharedSimData.spec.js',
   'specs/api/snapshot/SimCapi.spec.js',
