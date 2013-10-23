@@ -1,7 +1,7 @@
 /*global window sinon */
 define(function(require){
 
-    var SimCapi = require('api/snapshot/SimCapi').SimCapi;
+    var SimCapi = require('api/snapshot/SimCapi');
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
