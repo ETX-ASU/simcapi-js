@@ -145,7 +145,7 @@ module.exports = function(grunt) {
           include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
                            'api/snapshot/connectors/CapiConnector', 'api/snapshot/connectors/BackboneConnector',
                            ],
-          wrap : {
+          wrap          : {
             startFile: 'app/scripts/intro.js'
           },
           out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js',
@@ -158,13 +158,15 @@ module.exports = function(grunt) {
           optimize      : "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
-          name          : '../../../bower_components/almond/almond',
-          include       : 'api/snapshot/SimCapi',
+          include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
+                           'api/snapshot/connectors/CapiConnector', 'api/snapshot/connectors/BackboneConnector',
+                           ],
           exclude       : ['backbone', 'jquery', 'underscore', 'check'],
           out           : 'dist/simcapi.js',
-          // No wrapping to 'pollute' the global scope with requirejs,
-          // so external javascript can make use of simcapi.
-          wrap          : false
+          wrap          : {
+            startFile: 'app/scripts/intro.js'
+          },
+          onBuildWrite  : onBuildWrite
         }
       },
       minified:{
@@ -175,9 +177,10 @@ module.exports = function(grunt) {
           include       : 'api/snapshot/SimCapi',
           exclude       : ['backbone', 'jquery', 'underscore', 'check'],
           out           : 'dist/simcapi.min.js',
-          // No wrapping to 'pollute' the global scope with requirejs,
-          // so external javascript can make use of simcapi.
-          wrap          : false
+          wrap          : {
+            startFile: 'app/scripts/intro.js'
+          },
+          onBuildWrite  : onBuildWrite
         }
       }
     }
@@ -188,8 +191,9 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha']);
   
   // Custom tasks
-  grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs']);
+  grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs:local']);
 
+  grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified']);
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-mocha');
