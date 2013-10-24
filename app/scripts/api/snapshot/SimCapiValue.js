@@ -1,12 +1,24 @@
 define(['check'],function(check){
 
-
+function parseBoolean(value){
+  if (check(value).passive().isBoolean()) {
+      return value;
+  } else if (check(value).passive().isString()){
+      return value === 'true' ? true : false;
+  }
+  return value;
+}
 
 var SimCapiValue = function(options) {
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
     options = options || {};
+
+    /*
+    *  The key of the this SimCapiValue 
+    */
+    this.key = options.key || null;
 
     /*
      * The value type.
@@ -16,7 +28,8 @@ var SimCapiValue = function(options) {
     /*
      * The value of this object.
      */
-    this.value = options.value || null;
+    this.value = null;
+    this.setValue(options.value);
 
     /*
      * True if and only if, this value can NOT be written to. Any request to change
@@ -52,6 +65,26 @@ var SimCapiValue = function(options) {
       this._determineType();
     }
     
+};
+
+SimCapiValue.prototype.setValue = function(value) {
+	if(value !== null || value !== undefined){
+    switch (this.type) {
+      case SimCapiValue.TYPES.NUMBER:
+        check(parseFloat(value)).isNumber();
+        this.value = parseFloat(value);
+        break;
+      case SimCapiValue.TYPES.STRING:
+        this.value = value;
+        break;
+      case SimCapiValue.TYPES.BOOLEAN:
+        this.value = parseBoolean(value);
+        break;                
+      default:
+        this.value = value;
+        break;
+    }
+  }
 };
 
 /*
