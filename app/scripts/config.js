@@ -13,11 +13,11 @@ requirejs.config({
     }
   },
   paths: {
-    jquery    : '../../../components/jquery/jquery',
-    underscore: '../../../components/underscore/underscore',
-    backbone  : '../../../components/backbone/backbone',
+    jquery    : '../../../bower_components/jquery/jquery',
+    underscore: '../../../bower_components/underscore/underscore',
+    backbone  : '../../../bower_components/backbone/backbone',
 
-    check: '../../../components/check-js/check.min',
+    check: '../../../bower_components/check-js/check.min',
     
     // libs
     sinon: '../../../libs/sinon-1.5.2',
