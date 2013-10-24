@@ -251,10 +251,10 @@ define(function(require){
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
-                    attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2'),
-                    attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true),
-                    attr4 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr4', false)
+                    attr1 : createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
+                    attr2 : createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
+                    attr3 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
+                    attr4 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
@@ -309,19 +309,19 @@ define(function(require){
                     // create two attribute changes as mentioned above
                     values : {
                         'attr1' : new SimCapiValue({
-                            type : SimCapi.TYPES.STRING,
+                            type : SimCapiValue.TYPES.STRING,
                             value : '0.222'
                         }),
                         'attr2' : new SimCapiValue({
-                            type : SimCapi.TYPES.STRING,
+                            type : SimCapiValue.TYPES.STRING,
                             value : 'value2'
                         }),
                         'attr3' : new SimCapiValue({
-                            type : SimCapi.TYPES.BOOLEAN,
+                            type : SimCapiValue.TYPES.BOOLEAN,
                             value : 'true'
                         }),
                         'attr4' : new SimCapiValue({
-                            type : SimCapi.TYPES.BOOLEAN,
+                            type : SimCapiValue.TYPES.BOOLEAN,
                             value : 'false' 
                         })
                     }

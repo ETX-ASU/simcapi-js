@@ -328,7 +328,7 @@ define(function(require){
                     expect(response.handshake.authToken).to.be(authToken);
                     expect(_.size(response.values)).to.be(1);
                     expect(response.values['value'].value).to.be('1');
-                    expect(response.values['value'].type).to.be(SimCapi.TYPES.STRING);
+                    expect(response.values['value'].type).to.be(SimCapiValue.TYPES.STRING);
 
                     expect(iframeid).to.be('iframe1');
 
@@ -384,7 +384,7 @@ define(function(require){
                     expect(response.handshake.authToken).to.be(authToken);
                     expect(_.size(response.values)).to.be(1);
                     expect(response.values['value2'].value).to.be('1');
-                    expect(response.values['value2'].type).to.be(SimCapi.TYPES.STRING);
+                    expect(response.values['value2'].type).to.be(SimCapiValue.TYPES.STRING);
 
                     expect(iframeid).to.be('iframe2');
 

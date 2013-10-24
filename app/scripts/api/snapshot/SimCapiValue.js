@@ -1,4 +1,6 @@
-define(function(require){
+define(['check'],function(check){
+
+
 
 var SimCapiValue = function(options) {
 
@@ -21,6 +23,35 @@ var SimCapiValue = function(options) {
      * the value of this key, will be ignored.
      */
     this.readOnly = options.readOnly || false;
+
+    /*
+    * List of possible values for enum
+    */
+    this.enums = options.enums || null;
+
+    this._determineType = function(){
+      if(!this.enums){
+        var passiveValue = check(this.value).passive();
+        if(passiveValue.isString()){
+          this.type = SimCapiValue.TYPES.STRING;
+        }
+        else if(passiveValue.isNumber()){
+          this.type = SimCapiValue.TYPES.NUMBER;
+        }
+        else if(passiveValue.isBoolean()){
+          this.type = SimCapiValue.TYPES.BOOLEAN;
+        }
+      }
+      else{
+        //set type to be enum 
+      }
+    };
+
+    //Only determin the type if its not given.
+    if(!this.type){
+      this._determineType();
+    }
+    
 };
 
 /*
