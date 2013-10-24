@@ -74,7 +74,7 @@ var SimCapiValue = function(options) {
      * True if and only if, this value can NOT be written to. Any request to change
      * the value of this key, will be ignored.
      */
-    this.readOnly = options.readOnly || false;
+    this.readonly = options.readonly || false;
 
     /*
     * List of possible values for enum

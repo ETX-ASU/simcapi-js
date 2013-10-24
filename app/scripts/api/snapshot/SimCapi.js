@@ -18,7 +18,7 @@ var SimCapi = function(options) {
     // The mapping of watched 'attributes'
     var outgoingMap = options.outgoingMap || {};
 
-    //The list
+    //The list of change listeners
     var changeListeners = [];
 
     // Authentication handshake used for communicating to viewer
@@ -60,6 +60,10 @@ var SimCapi = function(options) {
       changeListeners.push(changeListener);
     };
 
+    this.removeAllChangeListeners = function(){
+      changeListeners = [];
+    };
+
     /*
      * Handles configuration changes to sharedsimdata
      */
@@ -95,8 +99,6 @@ var SimCapi = function(options) {
                 // check if the key exists in the mapping and is writeable
                 if (capiValue && !capiValue.readonly) {
 
-                    outgoingMap[key] = capiValue.value;  
-
                     if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
                       outgoingMap[key].value = capiValue.value;
                       changed[key] = outgoingMap[key];
@@ -104,9 +106,13 @@ var SimCapi = function(options) {
                 }
             });
 
-            _.each(changeListeners, function(changeListener){
-              changeListener.call(null, changed);
-            });
+            //Ensure that changed object has something in it.
+            if(Object.keys(changed).length !==0){
+              _.each(changeListeners, function(changeListener){
+                changeListener.call(null, changed);
+              });
+            }
+            
         }
     };
 

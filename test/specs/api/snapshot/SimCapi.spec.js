@@ -1,11 +1,10 @@
 /*global window sinon */
 define(function(require){
 
-    var SimCapi = require('api/snapshot/SimCapi');
+    var SimCapi = require('api/snapshot/SimCapi').SimCapi;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
-    var CapiAdapter = require('api/snapshot/connectors/CapiAdapter').CapiAdapter;
     require('sinon');
 
     describe('SimCapi', function() {
@@ -14,7 +13,6 @@ define(function(require){
         var authToken = 'testToken';
         var simCapi = null;
         var sandbox = null;
-        var connector = null;
 
         beforeEach(function() {          
             sandbox = sinon.sandbox.create();
@@ -25,11 +23,10 @@ define(function(require){
                 expect(callback).to.be.ok();
             });
 
-            simCapi = new SimCapi.getInstance({
+            simCapi = new SimCapi({
                 requestToken : requestToken
             });
 
-            connector = new CapiAdapter();
         });
         
         afterEach(function() {
@@ -251,45 +248,32 @@ define(function(require){
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    attr1 : createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
+                    'these.are.fake.objects.attr1' : createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222),
                     attr2 : createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
                     attr3 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
                     attr4 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
-                simCapi = SimCapi.getInstance({
+                simCapi = new SimCapi({
                     requestToken : requestToken,
-                    authToken : authToken
-                });
-
-                connector = new CapiAdapter({
+                    authToken : authToken, 
                     outgoingMap : outgoingMap
                 });
+
+                simCapi.removeAllChangeListeners();
+
             });
 
             // helper to create entries in outgoing map. expectedKey and expectedValue represent
             // expected updates. Eg, the value of expectedKey changes to expectedValue.
-            var createAttr = function(type, readOnly, expectedKey, expectedValue, alias) {
-                return {
-                    type : type,
-                    alias: alias,
-                    originalName: expectedKey,
-                    parent : {
-                        set : function(key, value) {
-                            // verify that the value is updated
-                            expect(key).to.be(expectedKey);
-                            expect(value).to.be(expectedValue);
-                        },
-                        has : function (key) {
-                            return true;
-                        },
-                        get : function (key) {
-                            return expectedValue;
-                        }
-                    },
-                    readOnly : readOnly
-                };
+            var createAttr = function(type, readonly, expectedKey, expectedValue) {
+                return new SimCapiValue({
+                  type: type,
+                  readonly: readonly,
+                  key: expectedKey,
+                  value: expectedValue
+                });
             };
 
             /*
@@ -308,9 +292,9 @@ define(function(require){
 
                     // create two attribute changes as mentioned above
                     values : {
-                        'attr1' : new SimCapiValue({
-                            type : SimCapiValue.TYPES.STRING,
-                            value : '0.222'
+                        'these.are.fake.objects.attr1' : new SimCapiValue({
+                            type : SimCapiValue.TYPES.NUMBER,
+                            value : 0.5
                         }),
                         'attr2' : new SimCapiValue({
                             type : SimCapiValue.TYPES.STRING,
@@ -318,11 +302,11 @@ define(function(require){
                         }),
                         'attr3' : new SimCapiValue({
                             type : SimCapiValue.TYPES.BOOLEAN,
-                            value : 'true'
+                            value : false
                         }),
                         'attr4' : new SimCapiValue({
                             type : SimCapiValue.TYPES.BOOLEAN,
-                            value : 'false' 
+                            value : false 
                         })
                     }
                 });
@@ -332,28 +316,28 @@ define(function(require){
 
                 var valueChangeMsg = createGoodValueChangeMessage();
 
-                // spy on simCapi to verify that values are updated. Verifying that the updates are correct are
-                // performed @ createAttr
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                var failed = true;
+                simCapi.addChangeListener(function(){
+                  failed = false;
+                });
 
                 simCapi.capiMessageHandler(valueChangeMsg);
 
                 // verify that there were two updates
-                expect(outgoingMap.attr1.parent.set.called).to.be(true);
-                expect(outgoingMap.attr2.parent.set.called).to.be(true);
-                expect(outgoingMap.attr3.parent.set.called).to.be(true);
+                //expect(outgoingMap.attr1.parent.set.called).to.be(true);
+                //expect(outgoingMap.attr2.parent.set.called).to.be(true);
+                //expect(outgoingMap.attr3.parent.set.called).to.be(true);
+                expect(failed).to.be(false);
             });
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
 
                 var expectedValueChangeMsg = simCapi.notifyValueChange();
 
-                expect(expectedValueChangeMsg.values.attr1.value).to.be('0.222');
+                expect(expectedValueChangeMsg.values['these.are.fake.objects.attr1'].value).to.be(0.222);
                 expect(expectedValueChangeMsg.values.attr2.value).to.be('value2');
-                expect(expectedValueChangeMsg.values.attr3.value).to.be('true');
-                expect(expectedValueChangeMsg.values.attr4.value).to.be('false');
+                expect(expectedValueChangeMsg.values.attr3.value).to.be(true);
+                expect(expectedValueChangeMsg.values.attr4.value).to.be(false);
             });
 
             it('should ignore VALUE_CHANGE message if values is undefined', function(){
@@ -368,17 +352,16 @@ define(function(require){
                     values : undefined
                 });
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                var failed = false;
+                simCapi.addChangeListener(function(values){
+                  failed = true;
+                });
 
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
-
+                
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(false);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(false);
+                expect(failed).to.be(false);
             });
 
             it('should ignore VALUE_CHANGE when authToken does not match', function(){
@@ -393,18 +376,15 @@ define(function(require){
                     values : undefined
                 });
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
-
+                var failed = false;
+                simCapi.addChangeListener(function(values){
+                  failed = true;
+                });
 
                 simCapi.capiMessageHandler(badValueChangeMsg);
-
+                
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(false);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(false);
-
+                expect(failed).to.be(false);
             });
 
             it('should not update readonly values', function(){
@@ -414,17 +394,14 @@ define(function(require){
                 // change attr2 to be readonly
                 outgoingMap.attr2.readonly = true;
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
-
+                simCapi.addChangeListener(function(values){
+                  //verify that two attrs get updated
+                  expect(values['these.are.fake.objects.attr1']).to.be.ok();
+                  expect(values.attr2).to.not.be.ok();
+                  expect(values.attr3).to.be.ok();
+                });
 
                 simCapi.capiMessageHandler(valueChangeMsg);
-
-                // verify that only attr1 is updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(true);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(true);
 
             });
 
