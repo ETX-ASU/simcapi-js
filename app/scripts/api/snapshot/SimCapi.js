@@ -86,15 +86,26 @@ var SimCapi = function(options) {
     var handleValueChangeMessage = function(message) {
         if (message.handshake.authToken === handshake.authToken) {
 
+            var changed = {};
             // enumerate through all received values @see SimCapiMessage.values
             //key - the alias || original name
             //capiValue.key - the original name
             _.each(message.values, function(capiValue, key){
 
                 // check if the key exists in the mapping and is writeable
-                if (capiValue && !capiValue.readonly) {               
-                    outgoingMap[key] = capiValue.value;   
+                if (capiValue && !capiValue.readonly) {
+
+                    outgoingMap[key] = capiValue.value;  
+
+                    if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
+                      outgoingMap[key].value = capiValue.value;
+                      changed[key] = outgoingMap[key];
+                    } 
                 }
+            });
+
+            _.each(changeListeners, function(changeListener){
+              changeListener.call(null, changed);
             });
         }
     };

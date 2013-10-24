@@ -11,6 +11,45 @@ function parseBoolean(value){
 
 var SimCapiValue = function(options) {
 
+    var _determineType = function(){
+      if(!this.enums){
+        var passiveValue = check(this.value).passive();
+        if(passiveValue.isString()){
+          this.type = SimCapiValue.TYPES.STRING;
+        }
+        else if(passiveValue.isNumber()){
+          this.type = SimCapiValue.TYPES.NUMBER;
+        }
+        else if(passiveValue.isBoolean()){
+          this.type = SimCapiValue.TYPES.BOOLEAN;
+        }
+      }
+      else{
+        //set type to be enum 
+      }
+    };
+
+    var _setValue = function(value) {
+      if(value !== null || value !== undefined){
+        switch (this.type) {
+          case SimCapiValue.TYPES.NUMBER:
+            check(parseFloat(value)).isNumber();
+            this.value = parseFloat(value);
+            break;
+          case SimCapiValue.TYPES.STRING:
+            this.value = value;
+            break;
+          case SimCapiValue.TYPES.BOOLEAN:
+            this.value = parseBoolean(value);
+            break;                
+          default:
+            this.value = value;
+            break;
+        }
+      }
+    };
+
+
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
     options = options || {};
@@ -29,7 +68,7 @@ var SimCapiValue = function(options) {
      * The value of this object.
      */
     this.value = null;
-    this.setValue(options.value);
+    _setValue.call(this,options.value);
 
     /*
      * True if and only if, this value can NOT be written to. Any request to change
@@ -42,50 +81,15 @@ var SimCapiValue = function(options) {
     */
     this.enums = options.enums || null;
 
-    this._determineType = function(){
-      if(!this.enums){
-        var passiveValue = check(this.value).passive();
-        if(passiveValue.isString()){
-          this.type = SimCapiValue.TYPES.STRING;
-        }
-        else if(passiveValue.isNumber()){
-          this.type = SimCapiValue.TYPES.NUMBER;
-        }
-        else if(passiveValue.isBoolean()){
-          this.type = SimCapiValue.TYPES.BOOLEAN;
-        }
-      }
-      else{
-        //set type to be enum 
-      }
-    };
+    
 
     //Only determin the type if its not given.
     if(!this.type){
-      this._determineType();
+      _determineType.call(this);
     }
     
 };
 
-SimCapiValue.prototype.setValue = function(value) {
-	if(value !== null || value !== undefined){
-    switch (this.type) {
-      case SimCapiValue.TYPES.NUMBER:
-        check(parseFloat(value)).isNumber();
-        this.value = parseFloat(value);
-        break;
-      case SimCapiValue.TYPES.STRING:
-        this.value = value;
-        break;
-      case SimCapiValue.TYPES.BOOLEAN:
-        this.value = parseBoolean(value);
-        break;                
-      default:
-        this.value = value;
-        break;
-    }
-  }
-};
 
 /*
  * Attribute types.
