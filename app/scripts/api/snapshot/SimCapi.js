@@ -198,5 +198,19 @@ SimCapi.TYPES = {
     BOOLEAN : 4
 };
 
-return SimCapi;
+var _instance = null;
+var getInstance = function(options){
+  if(!_instance){
+    _instance = new SimCapi(options);
+  }
+
+  return _instance;
+};
+
+// in reality, we want a singleton but not for testing.
+return {
+  getInstance: getInstance,
+  SimCapi: SimCapi,
+  TYPES: SimCapi.TYPES
+};
 });

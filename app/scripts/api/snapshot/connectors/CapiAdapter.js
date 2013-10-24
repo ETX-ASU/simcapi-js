@@ -5,10 +5,10 @@ define(['underscore',
         'check'
 ], function(_, SimCapi, SimCapiMessage, SimCapiValue, check){
 
-var CapiConnector = function(options){
+var CapiAdapter = function(options){
   options = options || {};
 
-  this._simCapi = options.simCapi || new SimCapi();
+  this._simCapi = SimCapi.getInstance();
 
   this._simCapi.setConnector(this);
 
@@ -135,14 +135,18 @@ var CapiConnector = function(options){
 };
 
 
-CapiConnector._instance = null;
-var getInstance = function(options) {
-    if(!CapiConnector._instance) {
-        CapiConnector._instance = new CapiConnector(options);
+var _instance = null;
+var getInstance = function(force, options) {
+    if(!_instance || force === true) {
+        _instance = new CapiAdapter(options);
     }
-    return CapiConnector._instance;
+    return _instance;
 };
 
-return CapiConnector;
+// in reality, we want a singleton but not for testing.
+return {
+  getInstance:getInstance,
+  CapiAdapter: CapiAdapter
+};
 
 });

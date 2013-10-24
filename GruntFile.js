@@ -143,7 +143,7 @@ module.exports = function(grunt) {
           mainConfigFile: 'app/scripts/config.js',
           exclude       : ['jquery', 'underscore', 'check', 'backbone', 'almond'],
           include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
-                           'api/snapshot/connectors/CapiConnector', 'api/snapshot/connectors/BackboneConnector',
+                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
                            ],
           wrap          : {
             startFile: 'app/scripts/intro.js'
@@ -159,7 +159,7 @@ module.exports = function(grunt) {
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
-                           'api/snapshot/connectors/CapiConnector', 'api/snapshot/connectors/BackboneConnector',
+                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
                            ],
           exclude       : ['backbone', 'jquery', 'underscore', 'check'],
           out           : 'dist/simcapi.js',

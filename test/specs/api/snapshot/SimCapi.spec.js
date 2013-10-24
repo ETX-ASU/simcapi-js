@@ -5,7 +5,7 @@ define(function(require){
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
-    var CapiConnector = require('api/snapshot/connectors/CapiConnector');
+    var CapiAdapter = require('api/snapshot/connectors/CapiAdapter').CapiAdapter;
     require('sinon');
 
     describe('SimCapi', function() {
@@ -25,11 +25,11 @@ define(function(require){
                 expect(callback).to.be.ok();
             });
 
-            simCapi = new SimCapi({
+            simCapi = new SimCapi.getInstance({
                 requestToken : requestToken
             });
 
-            connector = new CapiConnector({simCapi: simCapi});
+            connector = new CapiAdapter();
         });
         
         afterEach(function() {
@@ -200,6 +200,8 @@ define(function(require){
                 var gotOnReady = -1;
                 var gotValueChange = -1;
 
+                simCapi.getHandshake().authToken = null;
+
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
                     // remember the order that we recieved messages
@@ -256,13 +258,12 @@ define(function(require){
                 };
 
                 // create a new instance with outgoingMap parameters
-                simCapi = new SimCapi({
+                simCapi = SimCapi.getInstance({
                     requestToken : requestToken,
                     authToken : authToken
                 });
 
-                connector = new CapiConnector({
-                    simCapi: simCapi,
+                connector = new CapiAdapter({
                     outgoingMap : outgoingMap
                 });
             });

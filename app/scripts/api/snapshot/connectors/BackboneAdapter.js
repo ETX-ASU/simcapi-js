@@ -5,10 +5,10 @@ define(['underscore',
         'check'
 ], function(_, SimCapi, SimCapiMessage, SimCapiValue, check){
 
-var BackboneConnector = function(options){
+var BackboneAdapter = function(options){
   options = options || {};
 
-  this._simCapi = options.simCapi || new SimCapi();
+  this._simCapi = SimCapi.getInstance();
 
   this._simCapi.setConnector(this);
 
@@ -144,13 +144,17 @@ var BackboneConnector = function(options){
 };
 
 
-BackboneConnector._instance = null;
-BackboneConnector.getInstance = function(options) {
-    if(!BackboneConnector._instance) {
-        BackboneConnector._instance = new BackboneConnector(options);
+var _instance = null;
+var getInstance = function(force, options) {
+    if(!_instance || force === true) {
+        _instance = new BackboneAdapter(options);
     }
-    return BackboneConnector._instance;
+    return _instance;
 };
 
-return BackboneConnector;
+// in reality, we want a singleton but not for testing.
+return {
+  getInstance: getInstance,
+  BackboneAdapter: BackboneAdapter
+};
 });
