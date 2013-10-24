@@ -22,7 +22,7 @@ var CapiAdapter = function(options){
    * @param params : {
    *      parent : What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    *      alias  : alias of the attributeName 
-   *      type : Type of the 'attribute'. @see SimCapi.TYPES below.
+   *      type : Type of the 'attribute'. @see SimCapiValue.TYPES below.
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
@@ -99,14 +99,14 @@ var CapiAdapter = function(options){
    */
   var setValue = function(attrParams, attrName, value){
    switch (attrParams.type) {
-      case SimCapi.TYPES.NUMBER:
+      case SimCapiValue.TYPES.NUMBER:
         check(parseFloat(value)).isNumber();
         attrParams.parent.set(attrName, parseFloat(value));
         break;
-      case SimCapi.TYPES.STRING:
+      case SimCapiValue.TYPES.STRING:
         attrParams.parent.set(attrName, value);
         break;
-      case SimCapi.TYPES.BOOLEAN:
+      case SimCapiValue.TYPES.BOOLEAN:
         attrParams.parent.set(attrName, parseBoolean(value));
         break;                
       default:

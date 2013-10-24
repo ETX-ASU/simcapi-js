@@ -188,15 +188,7 @@ var SimCapi = function(options) {
     });
 };
 
-/*
- * Attribute types.
- */
-SimCapi.TYPES = {
-    NUMBER  : 1,
-    STRING  : 2,
-    ARRAY   : 3,
-    BOOLEAN : 4
-};
+
 
 var _instance = null;
 var getInstance = function(options){
@@ -210,7 +202,6 @@ var getInstance = function(options){
 // in reality, we want a singleton but not for testing.
 return {
   getInstance: getInstance,
-  SimCapi: SimCapi,
-  TYPES: SimCapi.TYPES
+  SimCapi: SimCapi
 };
 });

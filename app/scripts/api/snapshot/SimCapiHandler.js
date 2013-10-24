@@ -5,11 +5,10 @@ define([
 	'check',
 	'api/snapshot/SimCapiMessage',
 	'api/snapshot/SimCapiValue',
-	'api/snapshot/SimCapi',
 	'api/snapshot/SnapshotSegment',
 	'api/snapshot/SharedSimData',
 	'api/snapshot/util/Math.uuid'
-],function (_, $, check, SimCapiMessage, SimCapiValue, SimCapi, SnapshotSegment, SharedSimData, Math){
+],function (_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, Math){
 
 var SimCapiHandler = function(options) {
 
@@ -226,7 +225,7 @@ var SimCapiHandler = function(options) {
 
                 var variable = _.rest(segment.path, 2).join('.');
                 messages[iframeId].values[variable] = new SimCapiValue({
-                    type: SimCapi.TYPES.STRING,
+                    type: SimCapiValue.TYPES.STRING,
                     value: segment.value
                 });
 

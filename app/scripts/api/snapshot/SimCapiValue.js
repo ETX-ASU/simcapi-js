@@ -23,5 +23,15 @@ var SimCapiValue = function(options) {
     this.readOnly = options.readOnly || false;
 };
 
+/*
+ * Attribute types.
+ */
+SimCapiValue.TYPES = {
+    NUMBER  : 1,
+    STRING  : 2,
+    ARRAY   : 3,
+    BOOLEAN : 4
+};
+
 return SimCapiValue;
 });
