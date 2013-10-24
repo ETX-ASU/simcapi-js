@@ -10,126 +10,59 @@ var CapiAdapter = function(options){
 
   this._simCapi = SimCapi.getInstance();
 
-  this._simCapi.setConnector(this);
-
-  // The mapping of watched 'attributes'
-  var outgoingMap = options.outgoingMap || {};
-
+  this.models = {};
 
   /*
    * Allows the 'attributes' to be watched.
    * @param attrName - The 'attribute name'
+   * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
-   *      parent : What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    *      alias  : alias of the attributeName 
    *      type : Type of the 'attribute'. @see SimCapiValue.TYPES below.
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
-  this.watch = function(varName, params) {
-    if(params.parent.has(varName))
+  this.watch = function(varName, parent, params) {
+    if(parent.has(varName))
     {
-      params.alias = params.alias || varName;
+      var capiValue = new SimCapiValue({
+        key: varName,
+        value: parent.get(varName),
+        type: params.type,
+        readonly: params.readonly
+      });
 
-      //params.alias is the key on the map, but we must retain the original attrName of that attribute
-      //so that we can set the value on the parent model.
-      params.originalName = varName;
-
-      
-      outgoingMap[params.alias] = params;
-     
+      var alias = params.alias || varName;
 
       // listen to the model by attaching event handler on the parent
-      params.parent.on('change:' + varName, _.bind(function(){
-        this._simCapi.notifyValueChange();
+      parent.on('change:' + varName, _.bind(function(m, value){
+        this._simCapi.updateValue(alias, value);
       },this));
       
-      this._simCapi.notifyValueChange();
+      this._simCapi.setValue(alias, capiValue);
+
+      this.models[alias] = parent;
+      
     }
   };
 
-  this.notifyOnReady = function(){
-    this._simCapi.notifyOnReady();
-  };
 
-
-  this.createValueChangeMessage = function(){
-    var valueChangeMsg = new SimCapiMessage({
-        type : SimCapiMessage.TYPES.VALUE_CHANGE,
-        handshake : this._simCapi.getHandshake()
-    });
-
-    // populate the message with the values of the entire model
-    _.each(outgoingMap, function(attrParams, attrName) {
-        
-        valueChangeMsg.values[attrName] = new SimCapiValue({
-            // everything is going to be a string from the viewer's perspective
-            type    : attrParams.type,
-            value   : null,
-            readOnly: attrParams.readonly
-        });
-        
-        // Not passing attributes that don't exist in the ref model
-        if (attrParams.parent.has(attrParams.originalName)) {
-            var value = attrParams.parent.get(attrParams.originalName);
-            if (value !== undefined && value !== null) {
-                valueChangeMsg.values[attrName].value = value.toString();
-            }
-        }
-    });
-
-    return valueChangeMsg;
-  };
-
-   /*
-   * Convert value to boolean primitive. If the value is unconvertable, 
-   * the original value is returned.
-   */
-  var parseBoolean = function(value) {
-      if (check(value).passive().isBoolean()) {
-          return value;
-      } else if (check(value).passive().isString()){
-          return value === 'true' ? true : false;
-      }
-      return value;
-  };
 
   /*
-   * Helper to update the value of a model based on it's type.
-   */
-  var setValue = function(attrParams, attrName, value){
-   switch (attrParams.type) {
-      case SimCapiValue.TYPES.NUMBER:
-        check(parseFloat(value)).isNumber();
-        attrParams.parent.set(attrName, parseFloat(value));
-        break;
-      case SimCapiValue.TYPES.STRING:
-        attrParams.parent.set(attrName, value);
-        break;
-      case SimCapiValue.TYPES.BOOLEAN:
-        attrParams.parent.set(attrName, parseBoolean(value));
-        break;                
-      default:
-        attrParams.parent.set(attrName, value);
-        break;
-    }
-  };
-
-  this.handleValueChange = function(message){
+  * values - Object of key - SimCapiValue
+  */
+  this.handleValueChange = function(values){
     // enumerate through all received values @see SimCapiMessage.values
-    _.each(message.values, function(capiValue, key){
-
-        var attrParams = outgoingMap[key];
-
-        // check if the key exists in the mapping and is writeable
-        if (attrParams && !attrParams.readonly) {
-            // attempt to set update the model value
-                 
-            setValue(outgoingMap[key], attrParams.originalName, capiValue.value);
-            
-        }
+    _.each(values, function(capiValue, key){
+      if(this.models[key]){
+        var model = this.models[key];
+        model.set(capiValue.key, capiValue.value);
+      }
     });
+    
   };
+
+  this._simCapi.addChangeListener(_.bind(this.handleValueChange,this));
 
 
 };

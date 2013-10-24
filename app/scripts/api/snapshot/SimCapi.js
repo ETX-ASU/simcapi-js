@@ -18,6 +18,9 @@ var SimCapi = function(options) {
     // The mapping of watched 'attributes'
     var outgoingMap = options.outgoingMap || {};
 
+    //The list
+    var changeListeners = [];
+
     // Authentication handshake used for communicating to viewer
     var handshake = {
         requestToken : options.requestToken || Math.uuid(),
@@ -28,12 +31,6 @@ var SimCapi = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
-    /*
-    * Sets reference to the current connector.
-    */
-    this.setConnector = function(connector){
-        self._connector = connector;
-    };
 
     this.getHandshake = function(){
         return handshake;
@@ -59,6 +56,10 @@ var SimCapi = function(options) {
         }
     };
 
+    this.addChangeListener = function(changeListener){
+      changeListeners.push(changeListener);
+    };
+
     /*
      * Handles configuration changes to sharedsimdata
      */
@@ -77,18 +78,26 @@ var SimCapi = function(options) {
         }
     };
     
+
     /*
      * Handles value change messages and update the model accordingly. If the
      * authToken doesn't match our authToken, we ignore the message.
      */
     var handleValueChangeMessage = function(message) {
         if (message.handshake.authToken === handshake.authToken) {
-            if(self._connector){
-                self._connector.handleValueChange(message);
-            }
+
+            // enumerate through all received values @see SimCapiMessage.values
+            //key - the alias || original name
+            //capiValue.key - the original name
+            _.each(message.values, function(capiValue, key){
+
+                // check if the key exists in the mapping and is writeable
+                if (capiValue && !capiValue.readonly) {               
+                    outgoingMap[key] = capiValue.value;   
+                }
+            });
         }
     };
-
 
     /*
      * Handles handshake response by storing the authtoken and sending an ON_READY message
@@ -148,16 +157,43 @@ var SimCapi = function(options) {
      */
     this.notifyValueChange = function() {
 
-      if (handshake.authToken && self._connector) {
+      if (handshake.authToken) {
 
         //retrieve the VALUE_CHANGE message
-        var valueChangeMsg = self._connector.createValueChangeMessage();
         
+        var valueChangeMsg = new SimCapiMessage({
+            type : SimCapiMessage.TYPES.VALUE_CHANGE,
+            handshake : this.getHandshake()
+        });
+
+        // populate the message with the values of the entire model
+        _.each(outgoingMap, function(simCapiValue, attrName) {
+            
+            valueChangeMsg.values[attrName] = simCapiValue;
+        });
+
         // send the message to the viewer
         self.sendMessage(valueChangeMsg);            
         return valueChangeMsg;            
       }
       return null;
+    };
+
+    this.setValue = function(attrName, simCapiValue){
+      outgoingMap[attrName] = simCapiValue;
+
+      this.notifyValueChange();
+    };
+
+    this.updateValue = function(attrName, value){
+      if(outgoingMap[attrName]){
+        outgoingMap[attrName].value = value;
+      }
+      else{
+        throw new Error('Can not use updateValue');
+      }
+
+      this.notifyValueChange();
     };
 
     // Helper to send message to viewer
