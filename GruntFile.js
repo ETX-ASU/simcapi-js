@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 
     // Lint
     jshint: {
-      all : ['grunt.js', 'app/**/*.js', 'test/specs/**/*.js'],
+      all : ['grunt.js', 'app/scripts/api/**/*.js', 'test/specs/**/*.js'],
       options: {
         curly  : true,
         eqeqeq : true,
@@ -65,7 +65,7 @@ module.exports = function(grunt) {
     cover : {
       compile : {
         files : {
-          'cover/' : 'app/**/*.js'
+          'cover/' : 'app/scripts/api/**/*.js'
         }
       }
     },
@@ -89,14 +89,12 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          optimize: "none",
+          //optimize: "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/SimCapiHandler'],
-          wrap          : {
-            startFile: 'app/scripts/intro.js'
-          },
+          wrap          : false,
           out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js'
         }
       },
@@ -113,7 +111,7 @@ module.exports = function(grunt) {
           out           : 'dist/simcapi.js',
           wrap          : {
             startFile: 'app/scripts/intro.js',
-            endFile: 'app/scripts/outro.js'
+            endFile  : 'app/scripts/outro.js'
           }
         }
       },
@@ -128,7 +126,7 @@ module.exports = function(grunt) {
           out           : 'dist/simcapi.min.js',
           wrap          : {
             startFile: 'app/scripts/intro.js',
-            endFile: 'app/scripts/outro.js'
+            endFile  : 'app/scripts/outro.js'
           }
         }
       }
