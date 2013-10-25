@@ -28,23 +28,21 @@ var SimCapiValue = function(options) {
     };
 
     var _setValue = function(value) {
-      if(value !== null || value !== undefined){
-        switch (this.type) {
-          case SimCapiValue.TYPES.NUMBER:
-            check(parseFloat(value)).isNumber();
-            this.value = parseFloat(value);
-            break;
-          case SimCapiValue.TYPES.STRING:
-            this.value = value;
-            break;
-          case SimCapiValue.TYPES.BOOLEAN:
-            this.value = parseBoolean(value);
-            break;                
-          default:
-            this.value = value;
-            break;
-        }
-      }
+      switch (this.type) {
+        case SimCapiValue.TYPES.NUMBER:
+          check(parseFloat(value)).isNumber();
+          this.value = parseFloat(value);
+          break;
+        case SimCapiValue.TYPES.STRING:
+          this.value = value;
+          break;
+        case SimCapiValue.TYPES.BOOLEAN:
+          this.value = parseBoolean(value);
+          break;                
+        default:
+          this.value = value;
+          break;
+    	}
     };
 
 
@@ -53,7 +51,7 @@ var SimCapiValue = function(options) {
     options = options || {};
 
     /*
-    *  The key of the this SimCapiValue 
+    *  The original attribute name associated with this SimCapiValue
     */
     this.key = options.key || null;
 
@@ -81,7 +79,7 @@ var SimCapiValue = function(options) {
 
     
 
-    //Only determin the type if its not given.
+    //Only determine the type if its not given.
     if(!this.type){
       _determineType.call(this);
     }
