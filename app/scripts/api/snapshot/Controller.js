@@ -1,5 +1,5 @@
-define(['api/snapshot/SimCapi'], function(SimCapi){
+define(['api/snapshot/Transporter'], function(Transporter){
 
-	return {notifyOnReady: SimCapi.getInstance().notifyOnReady};
+	return {notifyOnReady: Transporter.getInstance().notifyOnReady};
 
 });

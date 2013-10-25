@@ -8,8 +8,8 @@ define(['jquery',
 $.noConflict();
 _.noConflict();
 
-var SimCapi = function(options) {
-    // current version of SimCapi
+var Transporter = function(options) {
+    // current version of Transporter
     var version = 0.1;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
@@ -255,7 +255,7 @@ var SimCapi = function(options) {
 var _instance = null;
 var getInstance = function(options){
   if(!_instance){
-    _instance = new SimCapi(options);
+    _instance = new Transporter(options);
   }
 
   return _instance;
@@ -264,6 +264,6 @@ var getInstance = function(options){
 // in reality, we want a singleton but not for testing.
 return {
   getInstance: getInstance,
-  SimCapi: SimCapi
+  Transporter: Transporter
 };
 });

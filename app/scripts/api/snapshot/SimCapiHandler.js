@@ -25,7 +25,7 @@ var SimCapiHandler = function(options) {
     var descriptors = {};
 
     /*
-     * SimCapi versions:
+     * Tranporter versions:
      * 0.1 - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
@@ -357,9 +357,9 @@ var SimCapiHandler = function(options) {
     };
     
     /*
-     * Returns version of SimCapi, used by the iframe
+     * Returns version of Transporter, used by the iframe
      */
-    this.getSimCapiVersion = function (iframeId) {
+    this.getTransporterVersion = function (iframeId) {
         return idToSimVersion[iframeId];
     };
 };

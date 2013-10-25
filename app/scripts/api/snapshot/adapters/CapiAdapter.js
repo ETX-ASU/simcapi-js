@@ -1,14 +1,14 @@
 define(['underscore', 
-        'api/snapshot/SimCapi',
+        'api/snapshot/Transporter',
         'api/snapshot/SimCapiMessage',
         'api/snapshot/SimCapiValue',
         'check'
-], function(_, SimCapi, SimCapiMessage, SimCapiValue, check){
+], function(_, Transporter, SimCapiMessage, SimCapiValue, check){
 
 var CapiAdapter = function(options){
   options = options || {};
 
-  this._simCapi = options.simCapi || SimCapi.getInstance();
+  this._transporter = options.transporter || Transporter.getInstance();
 
   this.models = {};
 
@@ -38,10 +38,10 @@ var CapiAdapter = function(options){
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, _.bind(function(m, value){
-        this._simCapi.updateValue(alias, value);
+        this._transporter.updateValue(alias, value);
       },this));
       
-      this._simCapi.setValue(alias, capiValue);
+      this._transporter.setValue(alias, capiValue);
 
       this.models[alias] = parent;
       
@@ -64,7 +64,7 @@ var CapiAdapter = function(options){
     
   };
 
-  this._simCapi.addChangeListener(_.bind(this.handleValueChange,this));
+  this._transporter.addChangeListener(_.bind(this.handleValueChange,this));
 
 
 };

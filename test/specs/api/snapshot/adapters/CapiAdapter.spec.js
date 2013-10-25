@@ -2,7 +2,7 @@
 define(function(require){
    
   var CapiAdapter = require('api/snapshot/adapters/CapiAdapter').CapiAdapter;
-  var SimCapi = require('api/snapshot/SimCapi').SimCapi;
+  var Transporter = require('api/snapshot/Transporter').Transporter;
   var SimCapiValue = require('api/snapshot/SimCapiValue');
 
   require('sinon');
@@ -15,7 +15,7 @@ define(function(require){
     var sandbox = null;
     
 
-    var simCapi = null;
+    var transporter = null;
     var adapter = null; 
     
     beforeEach(function(){
@@ -38,9 +38,9 @@ define(function(require){
         }
       };
 
-      simCapi = new SimCapi();
+      transporter = new Transporter();
       adapter = new CapiAdapter({
-        simCapi: simCapi
+        transporter: transporter
       });
 
     });
@@ -52,7 +52,7 @@ define(function(require){
 
     
     it('should create SimCapiValues properly', function(){
-      sandbox.stub(simCapi, 'setValue', function(attrName, capiValue){
+      sandbox.stub(transporter, 'setValue', function(attrName, capiValue){
         expect(capiValue).to.be.a(SimCapiValue);
       });
 
@@ -60,7 +60,7 @@ define(function(require){
       adapter.watch('fakeAttr', model, {readonly:false});
       adapter.watch(null, model, {readonly:false});
 
-      expect(simCapi.setValue.callCount).to.be(1);
+      expect(transporter.setValue.callCount).to.be(1);
     });
 
     it('should set new values when recieved', function(){

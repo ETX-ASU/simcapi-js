@@ -1,7 +1,7 @@
 
   root.pipit = {
     BackboneAdapter : require('api/snapshot/adapters/BackboneAdapter').getInstance(),
-    CapiAdpater: require('api/snapshot/adapters/CapiAdapter').getInstance(),
+    CapiAdapter: require('api/snapshot/adapters/CapiAdapter').getInstance(),
     Controller: require('api/snapshot/Controller'),
     noConflict : function(){
       root.pipit = previousPipit;
@@ -9,6 +9,6 @@
     }
   };
 
-  root.pipit.CapiAdpater.CapiModel = require('api/snapshot/CapiModel');
+  root.pipit.CapiAdapter.CapiModel = require('api/snapshot/CapiModel');
 
 }).call(this);
