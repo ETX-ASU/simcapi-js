@@ -141,6 +141,4 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha');
   grunt.loadTasks('grunt-lib');
 
-  grunt.log.writeln(grunt.config('requirejs.minified.options').out);
-
 };
