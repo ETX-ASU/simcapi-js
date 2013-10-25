@@ -10,7 +10,7 @@ var CapiAdapter = function(options){
 
   var _transporter = options.transporter || Transporter.getInstance();
 
-  var models = {};
+  var modelsMapping = {};
 
   /*
    * Allows the 'attributes' to be watched.
@@ -27,14 +27,15 @@ var CapiAdapter = function(options){
 
     if(parent.has(varName))
     {
+      var alias = params.alias || varName;
+      
       var capiValue = new SimCapiValue({
-        key: varName,
+        key: alias,
         value: parent.get(varName),
         type: params.type,
         readonly: params.readonly
       });
 
-      var alias = params.alias || varName;
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, _.bind(function(m, value){
@@ -43,7 +44,7 @@ var CapiAdapter = function(options){
       
       _transporter.setValue(alias, capiValue);
 
-      models[alias] = parent;
+      modelsMapping[alias] = {parent:parent, originalName:varName};
       
     }
   };
@@ -51,16 +52,17 @@ var CapiAdapter = function(options){
 
 
   /*
-  * values - Object of key - SimCapiValue
+  * values - Array of SimCapiValue
   */
   this.handleValueChange = function(values){
     // enumerate through all received values @see SimCapiMessage.values
-    _.each(values, function(capiValue, key){
-      if(models[key]){
-        var model = models[key];
-        model.set(capiValue.key, capiValue.value);
+    _.each(values, function(capiValue){
+      if(modelsMapping[capiValue.key]){
+        var parent = modelsMapping[capiValue.key].parent;
+        var originalName = modelsMapping[capiValue.key].originalName;
+        parent.set(originalName, capiValue.value);
       }
-    },this);
+    }, this);
     
   };
 

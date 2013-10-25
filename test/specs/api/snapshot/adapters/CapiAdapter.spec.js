@@ -66,7 +66,7 @@ define(function(require){
 
       sandbox.stub(model, 'set');
 
-      adapter.handleValueChange({'attr1': new SimCapiValue({key:'attr1', value:6})});
+      adapter.handleValueChange([new SimCapiValue({key:'attr1', value:6})]);
 
       expect(model.set.callCount).to.be(1);
     });

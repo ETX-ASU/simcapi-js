@@ -93,7 +93,7 @@ var Transporter = function(options) {
     var handleValueChangeMessage = function(message) {
         if (message.handshake.authToken === handshake.authToken) {
 
-            var changed = {};
+            var changed = [];
             // enumerate through all received values @see SimCapiMessage.values
             //key - the alias || original name
             //capiValue.key - the original name
@@ -104,13 +104,13 @@ var Transporter = function(options) {
 
                     if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
                       outgoingMap[key].value = capiValue.value;
-                      changed[key] = outgoingMap[key];
+                      changed.push(outgoingMap[key]);
                     } 
                 }
             });
 
             //Ensure that changed object has something in it.
-            if(Object.keys(changed).length !==0){
+            if(changed.length !==0){
               _.each(changeListeners, function(changeListener){
                 changeListener(changed);
               });

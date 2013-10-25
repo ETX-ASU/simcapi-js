@@ -396,9 +396,7 @@ define(function(require){
 
                 transporter.addChangeListener(function(values){
                   //verify that two attrs get updated
-                  expect(values['these.are.fake.objects.attr1']).to.be.ok();
-                  expect(values.attr2).to.not.be.ok();
-                  expect(values.attr3).to.be.ok();
+                  expect(values.length).to.be(2);
                 });
 
                 transporter.capiMessageHandler(valueChangeMsg);
