@@ -1,55 +1,6 @@
 /*global require, process */
 module.exports = function(grunt) {
 
-  var rdefineEnd = /\}\);[^}\w]*$/;
-  
-  //Strips require as a dependency
-  //Code from jQuery build.js
-  function onBuildWrite(name, path, contents){
-    // Convert var modules
-    if ( /.\/var\//.test( path ) ) {
-      contents = contents
-        .replace( /define\([\w\W]*?return/, "var " + (/var\/([\w-]+)/.exec(name)[1]) + " =" )
-        .replace( rdefineEnd, "" );
-
-    // Sizzle treatment
-    } else if ( /^sizzle$/.test( name ) ) {
-      contents = "var Sizzle =\n" + contents
-        // Remove EXPOSE lines from Sizzle
-        .replace( /\/\/\s*EXPOSE[\w\W]*\/\/\s*EXPOSE/, "return Sizzle;" );
-
-    } else {
-
-      // Ignore jQuery's exports (the only necessary one)
-      if ( name !== "jquery" ) {
-        contents = contents
-          .replace( /\s*return\s+[^\}]+(\}\);[^\w\}]*)$/, "$1" )
-          // Multiple exports
-          .replace( /\s*exports\.\w+\s*=\s*\w+;/g, "" );
-      }
-
-      // Remove define wrappers, closure ends, and empty declarations
-      contents = contents
-        .replace( /define\([^{]*?{/, "" )
-        .replace( rdefineEnd, "" );
-
-      // Remove anything wrapped with
-      // /* ExcludeStart */ /* ExcludeEnd */
-      // or a single line directly after a // BuildExclude comment
-      contents = contents
-        .replace( /\/\*\s*ExcludeStart\s*\*\/[\w\W]*?\/\*\s*ExcludeEnd\s*\*\//ig, "" )
-        .replace( /\/\/\s*BuildExclude\n\r?[\w\W]*?\n\r?/ig, "" );
-
-      // Remove empty definitions
-      contents = contents
-        .replace( /define\(\[[^\]]+\]\)[\W\n]+$/, "");
-    }
-    return contents;
-  };
-
-
-
-
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
@@ -138,18 +89,15 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          //optimize: "none",
+          optimize: "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
-          exclude       : ['jquery', 'underscore', 'check', 'backbone', 'almond'],
-          include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
-                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
-                           ],
+          name          : '../../../bower_components/almond/almond',
+          include       : ['api/snapshot/SimCapiHandler'],
           wrap          : {
             startFile: 'app/scripts/intro.js'
           },
-          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js',
-          onBuildWrite  : onBuildWrite
+          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js'
         }
       },
 
@@ -158,15 +106,15 @@ module.exports = function(grunt) {
           optimize      : "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
-          include       : ['api/snapshot/SimCapiHandler', 'api/snapshot/CapiModel', 
+          name          : '../../../bower_components/almond/almond',
+          include       : ['api/snapshot/SimCapi', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
                            'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
                            ],
-          exclude       : ['backbone', 'jquery', 'underscore', 'check'],
           out           : 'dist/simcapi.js',
           wrap          : {
-            startFile: 'app/scripts/intro.js'
-          },
-          onBuildWrite  : onBuildWrite
+            startFile: 'app/scripts/intro.js',
+            endFile: 'app/scripts/outro.js'
+          }
         }
       },
       minified:{
@@ -174,13 +122,14 @@ module.exports = function(grunt) {
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
-          include       : 'api/snapshot/SimCapi',
-          exclude       : ['backbone', 'jquery', 'underscore', 'check'],
-          out           : 'dist/simcapi.min.js',
+          include       : ['api/snapshot/SimCapi', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
+                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
+                           ],
+          out           : 'dist/simcapi.js',
           wrap          : {
-            startFile: 'app/scripts/intro.js'
-          },
-          onBuildWrite  : onBuildWrite
+            startFile: 'app/scripts/intro.js',
+            endFile: 'app/scripts/outro.js'
+          }
         }
       }
     }
