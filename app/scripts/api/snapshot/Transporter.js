@@ -1,9 +1,9 @@
 /*global window, document */
 define(['jquery', 
         'underscore',
-        'api/snapshot/util/Math.uuid',
+        'api/snapshot/util/uuid',
         'api/snapshot/SimCapiMessage'
-], function($, _, Math, SimCapiMessage){
+], function($, _, uuid, SimCapiMessage){
 
 $.noConflict();
 _.noConflict();
@@ -26,7 +26,7 @@ var Transporter = function(options) {
 
     // Authentication handshake used for communicating to viewer
     var handshake = {
-        requestToken : options.requestToken || Math.uuid(),
+        requestToken : options.requestToken || uuid(),
         authToken : options.authToken || null,
         version : version
     };

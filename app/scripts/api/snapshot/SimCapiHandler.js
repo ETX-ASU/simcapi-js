@@ -7,8 +7,8 @@ define([
   'api/snapshot/SimCapiValue',
   'api/snapshot/SnapshotSegment',
   'api/snapshot/SharedSimData',
-  'api/snapshot/util/Math.uuid'
-],function (_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, Math){
+  'api/snapshot/util/uuid'
+],function (_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid){
 
 $.noConflict();
 _.noConflict();
@@ -140,7 +140,7 @@ var SimCapiHandler = function(options) {
 
                 if (!idToToken[id]) {
                     // generate a token for the iframe if we haven't already
-                    var token = Math.uuid();
+                    var token = uuid();
                     tokenToId[token] = id;
                     idToToken[id] = token;
                     isReady[token] = false;

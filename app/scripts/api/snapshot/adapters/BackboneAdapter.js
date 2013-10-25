@@ -71,7 +71,7 @@ var BackboneAdapter = function(options){
   */
   this.handleValueChange = function(values){
     // enumerate through all received values @see SimCapiMessage.values
-    _.each(values, function(capiValue, key){
+    _.each(values, function(capiValue){
       if(modelsMapping[capiValue.key]){
         var model = modelsMapping[capiValue.key].model;
         var originalName = modelsMapping[capiValue.key].originalName;
