@@ -2,8 +2,9 @@ define(['underscore',
         'api/snapshot/Transporter',
         'api/snapshot/SimCapiMessage',
         'api/snapshot/SimCapiValue',
-        'check'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, check){
+        'check',
+        'api/snapshot/CapiModel'
+], function(_, Transporter, SimCapiMessage, SimCapiValue, check, CapiModel){
 
 var CapiAdapter = function(options){
   options = options || {};
@@ -76,6 +77,7 @@ var _instance = null;
 var getInstance = function() {
     if(!_instance) {
         _instance = new CapiAdapter();
+        _instance.CapiModel = CapiModel; 
     }
     return _instance;
 };

@@ -9,6 +9,4 @@
     }
   };
 
-  root.pipit.CapiAdapter.CapiModel = require('api/snapshot/CapiModel');
-
 }).call(this);
