@@ -116,18 +116,13 @@ module.exports = function(grunt) {
         }
       },
       minified:{
-        options:{
-          baseUrl       : 'temp/local/scripts',
-          mainConfigFile: 'app/scripts/config.js',
-          name          : '../../../bower_components/almond/almond',
-          include       : ['api/snapshot/Transporter', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
-                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
-                           ],
-          out           : 'dist/pipit.min.js',
-          wrap          : {
-            startFile: 'app/scripts/intro.js',
-            endFile  : 'app/scripts/outro.js'
-          }
+        options: {
+          baseUrl        : '<%= requirejs.exploded.options.baseUrl %>',
+          mainConfigFile : '<%= requirejs.exploded.options.mainConfigFile %>',
+          name           : '<%= requirejs.exploded.options.name %>',
+          include        : '<%= requirejs.exploded.options.include %>',
+          out            : 'dist/pipit.min.js',
+          wrap           : '<%= requirejs.exploded.options.wrap %>'
         }
       }
     }
@@ -145,5 +140,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-mocha');
   grunt.loadTasks('grunt-lib');
+
+  grunt.log.writeln(grunt.config('requirejs.minified.options').out);
 
 };
