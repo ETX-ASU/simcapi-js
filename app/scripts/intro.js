@@ -7,4 +7,4 @@
 
   var root = this;
 
-  var previousSimCapi = root.SimCapi;
+  var previousPipit = root.pipit;
