@@ -12,20 +12,18 @@ function parseBoolean(value){
 var SimCapiValue = function(options) {
 
     var _determineType = function(){
-      if(!this.enums){
-        var passiveValue = check(this.value).passive();
-        if(passiveValue.isString()){
-          this.type = SimCapiValue.TYPES.STRING;
-        }
-        else if(passiveValue.isNumber()){
-          this.type = SimCapiValue.TYPES.NUMBER;
-        }
-        else if(passiveValue.isBoolean()){
-          this.type = SimCapiValue.TYPES.BOOLEAN;
-        }
+      var passiveValue = check(this.value).passive();
+      if(passiveValue.isString()){
+        this.type = SimCapiValue.TYPES.STRING;
       }
-      else{
-        //set type to be enum 
+      else if(passiveValue.isNumber()){
+        this.type = SimCapiValue.TYPES.NUMBER;
+      }
+      else if(passiveValue.isBoolean()){
+        this.type = SimCapiValue.TYPES.BOOLEAN;
+      }
+      else if(passiveValue.isArray()){
+      	this.type = SimCapiValue.TYPES.ARRAY;
       }
     };
 
