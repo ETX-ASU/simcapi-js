@@ -5,5 +5,9 @@ define([
   'specs/api/snapshot/SimCapi.spec.js',
   'specs/api/snapshot/SimCapiValue.spec.js',
   'specs/api/snapshot/SimCapiHandler.spec.js',
-  'specs/api/snapshot/SnapshotSegment.spec.js'
+  'specs/api/snapshot/SnapshotSegment.spec.js',
+
+  //Adapters
+  'specs/api/snapshot/adapters/BackboneAdapter.spec.js',
+  'specs/api/snapshot/adapters/CapiAdapter.spec.js'
 ]);

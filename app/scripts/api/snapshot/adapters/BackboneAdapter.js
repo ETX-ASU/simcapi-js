@@ -8,7 +8,7 @@ define(['underscore',
 var BackboneAdapter = function(options){
   options = options || {};
 
-  this._simCapi = SimCapi.getInstance();
+  this._simCapi = options.simCapi || SimCapi.getInstance();
 
   this.models = {};
 
@@ -25,7 +25,9 @@ var BackboneAdapter = function(options){
    */
   this.watch = function(varName, model, params) {
 
-   if(model.has(varName))
+    params = params || {};
+
+    if(model.has(varName) && model.get(varName) !== null && model.get(varName) !== undefined)
     {
       var capiValue = new SimCapiValue({
         key: varName,
@@ -67,7 +69,7 @@ var BackboneAdapter = function(options){
         var model = this.models[key];
         model.set(capiValue.key, capiValue.value);
       }
-    });
+    }, this);
     
   };
 
@@ -77,8 +79,8 @@ var BackboneAdapter = function(options){
 
 
 var _instance = null;
-var getInstance = function(force, options) {
-    if(!_instance || force === true) {
+var getInstance = function(options) {
+    if(!_instance) {
         _instance = new BackboneAdapter(options);
     }
     return _instance;

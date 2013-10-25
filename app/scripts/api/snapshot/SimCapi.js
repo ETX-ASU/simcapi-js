@@ -229,8 +229,14 @@ var SimCapi = function(options) {
 
     // handler for postMessages received from the viewer
     var messageEventHandler = function(event) {
+      try{
         var message = JSON.parse(event.data);
         self.capiMessageHandler(message);
+      }
+      catch(e){
+        //silently ignore - occuring in test
+      }
+        
     };
 
     // we have to wait until the dom is ready to attach anything or sometimes the js files

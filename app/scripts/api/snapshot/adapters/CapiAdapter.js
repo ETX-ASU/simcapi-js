@@ -8,7 +8,7 @@ define(['underscore',
 var CapiAdapter = function(options){
   options = options || {};
 
-  this._simCapi = SimCapi.getInstance();
+  this._simCapi = options.simCapi || SimCapi.getInstance();
 
   this.models = {};
 
@@ -23,7 +23,9 @@ var CapiAdapter = function(options){
    * }
    */
   this.watch = function(varName, parent, params) {
-    if(parent.has(varName))
+    params = params || {};
+
+    if(parent.has(varName) && parent.get(varName) !== null && parent.get(varName) !== undefined)
     {
       var capiValue = new SimCapiValue({
         key: varName,
@@ -58,7 +60,7 @@ var CapiAdapter = function(options){
         var model = this.models[key];
         model.set(capiValue.key, capiValue.value);
       }
-    });
+    },this);
     
   };
 
@@ -69,8 +71,8 @@ var CapiAdapter = function(options){
 
 
 var _instance = null;
-var getInstance = function(force, options) {
-    if(!_instance || force === true) {
+var getInstance = function(options) {
+    if(!_instance) {
         _instance = new CapiAdapter(options);
     }
     return _instance;
