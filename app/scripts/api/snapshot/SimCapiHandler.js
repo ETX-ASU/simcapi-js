@@ -1,14 +1,17 @@
 /*global window */
 define([
-	'underscore',
-	'jquery',
-	'check',
-	'api/snapshot/SimCapiMessage',
-	'api/snapshot/SimCapiValue',
-	'api/snapshot/SnapshotSegment',
-	'api/snapshot/SharedSimData',
-	'api/snapshot/util/Math.uuid'
+  'underscore',
+  'jquery',
+  'check',
+  'api/snapshot/SimCapiMessage',
+  'api/snapshot/SimCapiValue',
+  'api/snapshot/SnapshotSegment',
+  'api/snapshot/SharedSimData',
+  'api/snapshot/util/Math.uuid'
 ],function (_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, Math){
+
+$.noConflict();
+_.noConflict();
 
 var SimCapiHandler = function(options) {
 
@@ -26,6 +29,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.1.1 - Rewrite of the client slide implementation
      * 0.1 - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
@@ -225,6 +229,7 @@ var SimCapiHandler = function(options) {
 
                 var variable = _.rest(segment.path, 2).join('.');
                 messages[iframeId].values[variable] = new SimCapiValue({
+                    key: variable,
                     type: SimCapiValue.TYPES.STRING,
                     value: segment.value
                 });

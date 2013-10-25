@@ -8,9 +8,9 @@ define(['underscore',
 var CapiAdapter = function(options){
   options = options || {};
 
-  this._transporter = options.transporter || Transporter.getInstance();
+  var _transporter = options.transporter || Transporter.getInstance();
 
-  this.models = {};
+  var models = {};
 
   /*
    * Allows the 'attributes' to be watched.
@@ -18,14 +18,14 @@ var CapiAdapter = function(options){
    * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
    *      alias  : alias of the attributeName 
-   *      type : Type of the 'attribute'. @see SimCapiValue.TYPES below.
+   *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
   this.watch = function(varName, parent, params) {
     params = params || {};
 
-    if(parent.has(varName) && parent.get(varName) !== null && parent.get(varName) !== undefined)
+    if(parent.has(varName))
     {
       var capiValue = new SimCapiValue({
         key: varName,
@@ -38,12 +38,12 @@ var CapiAdapter = function(options){
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, _.bind(function(m, value){
-        this._transporter.updateValue(alias, value);
+        _transporter.setValue(alias, value);
       },this));
       
-      this._transporter.setValue(alias, capiValue);
+      _transporter.setValue(alias, capiValue);
 
-      this.models[alias] = parent;
+      models[alias] = parent;
       
     }
   };
@@ -56,24 +56,24 @@ var CapiAdapter = function(options){
   this.handleValueChange = function(values){
     // enumerate through all received values @see SimCapiMessage.values
     _.each(values, function(capiValue, key){
-      if(this.models[key]){
-        var model = this.models[key];
+      if(models[key]){
+        var model = models[key];
         model.set(capiValue.key, capiValue.value);
       }
     },this);
     
   };
 
-  this._transporter.addChangeListener(_.bind(this.handleValueChange,this));
+  _transporter.addChangeListener(_.bind(this.handleValueChange,this));
 
 
 };
 
 
 var _instance = null;
-var getInstance = function(options) {
+var getInstance = function() {
     if(!_instance) {
-        _instance = new CapiAdapter(options);
+        _instance = new CapiAdapter();
     }
     return _instance;
 };

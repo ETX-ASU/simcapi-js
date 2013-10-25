@@ -10,7 +10,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.1;
+    var version = 0.2;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -112,7 +112,7 @@ var Transporter = function(options) {
             //Ensure that changed object has something in it.
             if(Object.keys(changed).length !==0){
               _.each(changeListeners, function(changeListener){
-                changeListener.call(null, changed);
+                changeListener(changed);
               });
             }
             
@@ -154,7 +154,7 @@ var Transporter = function(options) {
         if (!handshake.authToken) {
             pendingOnReady = true;
 
-            // once everything is ready, we request and handshake from the viewer.
+            // once everything is ready, we request a handshake from the viewer.
             requestHandshake();
 
         } else {
@@ -187,10 +187,7 @@ var Transporter = function(options) {
         });
 
         // populate the message with the values of the entire model
-        _.each(outgoingMap, function(simCapiValue, attrName) {
-            
-            valueChangeMsg.values[attrName] = simCapiValue;
-        });
+        valueChangeMsg.values = outgoingMap;
 
         // send the message to the viewer
         self.sendMessage(valueChangeMsg);            
@@ -201,17 +198,6 @@ var Transporter = function(options) {
 
     this.setValue = function(attrName, simCapiValue){
       outgoingMap[attrName] = simCapiValue;
-
-      this.notifyValueChange();
-    };
-
-    this.updateValue = function(attrName, value){
-      if(outgoingMap[attrName]){
-        outgoingMap[attrName].value = value;
-      }
-      else{
-        throw new Error('Can not use updateValue');
-      }
 
       this.notifyValueChange();
     };
@@ -253,9 +239,9 @@ var Transporter = function(options) {
 
 
 var _instance = null;
-var getInstance = function(options){
+var getInstance = function(){
   if(!_instance){
-    _instance = new Transporter(options);
+    _instance = new Transporter();
   }
 
   return _instance;

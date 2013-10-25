@@ -293,18 +293,22 @@ define(function(require){
                     // create two attribute changes as mentioned above
                     values : {
                         'these.are.fake.objects.attr1' : new SimCapiValue({
+                            key: 'attr1',
                             type : SimCapiValue.TYPES.NUMBER,
                             value : 0.5
                         }),
                         'attr2' : new SimCapiValue({
+                            key: 'attr2',
                             type : SimCapiValue.TYPES.STRING,
                             value : 'value2'
                         }),
                         'attr3' : new SimCapiValue({
+                            key: 'attr3',
                             type : SimCapiValue.TYPES.BOOLEAN,
                             value : false
                         }),
                         'attr4' : new SimCapiValue({
+                            key: 'attr4',
                             type : SimCapiValue.TYPES.BOOLEAN,
                             value : false 
                         })

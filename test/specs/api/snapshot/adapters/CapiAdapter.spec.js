@@ -57,8 +57,6 @@ define(function(require){
       });
 
       adapter.watch('attr1', model, {readonly:false});
-      adapter.watch('fakeAttr', model, {readonly:false});
-      adapter.watch(null, model, {readonly:false});
 
       expect(transporter.setValue.callCount).to.be(1);
     });

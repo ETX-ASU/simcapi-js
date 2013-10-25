@@ -8,9 +8,9 @@ define(['underscore',
 var BackboneAdapter = function(options){
   options = options || {};
 
-  this._transporter = options.transporter || Transporter.getInstance();
+  var _transporter = options.transporter || Transporter.getInstance();
 
-  this.models = {};
+  var models = {};
 
 
   /*
@@ -19,7 +19,7 @@ var BackboneAdapter = function(options){
    * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function. 
    * @param params : {
    *      alias  : alias of the attributeName 
-   *      type : Type of the 'attribute'. @see SimCapiValue.TYPES below.
+   *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
@@ -27,7 +27,7 @@ var BackboneAdapter = function(options){
 
     params = params || {};
 
-    if(model.has(varName) && model.get(varName) !== null && model.get(varName) !== undefined)
+    if(model.has(varName))
     {
       var capiValue = new SimCapiValue({
         key: varName,
@@ -40,12 +40,12 @@ var BackboneAdapter = function(options){
 
       // listen to the model by attaching event handler on the model
       model.on('change:' + varName, _.bind(function(m, value){
-        this._transporter.updateValue(alias, value);
+        _transporter.setValue(alias, value);
       },this));
       
-      this._transporter.setValue(alias, capiValue);
+      _transporter.setValue(alias, capiValue);
 
-      this.models[alias] = model;
+      models[alias] = model;
       
     }
     
@@ -65,23 +65,23 @@ var BackboneAdapter = function(options){
   this.handleValueChange = function(values){
     // enumerate through all received values @see SimCapiMessage.values
     _.each(values, function(capiValue, key){
-      if(this.models[key]){
-        var model = this.models[key];
+      if(models[key]){
+        var model = models[key];
         model.set(capiValue.key, capiValue.value);
       }
     }, this);
     
   };
 
-  this._transporter.addChangeListener(_.bind(this.handleValueChange,this));
+  _transporter.addChangeListener(_.bind(this.handleValueChange,this));
 
 };
 
 
 var _instance = null;
-var getInstance = function(options) {
+var getInstance = function() {
     if(!_instance) {
-        _instance = new BackboneAdapter(options);
+        _instance = new BackboneAdapter();
     }
     return _instance;
 };

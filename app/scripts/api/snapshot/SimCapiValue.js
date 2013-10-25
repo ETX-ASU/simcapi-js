@@ -11,38 +11,44 @@ function parseBoolean(value){
 
 var SimCapiValue = function(options) {
 
-    var _determineType = function(){
-      var passiveValue = check(this.value).passive();
+    var getType = function(value){
+      var passiveValue = check(value).passive();
+      var type;
       if(passiveValue.isString()){
-        this.type = SimCapiValue.TYPES.STRING;
+        type = SimCapiValue.TYPES.STRING;
       }
       else if(passiveValue.isNumber()){
-        this.type = SimCapiValue.TYPES.NUMBER;
+        type = SimCapiValue.TYPES.NUMBER;
       }
       else if(passiveValue.isBoolean()){
-        this.type = SimCapiValue.TYPES.BOOLEAN;
+        type = SimCapiValue.TYPES.BOOLEAN;
       }
       else if(passiveValue.isArray()){
-      	this.type = SimCapiValue.TYPES.ARRAY;
+        type = SimCapiValue.TYPES.ARRAY;
       }
-    };
+      else{
+        throw new Error('can not determined type');
+      }
 
-    var _setValue = function(value) {
-      switch (this.type) {
+      return type;
+    },
+
+    parseValue = function(value, type) {
+      switch (type) {
         case SimCapiValue.TYPES.NUMBER:
           check(parseFloat(value)).isNumber();
-          this.value = parseFloat(value);
+          value = parseFloat(value);
           break;
         case SimCapiValue.TYPES.STRING:
-          this.value = value;
+          check(value).isString();
           break;
         case SimCapiValue.TYPES.BOOLEAN:
-          this.value = parseBoolean(value);
+          value = parseBoolean(value);
+          check(value).isBoolean();
           break;                
-        default:
-          this.value = value;
-          break;
-    	}
+      }
+
+      return value;
     };
 
 
@@ -54,6 +60,7 @@ var SimCapiValue = function(options) {
     *  The original attribute name associated with this SimCapiValue
     */
     this.key = options.key || null;
+    check(this.key).isString();
 
     /*
      * The value type.
@@ -63,8 +70,7 @@ var SimCapiValue = function(options) {
     /*
      * The value of this object.
      */
-    this.value = null;
-    _setValue.call(this,options.value);
+    this.value = (options.value !== undefined || options.value !== null)  ? options.value  : null;
 
     /*
      * True if and only if, this value can NOT be written to. Any request to change
@@ -77,11 +83,18 @@ var SimCapiValue = function(options) {
     */
     this.enums = options.enums || null;
 
-    
 
-    //Only determine the type if its not given.
-    if(!this.type){
-      _determineType.call(this);
+    
+    if(this.type){
+      //we have a type so we only need to parse the value
+      this.value = parseValue(this.value, this.type);
+    }
+    else if(this.value !== undefined || this.value !== null){
+      //we don't have a type but we have a value, we can infer the type
+      this.type = getType(this.value);
+    }
+    else{
+      throw new Error ('Value nor type was given');
     }
     
 };

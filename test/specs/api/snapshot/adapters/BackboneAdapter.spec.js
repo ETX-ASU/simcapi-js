@@ -23,8 +23,7 @@ define(function(require){
       sandbox = sinon.sandbox.create();
 
       modelAttributes = {
-        'attr1'    : 5,
-        'fakeAttr' : null  
+        'attr1'    : 5
       };
 
       model = {
@@ -57,8 +56,6 @@ define(function(require){
       });
 
       adapter.watch('attr1', model, {readonly:false});
-      adapter.watch('fakeAttr', model, {readonly:false});
-      adapter.watch(null, model, {readonly:false});
 
       expect(transporter.setValue.callCount).to.be(1);
     });
