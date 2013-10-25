@@ -106,7 +106,7 @@ module.exports = function(grunt) {
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/SimCapi', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
-                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
+                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
                            ],
           out           : 'dist/simcapi.js',
           wrap          : {
@@ -121,7 +121,7 @@ module.exports = function(grunt) {
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/SimCapi', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
-                           'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
+                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
                            ],
           out           : 'dist/simcapi.min.js',
           wrap          : {

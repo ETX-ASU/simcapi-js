@@ -1,7 +1,7 @@
 /*globals require, window*/
   root.SimCapi = {
-    BackboneAdapter : require('api/snapshot/connectors/BackboneAdapter').getInstance(),
-    CapiAdpater: require('api/snapshot/connectors/CapiAdapter').getInstance(),
+    BackboneAdapter : require('api/snapshot/adapters/BackboneAdapter').getInstance(),
+    CapiAdpater: require('api/snapshot/adapters/CapiAdapter').getInstance(),
     Controller: require('api/snapshot/Controller'),
     noConflict : function(){
       root.SimCapi = previousSimCapi;
