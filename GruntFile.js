@@ -108,7 +108,7 @@ module.exports = function(grunt) {
           include       : ['api/snapshot/Transporter', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
                            'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
                            ],
-          out           : 'dist/simcapi.js',
+          out           : 'dist/pipit.js',
           wrap          : {
             startFile: 'app/scripts/intro.js',
             endFile  : 'app/scripts/outro.js'
@@ -123,7 +123,7 @@ module.exports = function(grunt) {
           include       : ['api/snapshot/Transporter', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
                            'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
                            ],
-          out           : 'dist/simcapi.min.js',
+          out           : 'dist/pipit.min.js',
           wrap          : {
             startFile: 'app/scripts/intro.js',
             endFile  : 'app/scripts/outro.js'
