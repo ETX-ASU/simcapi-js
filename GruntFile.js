@@ -125,7 +125,7 @@ module.exports = function(grunt) {
           include       : ['api/snapshot/SimCapi', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
                            'api/snapshot/connectors/CapiAdapter', 'api/snapshot/connectors/BackboneAdapter',
                            ],
-          out           : 'dist/simcapi.js',
+          out           : 'dist/simcapi.min.js',
           wrap          : {
             startFile: 'app/scripts/intro.js',
             endFile: 'app/scripts/outro.js'
