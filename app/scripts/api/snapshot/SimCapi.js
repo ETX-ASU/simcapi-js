@@ -5,6 +5,9 @@ define(['jquery',
         'api/snapshot/SimCapiMessage'
 ], function($, _, Math, SimCapiMessage){
 
+$.noConflict();
+_.noConflict();
+
 var SimCapi = function(options) {
     // current version of SimCapi
     var version = 0.1;

@@ -1,4 +1,4 @@
-/*globals require, window*/
+
   root.SimCapi = {
     BackboneAdapter : require('api/snapshot/adapters/BackboneAdapter').getInstance(),
     CapiAdpater: require('api/snapshot/adapters/CapiAdapter').getInstance(),
