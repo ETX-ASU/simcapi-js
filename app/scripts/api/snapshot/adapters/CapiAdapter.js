@@ -28,6 +28,7 @@ var CapiAdapter = function(options){
 
     if(parent.has(varName))
     {
+      var simCapiParams = params;
       var alias = params.alias || varName;
       
       var capiValue = new SimCapiValue({
@@ -40,7 +41,14 @@ var CapiAdapter = function(options){
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, _.bind(function(m, value){
-        _transporter.setValue(alias, value);
+        var capiValue = new SimCapiValue({
+          key: alias,
+          value: value,
+          type: simCapiParams.type,
+          readonly: simCapiParams.readonly
+        });
+        
+        _transporter.setValue(alias, capiValue);
       },this));
       
       _transporter.setValue(alias, capiValue);

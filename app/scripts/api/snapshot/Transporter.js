@@ -2,8 +2,10 @@
 define(['jquery', 
         'underscore',
         'api/snapshot/util/uuid',
-        'api/snapshot/SimCapiMessage'
-], function($, _, uuid, SimCapiMessage){
+        'api/snapshot/SimCapiMessage',
+        'check',
+        'api/snapshot/SimCapiValue'
+], function($, _, uuid, SimCapiMessage, check, SimCapiValue){
 
 $.noConflict();
 _.noConflict();
@@ -197,6 +199,9 @@ var Transporter = function(options) {
     };
 
     this.setValue = function(attrName, simCapiValue){
+
+      check(simCapiValue).isOfType(SimCapiValue);
+
       outgoingMap[attrName] = simCapiValue;
 
       this.notifyValueChange();
