@@ -105,7 +105,9 @@ var Transporter = function(options) {
                 if (capiValue && !capiValue.readonly) {
 
                     if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
-                      outgoingMap[key].value = capiValue.value;
+                      //By calling set value, we parse the string of capiValue.value
+                      //to whatever type the outgoingMap has stored  
+                      outgoingMap[key].setValue(capiValue.value);
                       changed.push(outgoingMap[key]);
                     } 
                 }

@@ -111,6 +111,9 @@ var SimCapiValue = function(options) {
       throw new Error ('Value nor type was given');
     }
     
+    this.setValue = function(value){
+      this.value = parseValue(value, this.type);
+    };
 };
 
 
