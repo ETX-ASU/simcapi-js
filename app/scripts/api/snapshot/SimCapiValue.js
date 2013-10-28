@@ -1,16 +1,5 @@
 define(['check'],function(check){
 
-function isBoolean(value){
-  var passiveValue = check(value).passive();
-  if(passiveValue.isBoolean()){
-    return true;
-  }
-  else if(passiveValue.isString()){
-    return value === 'true' || value === 'false';
-  }
-
-  return false;
-}
 
 function parseBoolean(value){
   if (check(value).passive().isBoolean()) {
@@ -28,7 +17,7 @@ var SimCapiValue = function(options) {
       var type;
 
       //Booleans must be checked before strings.
-      if(isBoolean(value)){
+      if(passiveValue.isBoolean()){
         type = SimCapiValue.TYPES.BOOLEAN;
       }
       else if(passiveValue.isNumber()){
