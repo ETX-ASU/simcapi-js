@@ -7,16 +7,16 @@ Pipit is an interface used by simulations to communicate between AELP (Smart Spa
 ## Why? ##
 
 Without Pipit, AELP can run the simulation... and that’s about it. This scenario makes any simulation on AELP pretty useless.
-With Sim CAPI, the platform can control the Simulation. Simulations by themselves, do not expose information to what is happening inside the sim. So depending on what the Simulation exposes, can AELP control the Simulation.   
+With Pipit, the platform can control the Simulation. Simulations by themselves, do not expose information to what is happening inside the sim. So depending on what the Simulation exposes, can AELP control the Simulation.   
 
 
 
 ## Installation ##
 
-AMD compatible or use the folling script tag:
+AMD compatible or use the following script tag:
 
 ```
-<script src= "https://github.com/SmartSparrow/simcapi/dist/pipit.min.js">
+<script src= "https://github.com/SmartSparrow/pipit/dist/pipit.min.js">
 ```
 
 
@@ -24,8 +24,7 @@ AMD compatible or use the folling script tag:
 
 There are two phases to use Pipit, _setup_ and _setup-completion_.
 
-To use Pipit, you must use an `adapter` to be able to interface with
-AELP. There exists two Adapters, `CapiAdapter` and `BackboneAdapter`. 
+To use Pipit, you must use an `adapter` to be able to interface with AELP. There exists two Adapters, `CapiAdapter` and `BackboneAdapter`. 
 
 ### Setup ###
 
@@ -36,11 +35,11 @@ adapter.watch(propertyName, model, options);
 ```
 
 propertyName - String - name of the property on the model
-model       - Object - the model that the property belongs to.
+model        - Object - the model that the property belongs to.
 options      - Object  
                        - type     - SimCapiValue.TYPES  - the type of the property 
-                       - alias    - String         - nickname of the property that is only shown via AELP. Can __NOT__ contain '.'
-                       - readonly - Boolean        - if the property is readonly 
+                       - alias    - String              - nickname of the property that is only shown via AELP. Can __NOT__ contain '.'
+                       - readonly - Boolean             - if the property is readonly 
 
 
 ### Setup-completion ###
