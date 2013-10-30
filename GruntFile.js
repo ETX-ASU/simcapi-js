@@ -17,7 +17,7 @@ module.exports = function(grunt) {
 
     // Lint
     jshint: {
-      all : ['grunt.js', 'app/**/*.js', 'test/specs/**/*.js'],
+      all : ['grunt.js', 'app/scripts/api/**/*.js', 'test/specs/**/*.js'],
       options: {
         curly  : true,
         eqeqeq : true,
@@ -65,7 +65,7 @@ module.exports = function(grunt) {
     cover : {
       compile : {
         files : {
-          'cover/' : 'app/**/*.js'
+          'cover/' : 'app/scripts/api/**/*.js'
         }
       }
     },
@@ -89,15 +89,40 @@ module.exports = function(grunt) {
         options: {
           // Need to debug the release code? Uncomment the optimize flag
           // to get a readable javascript output
-          // optimize: "none",
+          //optimize: "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
-          include       : 'api/snapshot/SimCapiHandler',
-          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js',
-          // No wrapping to 'pollute' the global scope with requirejs,
-          // so external javascript can make use of simcapi.
-          wrap          : false
+          include       : ['api/snapshot/SimCapiHandler'],
+          wrap          : false,
+          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js'
+        }
+      },
+
+      exploded:{
+        options:{
+          optimize      : "none",
+          baseUrl       : 'temp/local/scripts',
+          mainConfigFile: 'app/scripts/config.js',
+          name          : '../../../bower_components/almond/almond',
+          include       : ['api/snapshot/Transporter', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
+                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
+                           ],
+          out           : 'dist/pipit.js',
+          wrap          : {
+            startFile: 'app/scripts/intro.js',
+            endFile  : 'app/scripts/outro.js'
+          }
+        }
+      },
+      minified:{
+        options: {
+          baseUrl        : '<%= requirejs.exploded.options.baseUrl %>',
+          mainConfigFile : '<%= requirejs.exploded.options.mainConfigFile %>',
+          name           : '<%= requirejs.exploded.options.name %>',
+          include        : '<%= requirejs.exploded.options.include %>',
+          out            : 'dist/pipit.min.js',
+          wrap           : '<%= requirejs.exploded.options.wrap %>'
         }
       }
     }
@@ -110,6 +135,7 @@ module.exports = function(grunt) {
   // Custom tasks
   grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs:local']);
 
+  grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified']);
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-mocha');

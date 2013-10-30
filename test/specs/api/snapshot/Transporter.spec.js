@@ -1,18 +1,17 @@
 /*global window sinon */
 define(function(require){
 
-    var eventBus = require('eventBus');
-    var SimCapi = require('api/snapshot/SimCapi').SimCapi;
+    var Transporter = require('api/snapshot/Transporter').Transporter;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
     require('sinon');
 
-    describe('SimCapi', function() {
+    describe('Transporter', function() {
 
         var requestToken = 'requestToken';
         var authToken = 'testToken';
-        var simCapi = null;
+        var transporter = null;
         var sandbox = null;
 
         beforeEach(function() {          
@@ -24,9 +23,10 @@ define(function(require){
                 expect(callback).to.be.ok();
             });
 
-            simCapi = new SimCapi({
+            transporter = new Transporter({
                 requestToken : requestToken
             });
+
         });
         
         afterEach(function() {
@@ -37,7 +37,7 @@ define(function(require){
          * Helper to mock out PostMessage on the window object.
          */
         var mockPostMessage = function(assertCallback) {
-            sandbox.stub(simCapi, 'sendMessage', assertCallback);
+            sandbox.stub(transporter, 'sendMessage', assertCallback);
         };
 
         /*
@@ -45,9 +45,9 @@ define(function(require){
          */
         var doHandShake = function() {
             var config = SharedSimData.getInstance();
-            eventBus.trigger('simData:lessonId', '1');
-            eventBus.trigger('simData:questionId', 'qid');
-            eventBus.trigger('simData:servicesBaseUrl', 'someurl');
+            config.setLessonId('1');
+            config.setQuestionId('qid');
+            config.setServicesBaseUrl('someurl');
             
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
@@ -60,7 +60,7 @@ define(function(require){
             });
 
             // process handshake response so it remembers the auth token
-            simCapi.capiMessageHandler(handshakeResponse);
+            transporter.capiMessageHandler(handshakeResponse);
         };
         
         describe('HANDSHAKE_REQUEST', function(){
@@ -75,10 +75,10 @@ define(function(require){
                     expect(message.handshake.authToken).to.be(null);
                 });
 
-                simCapi.notifyOnReady();
+                transporter.notifyOnReady();
 
                 expect(window.addEventListener.called).to.be(true);
-                expect(simCapi.sendMessage.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(true);
             });
 
         });
@@ -89,7 +89,7 @@ define(function(require){
                 doHandShake();
                 
                 // verify old config
-                var config = simCapi.getConfig();
+                var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('1');
                 expect(config.getData().questionId).to.be('qid');
                 expect(config.getData().servicesBaseUrl).to.be('someurl');
@@ -98,9 +98,9 @@ define(function(require){
             var updateConfig = function(token) {
                 // update config
                 var newConfig = SharedSimData.getInstance();
-                eventBus.trigger('simData:lessonId', '2');
-                eventBus.trigger('simData:questionId', 'newqid');
-                eventBus.trigger('simData:servicesBaseUrl', 'newurl');
+                newConfig.setLessonId('2');
+                newConfig.setQuestionId('newqid');
+                newConfig.setServicesBaseUrl('newurl');
                 
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
@@ -110,14 +110,14 @@ define(function(require){
                         config : newConfig
                     }
                 });
-                simCapi.capiMessageHandler(configChangeMessage);
+                transporter.capiMessageHandler(configChangeMessage);
             };
             
             it('should ignore CONFIG_CHANGE when authToken does not match', function() {
                 updateConfig('bad token');
                 
                 // verify that the config has changed
-                var config = simCapi.getConfig();
+                var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
@@ -127,7 +127,7 @@ define(function(require){
                 updateConfig(authToken);
                 
                 // verify that the config has changed
-                var config = simCapi.getConfig();
+                var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
@@ -151,10 +151,10 @@ define(function(require){
                 // mock out postMessage for ON_READY. This shouldn't be called
                 mockPostMessage(function(){});
 
-                simCapi.capiMessageHandler(handshakeResponse);
+                transporter.capiMessageHandler(handshakeResponse);
 
                 // verify that the message was not called
-                expect(simCapi.sendMessage.called).to.be(false);
+                expect(transporter.sendMessage.called).to.be(false);
             });
 
         });
@@ -184,10 +184,10 @@ define(function(require){
                     expect(message.handshake.authToken).to.be(authToken);
                 });
 
-                simCapi.notifyOnReady();
+                transporter.notifyOnReady();
 
                 // verify that a message was sent
-                expect(simCapi.sendMessage.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(true);
                 expect(gotOnReady < gotValueChange).to.be(true);
             });
 
@@ -196,6 +196,8 @@ define(function(require){
                 var invoked = 0;
                 var gotOnReady = -1;
                 var gotValueChange = -1;
+
+                transporter.getHandshake().authToken = null;
 
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
@@ -208,7 +210,7 @@ define(function(require){
                     }
                 });
 
-                simCapi.notifyOnReady();
+                transporter.notifyOnReady();
 
                 // verify that the notification was not sent
                 expect(gotOnReady === gotValueChange).to.be(true);
@@ -223,10 +225,10 @@ define(function(require){
                 });
 
                 // process handshake response so it sends the pending notificaiton
-                simCapi.capiMessageHandler(handshakeResponse);
+                transporter.capiMessageHandler(handshakeResponse);
 
                 // verify that a message was sent
-                expect(simCapi.sendMessage.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(true);
                 expect(gotOnReady < gotValueChange).to.be(true);
             });
 
@@ -246,42 +248,32 @@ define(function(require){
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    attr1 : createAttr(SimCapi.TYPES.NUMBER, false, 'attr1', 0.222, 'these.are.fake.objects.attr1'),
-                    attr2 : createAttr(SimCapi.TYPES.STRING, false, 'attr2', 'value2'),
-                    attr3 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr3', true),
-                    attr4 : createAttr(SimCapi.TYPES.BOOLEAN, false, 'attr4', false)
+                    'these.are.fake.objects.attr1' : createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222),
+                    attr2 : createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
+                    attr3 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
+                    attr4 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
-                simCapi = new SimCapi({
+                transporter = new Transporter({
                     requestToken : requestToken,
-                    authToken : authToken,
+                    authToken : authToken, 
                     outgoingMap : outgoingMap
                 });
+
+                transporter.removeAllChangeListeners();
+
             });
 
             // helper to create entries in outgoing map. expectedKey and expectedValue represent
             // expected updates. Eg, the value of expectedKey changes to expectedValue.
-            var createAttr = function(type, readOnly, expectedKey, expectedValue, alias) {
-                return {
-                    type : type,
-                    alias: alias,
-                    originalName: expectedKey,
-                    parent : {
-                        set : function(key, value) {
-                            // verify that the value is updated
-                            expect(key).to.be(expectedKey);
-                            expect(value).to.be(expectedValue);
-                        },
-                        has : function (key) {
-                            return true;
-                        },
-                        get : function (key) {
-                            return expectedValue;
-                        }
-                    },
-                    readOnly : readOnly
-                };
+            var createAttr = function(type, readonly, expectedKey, expectedValue) {
+                return new SimCapiValue({
+                  type: type,
+                  readonly: readonly,
+                  key: expectedKey,
+                  value: expectedValue
+                });
             };
 
             /*
@@ -300,21 +292,25 @@ define(function(require){
 
                     // create two attribute changes as mentioned above
                     values : {
-                        'attr1' : new SimCapiValue({
-                            type : SimCapi.TYPES.STRING,
-                            value : '0.222'
+                        'these.are.fake.objects.attr1' : new SimCapiValue({
+                            key: 'attr1',
+                            type : SimCapiValue.TYPES.NUMBER,
+                            value : 0.5
                         }),
                         'attr2' : new SimCapiValue({
-                            type : SimCapi.TYPES.STRING,
+                            key: 'attr2',
+                            type : SimCapiValue.TYPES.STRING,
                             value : 'value2'
                         }),
                         'attr3' : new SimCapiValue({
-                            type : SimCapi.TYPES.BOOLEAN,
-                            value : 'true'
+                            key: 'attr3',
+                            type : SimCapiValue.TYPES.BOOLEAN,
+                            value : false
                         }),
                         'attr4' : new SimCapiValue({
-                            type : SimCapi.TYPES.BOOLEAN,
-                            value : 'false' 
+                            key: 'attr4',
+                            type : SimCapiValue.TYPES.BOOLEAN,
+                            value : false 
                         })
                     }
                 });
@@ -324,28 +320,24 @@ define(function(require){
 
                 var valueChangeMsg = createGoodValueChangeMessage();
 
-                // spy on simCapi to verify that values are updated. Verifying that the updates are correct are
-                // performed @ createAttr
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                var failed = true;
+                transporter.addChangeListener(function(){
+                  failed = false;
+                });
 
-                simCapi.capiMessageHandler(valueChangeMsg);
+                transporter.capiMessageHandler(valueChangeMsg);
 
-                // verify that there were two updates
-                expect(outgoingMap.attr1.parent.set.called).to.be(true);
-                expect(outgoingMap.attr2.parent.set.called).to.be(true);
-                expect(outgoingMap.attr3.parent.set.called).to.be(true);
+                expect(failed).to.be(false);
             });
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
 
-                var expectedValueChangeMsg = simCapi.notifyValueChange();
+                var expectedValueChangeMsg = transporter.notifyValueChange();
 
-                expect(expectedValueChangeMsg.values.attr1.value).to.be('0.222');
+                expect(expectedValueChangeMsg.values['these.are.fake.objects.attr1'].value).to.be(0.222);
                 expect(expectedValueChangeMsg.values.attr2.value).to.be('value2');
-                expect(expectedValueChangeMsg.values.attr3.value).to.be('true');
-                expect(expectedValueChangeMsg.values.attr4.value).to.be('false');
+                expect(expectedValueChangeMsg.values.attr3.value).to.be(true);
+                expect(expectedValueChangeMsg.values.attr4.value).to.be(false);
             });
 
             it('should ignore VALUE_CHANGE message if values is undefined', function(){
@@ -360,17 +352,16 @@ define(function(require){
                     values : undefined
                 });
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                var failed = false;
+                transporter.addChangeListener(function(values){
+                  failed = true;
+                });
 
 
-                simCapi.capiMessageHandler(badValueChangeMsg);
-
+                transporter.capiMessageHandler(badValueChangeMsg);
+                
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(false);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(false);
+                expect(failed).to.be(false);
             });
 
             it('should ignore VALUE_CHANGE when authToken does not match', function(){
@@ -385,18 +376,15 @@ define(function(require){
                     values : undefined
                 });
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                var failed = false;
+                transporter.addChangeListener(function(values){
+                  failed = true;
+                });
 
-
-                simCapi.capiMessageHandler(badValueChangeMsg);
-
+                transporter.capiMessageHandler(badValueChangeMsg);
+                
                 // verify that nothing was updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(false);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(false);
-
+                expect(failed).to.be(false);
             });
 
             it('should not update readonly values', function(){
@@ -406,17 +394,12 @@ define(function(require){
                 // change attr2 to be readonly
                 outgoingMap.attr2.readonly = true;
 
-                sandbox.spy(outgoingMap.attr1.parent, 'set');
-                sandbox.spy(outgoingMap.attr2.parent, 'set');
-                sandbox.spy(outgoingMap.attr3.parent, 'set');
+                transporter.addChangeListener(function(values){
+                  //verify that two attrs get updated
+                  expect(values.length).to.be(2);
+                });
 
-
-                simCapi.capiMessageHandler(valueChangeMsg);
-
-                // verify that only attr1 is updated
-                expect(outgoingMap.attr1.parent.set.called).to.be(true);
-                expect(outgoingMap.attr2.parent.set.called).to.be(false);
-                expect(outgoingMap.attr3.parent.set.called).to.be(true);
+                transporter.capiMessageHandler(valueChangeMsg);
 
             });
 
@@ -434,9 +417,9 @@ define(function(require){
   
             it('should send value change notification', function(){
                 doHandShake();
-                sandbox.stub(simCapi, 'notifyValueChange', function () {});
-                simCapi.capiMessageHandler(valueChangeRequestMessage);
-                expect(simCapi.notifyValueChange.called).to.be(true);
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+                transporter.capiMessageHandler(valueChangeRequestMessage);
+                expect(transporter.notifyValueChange.called).to.be(true);
             });
 
         });
