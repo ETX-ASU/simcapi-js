@@ -1,5 +1,5 @@
 define(['api/snapshot/Transporter'], function(Transporter){
 
-	return {notifyOnReady: Transporter.getInstance().notifyOnReady};
+  return {notifyOnReady: Transporter.getInstance().notifyOnReady};
 
 });

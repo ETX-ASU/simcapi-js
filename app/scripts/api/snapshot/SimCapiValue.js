@@ -92,7 +92,7 @@ var SimCapiValue = function(options) {
       //we have a type so we only need to parse the value
       this.value = parseValue(this.value, this.type);
     }
-    else if(this.value !== undefined || this.value !== null){
+    else if(this.value !== undefined && this.value !== null){
       //we don't have a type but we have a value, we can infer the type
       this.type = getType(this.value);
     }

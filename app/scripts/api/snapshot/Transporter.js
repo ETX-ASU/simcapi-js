@@ -97,8 +97,6 @@ var Transporter = function(options) {
 
             var changed = [];
             // enumerate through all received values @see SimCapiMessage.values
-            //key - the alias || original name
-            //capiValue.key - the original name
             _.each(message.values, function(capiValue, key){
 
                 // check if the key exists in the mapping and is writeable
