@@ -8,7 +8,7 @@ define(function(require) {
     var r;
     for (var i = 0; i < 46; i++) {
       r = 0 | Math.random()*36;
-      uuid += CHARS[r.toString()];
+      uuid += CHARS[r];
     }
 
     return uuid;

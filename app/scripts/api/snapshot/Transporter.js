@@ -198,11 +198,11 @@ var Transporter = function(options) {
       return null;
     };
 
-    this.setValue = function(attrName, simCapiValue){
+    this.setValue = function(simCapiValue){
 
       check(simCapiValue).isOfType(SimCapiValue);
 
-      outgoingMap[attrName] = simCapiValue;
+      outgoingMap[simCapiValue.key] = simCapiValue;
 
       this.notifyValueChange();
     };

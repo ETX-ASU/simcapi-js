@@ -48,10 +48,10 @@ var CapiAdapter = function(options){
           readonly: simCapiParams.readonly
         });
         
-        _transporter.setValue(alias, capiValue);
+        _transporter.setValue(capiValue);
       },this));
       
-      _transporter.setValue(alias, capiValue);
+      _transporter.setValue(capiValue);
 
       modelsMapping[alias] = {parent:parent, originalName:varName};
       

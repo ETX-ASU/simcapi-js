@@ -51,7 +51,7 @@ define(function(require){
 
     
     it('should create SimCapiValues properly', function(){
-      sandbox.stub(transporter, 'setValue', function(attrName, capiValue){
+      sandbox.stub(transporter, 'setValue', function(capiValue){
         expect(capiValue).to.be.a(SimCapiValue);
       });
 
