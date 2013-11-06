@@ -95,7 +95,17 @@ module.exports = function(grunt) {
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/SimCapiHandler'],
           wrap          : false,
-          out           : process.env.HTDOCS + '/aelp/local/js/simcapi.js'
+          out           : process.env.HTDOCS + '/aelp/local/js/pipit.js'
+        }
+      },
+      handlerMinified : {
+        options : {
+          baseUrl       : 'temp/local/scripts',
+          mainConfigFile: 'app/scripts/config.js',
+          name          : '../../../bower_components/almond/almond',
+          include       : ['api/snapshot/SimCapiHandler'],
+          wrap          : false,
+          out           : 'dist/handler_min/js/pipit.js'
         }
       },
 
@@ -135,7 +145,7 @@ module.exports = function(grunt) {
   // Custom tasks
   grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs:local']);
 
-  grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified']);
+  grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified', 'requirejs:handlerMinified']);
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
   grunt.loadNpmTasks('grunt-mocha');
