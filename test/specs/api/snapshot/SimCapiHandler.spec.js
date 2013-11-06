@@ -7,7 +7,6 @@ define(function(require){
     var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
     var SharedSimData   = require('api/snapshot/SharedSimData');
     var SimCapiValue    = require('api/snapshot/SimCapiValue');
-    var SimCapi         = require('api/snapshot/SimCapi');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
     require('sinon');
 
@@ -188,9 +187,9 @@ define(function(require){
                         authToken : authToken
                     },
                     values : {
-                        value1 : new SimCapiValue({value: 'value1'}),
-                        value2 : new SimCapiValue({value: 'value2'}),
-                        value3 : new SimCapiValue({value: 'value3'})
+                        value1 : new SimCapiValue({key: 'value1', value: 'value1'}),
+                        value2 : new SimCapiValue({key: 'value2', value: 'value2'}),
+                        value3 : new SimCapiValue({key: 'value3', value: 'value3'})
                     }
                 });
     
@@ -218,9 +217,9 @@ define(function(require){
                         authToken : authToken
                     },
                     values : {
-                        value1 : new SimCapiValue({value: 'value1'}),
-                        value2 : new SimCapiValue({value: 'value2'}),
-                        value3 : new SimCapiValue({value: 'value3'})
+                        value1 : new SimCapiValue({key: 'value1', value: 'value1'}),
+                        value2 : new SimCapiValue({key: 'value2', value: 'value2'}),
+                        value3 : new SimCapiValue({key: 'value3',value: 'value3'})
                     }
                 });
   
@@ -248,7 +247,7 @@ define(function(require){
                         authToken : authToken
                     },
                     values : {
-                        value1 : new SimCapiValue({value: 'value1'})
+                        value1 : new SimCapiValue({key: 'value1', value: 'value1'})
                     }
                 });
 
@@ -263,9 +262,9 @@ define(function(require){
                 expect(snapshot['iframe1.value1']).to.be('value1');
 
                 // create another VALUE_CHANGE message with three values, one of which overrides value1
-                valueChangeMsg.values.value1 = new SimCapiValue({value: 'changed1'});
-                valueChangeMsg.values.value2 = new SimCapiValue({value: 'value2'});
-                valueChangeMsg.values.value3 = new SimCapiValue({value: 'value3'});
+                valueChangeMsg.values.value1 = new SimCapiValue({key: 'value1', value: 'changed1'});
+                valueChangeMsg.values.value2 = new SimCapiValue({key: 'value2', value: 'value2'});
+                valueChangeMsg.values.value3 = new SimCapiValue({key: 'value3', value: 'value3'});
 
                 // send the update message
                 handler.capiMessageHandler(valueChangeMsg);
@@ -328,7 +327,7 @@ define(function(require){
                     expect(response.handshake.authToken).to.be(authToken);
                     expect(_.size(response.values)).to.be(1);
                     expect(response.values['value'].value).to.be('1');
-                    expect(response.values['value'].type).to.be(SimCapi.TYPES.STRING);
+                    expect(response.values['value'].type).to.be(SimCapiValue.TYPES.STRING);
 
                     expect(iframeid).to.be('iframe1');
 
@@ -384,7 +383,7 @@ define(function(require){
                     expect(response.handshake.authToken).to.be(authToken);
                     expect(_.size(response.values)).to.be(1);
                     expect(response.values['value2'].value).to.be('1');
-                    expect(response.values['value2'].type).to.be(SimCapi.TYPES.STRING);
+                    expect(response.values['value2'].type).to.be(SimCapiValue.TYPES.STRING);
 
                     expect(iframeid).to.be('iframe2');
 
