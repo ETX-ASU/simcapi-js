@@ -10,14 +10,17 @@ define([
   'api/snapshot/util/uuid'
 ],function (_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid){
 
-$.noConflict();
-_.noConflict();
-
 var SimCapiHandler = function(options) {
 
     var $container = options.$container;
     var ignoreHidden = options.ignoreHidden || false;
     var self = this;
+
+    options.callback = options.callback || {};
+    var callback = {
+        check : options.callback.check,
+        onSnapshotChange : options.callback.onSnapshotChange
+    };
     var tokenToId = {}; // token -> iframeid
     var idToToken = {}; // iframeid -> token
     var isReady = {}; // token -> true/false
@@ -29,6 +32,8 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.4 - Added check events
+     * 0.3 - Minor changes
      * 0.2 - Rewrite of the client slide implementation
      * 0.1 - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
@@ -39,6 +44,11 @@ var SimCapiHandler = function(options) {
      * This can occur, when the sim is not ready.
      */
     var pendingApplySnapshot = [];
+
+    /*
+     * A set of tokens that are pending on check responses
+     */
+    var pendingCheckResponses = {};
 
     var windowEventHandler = function(event) {
         var message;
@@ -67,9 +77,44 @@ var SimCapiHandler = function(options) {
         case SimCapiMessage.TYPES.VALUE_CHANGE:
             updateSnapshot(message.handshake.authToken, message.values);
             break;
+        case SimCapiMessage.TYPES.CHECK_REQUEST:
+            handleCheckTrigger(message);
+            break;
         }
     };
-    
+
+    var handleCheckTrigger = function(message) {
+        pendingCheckResponses[message.handshake.authToken] = true;
+
+        // only trigger check event when we aren't waiting for a response
+        if (Object.keys(pendingCheckResponses).length === 0) {
+            if (callback.check) {
+                callback.check();
+            }
+        }
+    };
+
+    this.notifyCheckResponse = function() {
+        // create a message
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.CHECK_RESPONSE;
+        message.handshake = {
+            // Config object is used to pass relevant information to the sim
+            // like the lesson id, etc.
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        // reset the pending check responses
+        var remainingResponses = pendingCheckResponses;
+        pendingCheckResponses = [];
+
+        // broadcast check response to each sim
+        _.each(remainingResponses, function(value, authToken) {
+            message.handshake.authToken = authToken;
+            self.sendMessage(message);
+        });
+    };
+
     /*
      * Update the snapshot with new values recieved from the appropriate iframe.
      */
@@ -83,6 +128,11 @@ var SimCapiHandler = function(options) {
                 snapshot[iframeId + '.' + key] = simCapiValue.value;
                 descriptors[iframeId + '.' + key] = simCapiValue;
             });
+
+            // this is used in the platform to do work when things change
+            if (callback.onSnapshotChange) {
+                callback.onSnapshotChange();
+            }
         }
     };
 

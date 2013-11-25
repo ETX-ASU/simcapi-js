@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.2;
+    var version = 0.4;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -36,6 +36,10 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
+    // holds callbacks that may be needed
+    var callback = {
+        check : null
+    };
 
     this.getHandshake = function(){
         return handshake;
@@ -58,6 +62,9 @@ var Transporter = function(options) {
         case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
             handleValueChangeRequestMessage(message);
             break;
+        case SimCapiMessage.TYPES.CHECK_RESPONSE:
+            handleCheckResponse(message);
+            break;
         }
     };
 
@@ -67,6 +74,16 @@ var Transporter = function(options) {
 
     this.removeAllChangeListeners = function(){
       changeListeners = [];
+    };
+
+    /*
+     * Handles check complete event
+     */
+    var handleCheckResponse = function(message) {
+      if (callback.check) {
+        callback.check(message);
+        callback.check = null;
+      }
     };
 
     /*
@@ -172,6 +189,24 @@ var Transporter = function(options) {
             // send initial value snapshot
             self.notifyValueChange();
         }
+    };
+
+    /*
+     * @since 0.4
+     * Trigger a check event from the sim
+     */
+    this.triggerCheck = function(handlers) {
+        if (callback.check) {
+            throw new Error("You have already triggered a check event");
+        }
+
+        callback.check = handlers.complete || function() {};
+
+        var triggerCheckMsg = new SimCapiMessage({
+            type : SimCapiMessage.TYPES.CHECK_REQUEST,
+            handshake : handshake
+        });
+        self.sendMessage(triggerCheckMsg);
     };
 
     /*
