@@ -39,7 +39,10 @@ define(function(require){
 
             handler = new SimCapiHandler({
                 $container : $container,
-                ignoreHidden : true
+                ignoreHidden : true,
+                callback : {
+                    check : function() {}
+                }
             });
 
             // make sure it doesn't send any messages to iframe3 because it has display:none
@@ -140,6 +143,37 @@ define(function(require){
 
             handler.capiMessageHandler(onReadyMsg);
         };
+
+        describe('notifyCheckResponse', function() {
+            beforeEach(function() {
+                setupHandshake('iframe1', 'token1');
+                setupHandshake('iframe2', 'token2');
+            });
+
+            it('should remember pending check request', function() {
+                var message = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.CHECK_REQUEST,
+                    handshake : {
+                        authToken : 'token1'
+                    }
+                });
+                handler.capiMessageHandler(message);
+                message.handshake.authToken = 'token2';
+                handler.capiMessageHandler(message);
+
+                mockPostMessage(function(response, id) {
+                    expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_RESPONSE);
+                    expect(response.handshake.authToken === 'token1' || response.handshake.authToken === 'token2').to.be(true);
+                });
+
+                handler.notifyCheckResponse();
+                expect(handler.sendMessage.callCount).to.be(2);
+
+                // should clear the pending queue and not send anything else
+                handler.notifyCheckResponse();
+                expect(handler.sendMessage.callCount).to.be(2);
+            });
+        });
 
         describe('notifyConfigChange', function() {
             

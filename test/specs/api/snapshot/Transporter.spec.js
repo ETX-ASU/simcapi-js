@@ -424,6 +424,28 @@ define(function(require){
 
         });
 
+        describe('CHECK_*', function() {
+            var checkResponseMessage = new SimCapiMessage({
+                type : SimCapiMessage.TYPES.CHECK_RESPONSE,
+                handshake : {
+                    authToken : authToken
+                }
+            });
+
+            it('should trigger check completion callback', function() {
+                doHandShake();
+                var onComplete = sandbox.stub();
+
+                // trigger check
+                transporter.triggerCheck({
+                    complete : onComplete
+                });
+
+                transporter.capiMessageHandler(checkResponseMessage);
+                expect(onComplete.called).to.be(true);
+            });
+        });
+
     });
 
 });
