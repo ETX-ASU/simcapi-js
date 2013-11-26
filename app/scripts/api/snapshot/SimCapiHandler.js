@@ -106,12 +106,12 @@ var SimCapiHandler = function(options) {
 
         // reset the pending check responses
         var remainingResponses = pendingCheckResponses;
-        pendingCheckResponses = [];
+        pendingCheckResponses = {};
 
         // broadcast check response to each sim
         _.each(remainingResponses, function(value, authToken) {
             message.handshake.authToken = authToken;
-            self.sendMessage(message);
+            self.sendMessage(message, tokenToId[authToken]);
         });
     };
 
