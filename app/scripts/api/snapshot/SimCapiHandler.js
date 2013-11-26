@@ -87,7 +87,7 @@ var SimCapiHandler = function(options) {
         pendingCheckResponses[message.handshake.authToken] = true;
 
         // only trigger check event when we aren't waiting for a response
-        if (Object.keys(pendingCheckResponses).length === 0) {
+        if (Object.keys(pendingCheckResponses).length === 1) {
             if (callback.check) {
                 callback.check();
             }
