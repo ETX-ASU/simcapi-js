@@ -1,0 +1,26 @@
+{
+  "name": "simcapi",
+  "description": "Allows the communication between the HTMLViewer and the Sims.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Smart Sparrow"
+  },
+  "bugs": {
+    "url": "https://jira.smartsparrow.com/"
+  },
+  "engines": {
+    "node": "*"
+  },
+  "scripts": {
+    "preinstall": "npm install unzip@0.1.6-alpha",
+    "test": "grunt test"
+  },
+  "devDependencies": {
+    "grunt-contrib": "0.4.0",
+    "grunt-lib-phantomjs": "0.2.0",
+    "grunt-mocha": "",
+    "coverjs" : "0.0.11-alpha",
+    "grunt": "0.4.1"
+  },
+  "keywords": []
+}
