@@ -73,11 +73,11 @@ var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.watch(‘currentTime’, {parent: simModel, 
-	                                          readonly: true});
-pipit.BackboneAdapter.watch(‘selectedObject’, {parent: simModel, 
-                                               alias: “selectedPlanet”, 
-                                               readonly: false});
+pipit.BackboneAdapter.watch(‘currentTime’, simModel, 
+                                            {readonly: true});
+pipit.BackboneAdapter.watch(‘selectedObject’, simModel, 
+                                               {alias: “selectedPlanet”, 
+                                                readonly: false});
 
 …
 
