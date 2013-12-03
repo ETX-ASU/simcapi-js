@@ -54,6 +54,21 @@ define(function(require){
       expect(failed3).to.equal(false);
 
     });
+
+    it('should not call event hooks when removed', function(){
+      var count = 0;
+      var funct = function(){
+        count++;
+      };
+
+      model.on('change:test1', funct);
+      model.set('test1', 'value1');
+      expect(count).to.equal(1);
+
+      model.off('change:test1', funct);
+      model.set('test1', 'value2');
+      expect(count).to.equal(1);
+    });
   });
     
 });

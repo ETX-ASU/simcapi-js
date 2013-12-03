@@ -35,7 +35,8 @@ define(function(require){
         on: function(){},
         has: function(varName){
           return varName;
-        }
+        },
+        off: function(){}
       };
 
       transporter = new Transporter();
@@ -69,6 +70,21 @@ define(function(require){
       adapter.handleValueChange([new SimCapiValue({key:'attr1', value:6})]);
 
       expect(model.set.callCount).to.be(1);
+    });
+
+    it('should remove SimCapiValues when unwatch', function(){
+      sandbox.stub(transporter, 'removeValue', function(alias){
+        expect(alias).to.equal('attr1.newName');
+      });
+
+      sandbox.stub(model, 'off', function(eventName, funct){
+        expect(eventName).to.equal('change:attr1');
+      });
+
+      adapter.watch('attr1', model, {readonly:false, alias:"attr1.newName"});
+      adapter.unwatch('attr1', model);
+
+      expect(transporter.removeValue.callCount).to.be(1);
     });
   });
     
