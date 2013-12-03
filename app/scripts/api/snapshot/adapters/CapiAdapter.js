@@ -64,7 +64,11 @@ var CapiAdapter = function(options){
     }
   };
 
-
+  /*
+   * Allows the 'attributes' to be unwatched.
+   * @param attrName - The 'attribute name'
+   * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
+   */
   this.unwatch = function(varName, parent){
     
     var modelMap;
@@ -83,6 +87,9 @@ var CapiAdapter = function(options){
       _transporter.removeValue(modelMap.alias);
 
       modelsMapping[modelMap.alias] = null;
+    }
+    else{
+      throw new Error(varName + " doesn't exist on parent.");
     }
   };
 
