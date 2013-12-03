@@ -54,11 +54,42 @@ var CapiAdapter = function(options){
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {parent:parent, originalName:varName};
+      modelsMapping[alias] = {
+        alias:        alias,
+        parent:       parent, 
+        originalName: varName,
+        watchFunc:    watchFunc
+      };
       
     }
   };
 
+
+  this.unwatch = function(varName, parent){
+    
+    var modelMap, alias;
+
+    if(modelsMapping[varName]){
+      modelMap = modelsMapping[varName];
+      alias = varName;
+    }
+    else{
+      //could be under an alias
+      modelMap = _.findWhere(modelsMapping, {originalName: varName});
+
+      if(modelMap){
+        alias = modelMap.alias;
+      }
+    }
+
+    if(modelMap){
+      parent.off('change:'+varName, modelMap.watchFunc);
+
+      _transporter.removeValue(alias);
+
+      modelsMapping[alias] = null;
+    }
+  };
 
 
   /*
