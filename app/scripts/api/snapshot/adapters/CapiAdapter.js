@@ -38,18 +38,19 @@ var CapiAdapter = function(options){
         readonly: params.readonly
       });
 
-
-      // listen to the model by attaching event handler on the parent
-      parent.on('change:' + varName, _.bind(function(m, value){
+      var watchFunc = _.bind(function(m,value){
         var capiValue = new SimCapiValue({
           key: alias,
           value: value,
           type: simCapiParams.type,
           readonly: simCapiParams.readonly
         });
-        
+
         _transporter.setValue(capiValue);
-      },this));
+      }, this);
+
+      // listen to the model by attaching event handler on the parent
+      parent.on('change:' + varName, watchFunc);
       
       _transporter.setValue(capiValue);
 
