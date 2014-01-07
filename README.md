@@ -31,7 +31,7 @@ To use Pipit, you must use an `adapter` to be able to interface with AELP. There
 In the setup phase, you must tell Pipit what you want the Sim to expose. To expose the properties of the simulation, you use the method _watch_.
 
 ```
-adapter.watch(propertyName, model, options);
+pipit.CapiAdapter.watch(propertyName, model, options);
 ```
 
 propertyName - String - name of the property on the model
@@ -58,6 +58,28 @@ This must be called when the model has finished being setup. It is to tell Pipit
 ## Usage ##
 
 ### A simple example ###
+```
+var simModel = new pipit.CapiAdapter.CapiModel({
+    currentTime: 0,
+    selectedObject: ‘saturn’
+});
+
+...
+
+pipit.CapiAdapter.watch(‘currentTime’, simModel, 
+                                       {readonly: true});
+pipit.CapiAdapter.watch(‘selectedObject’, simModel, 
+                                          {alias: “selectedPlanet”, 
+                                           readonly: false});
+
+…
+
+pipit.Controller.notifyOnReady();
+```
+
+
+
+### A backbone example ###
 
 ```
 var SimModel = Backbone.Model.extend({
