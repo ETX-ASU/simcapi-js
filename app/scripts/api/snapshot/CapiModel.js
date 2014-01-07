@@ -70,7 +70,7 @@ var CapiModel = function(attrs, methods){
   this.trigger = function(eventName){
     if(this._eventsMap[eventName]){
       _.each(this._eventsMap[eventName], function(funct){
-        funct.call(this, this.attributes, this);
+        funct.call(this, this, this.attributes);
       }, this);
     }
   };
