@@ -24,6 +24,7 @@ define(function(require){
 
       modelAttributes = {
         'attr1'    : 5,
+        'attr2'    : [],
         'fakeAttr' : null  
       };
 
@@ -61,6 +62,14 @@ define(function(require){
       expect(transporter.setValue.callCount).to.be(1);
     });
 
+    it('should create SimCapiValues properly when of type array', function(){
+      sandbox.stub(transporter, 'setValue', function(capiValue){
+        expect(capiValue.value).to.be('[]');
+      });
+
+      adapter.watch('attr2', model, {readonly:false});
+    });
+
     it('should set new values when recieved', function(){
       adapter.watch('attr1', model);
 
@@ -69,6 +78,17 @@ define(function(require){
       adapter.handleValueChange([new SimCapiValue({key:'attr1', value:6})]);
 
       expect(model.set.callCount).to.be(1);
+    });
+
+    it('should set new value of array type to be an array when recieved', function(){
+      adapter.watch('attr2', model);
+
+      sandbox.stub(model, 'set', function(m,v){
+        expect(v).to.be.a(Array);
+      });
+
+      adapter.handleValueChange([new SimCapiValue({key:'attr2', value:'[10]'})]);
+
     });
   });
     

@@ -29,6 +29,7 @@ var CapiAdapter = function(options){
     if(parent.has(varName))
     {
       var simCapiParams = params;
+      var originalName = varName;
       var alias = params.alias || varName;
       
       var capiValue = new SimCapiValue({
@@ -37,6 +38,10 @@ var CapiAdapter = function(options){
         type: params.type,
         readonly: params.readonly
       });
+
+      if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+        capiValue.value = '[' + parent.get(originalName).toString() + ']';
+      }
 
 
       // listen to the model by attaching event handler on the parent
@@ -48,12 +53,16 @@ var CapiAdapter = function(options){
           readonly: simCapiParams.readonly
         });
         
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          capiValue.value = '[' + parent.get(originalName).toString() + ']';
+        }
+
         _transporter.setValue(capiValue);
       },this));
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {parent:parent, originalName:varName};
+      modelsMapping[alias] = {parent:parent, originalName:originalName};
       
     }
   };
@@ -69,7 +78,21 @@ var CapiAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var parent = modelsMapping[capiValue.key].parent;
         var originalName = modelsMapping[capiValue.key].originalName;
-        parent.set(originalName, capiValue.value);
+
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          var newArray = [];
+
+          var elements = capiValue.value.replace(/^\[|\]$/g, '').split(',');
+
+          for(var i=0;i<elements.length; ++i){
+            newArray.push(elements[i].trim());
+          }
+
+          parent.set(originalName, newArray);
+        }
+        else{
+          parent.set(originalName, capiValue.value); 
+        }
       }
     }, this);
     

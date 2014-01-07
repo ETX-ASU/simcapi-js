@@ -10,6 +10,11 @@ function parseBoolean(value){
   return value;
 }
 
+function isArray(value){
+    return value.charAt(0) === '[' && 
+        value.charAt(value.length-1) === ']';
+}
+
 var SimCapiValue = function(options) {
 
     var getType = function(value){
@@ -23,11 +28,11 @@ var SimCapiValue = function(options) {
       else if(passiveValue.isNumber()){
         type = SimCapiValue.TYPES.NUMBER;
       }
+      else if(passiveValue.isArray() || isArray(value)){
+        type = SimCapiValue.TYPES.ARRAY;
+      }
       else if(passiveValue.isString()){
         type = SimCapiValue.TYPES.STRING;
-      }
-      else if(passiveValue.isArray()){
-        type = SimCapiValue.TYPES.ARRAY;
       }
       else{
         throw new Error('can not determined type');
