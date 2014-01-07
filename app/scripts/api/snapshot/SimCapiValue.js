@@ -105,7 +105,7 @@ var SimCapiValue = function(options) {
       if(this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()){
         var newArray = [];
 
-        var elements = this.value.replace(/^\[|\]$/g, '').split(',');
+        var elements = this.value.substring(1, this.value -1).split(',');
 
         for(var i=0;i<elements.length; ++i){
           newArray.push(elements[i].trim());
