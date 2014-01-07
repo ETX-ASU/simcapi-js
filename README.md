@@ -38,7 +38,7 @@ propertyName - String - name of the property on the model
 model        - Object - the model that the property belongs to.
 options      - Object  
                        - type     - SimCapiValue.TYPES  - the type of the property 
-                       - alias    - String              - nickname of the property that is only shown via AELP. Can __NOT__ contain '.'
+                       - alias    - String              - nickname of the property that is only shown via AELP. Can contain '.' but will create a hierarchy for every '.'.
                        - readonly - Boolean             - if the property is readonly 
 
 
@@ -73,11 +73,11 @@ var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.watch(‘currentTime’, {parent: simModel, 
-	                                          readonly: true});
-pipit.BackboneAdapter.watch(‘selectedObject’, {parent: simModel, 
-                                               alias: “selectedPlanet”, 
-                                               readonly: false});
+pipit.BackboneAdapter.watch(‘currentTime’, simModel, 
+	                                          {readonly: true});
+pipit.BackboneAdapter.watch(‘selectedObject’, simModel, 
+                                               {alias: “selectedPlanet”, 
+                                                readonly: false});
 
 …
 
