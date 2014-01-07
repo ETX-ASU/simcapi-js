@@ -10,6 +10,11 @@ function parseBoolean(value){
   return value;
 }
 
+function isArray(value){
+    return value.charAt(0) === '[' && 
+        value.charAt(value.length-1) === ']';
+}
+
 var SimCapiValue = function(options) {
 
     var getType = function(value){
@@ -23,11 +28,11 @@ var SimCapiValue = function(options) {
       else if(passiveValue.isNumber()){
         type = SimCapiValue.TYPES.NUMBER;
       }
+      else if(passiveValue.isArray() || isArray(value)){
+        type = SimCapiValue.TYPES.ARRAY;
+      }
       else if(passiveValue.isString()){
         type = SimCapiValue.TYPES.STRING;
-      }
-      else if(passiveValue.isArray()){
-        type = SimCapiValue.TYPES.ARRAY;
       }
       else{
         throw new Error('can not determined type');
@@ -95,6 +100,19 @@ var SimCapiValue = function(options) {
     else if(this.value !== undefined && this.value !== null){
       //we don't have a type but we have a value, we can infer the type
       this.type = getType(this.value);
+
+      //If determined to be of type array but value is a string, convert it.
+      if(this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()){
+        var newArray = [];
+
+        var elements = this.value.substring(1, this.value -1).split(',');
+
+        for(var i=0;i<elements.length; ++i){
+          newArray.push(elements[i].trim());
+        }
+
+        this.value = newArray;
+      }
     }
     else{
       throw new Error ('Value nor type was given');

@@ -39,6 +39,10 @@ var CapiAdapter = function(options){
         readonly: params.readonly
       });
 
+      if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+        capiValue.value = '[' + parent.get(originalName).toString() + ']';
+      }
+
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, _.bind(function(m, values){
@@ -49,6 +53,10 @@ var CapiAdapter = function(options){
           readonly: simCapiParams.readonly
         });
         
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          capiValue.value = '[' + parent.get(originalName).toString() + ']';
+        }
+
         _transporter.setValue(capiValue);
       },this));
       
@@ -70,7 +78,8 @@ var CapiAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var parent = modelsMapping[capiValue.key].parent;
         var originalName = modelsMapping[capiValue.key].originalName;
-        parent.set(originalName, capiValue.value);
+
+        parent.set(originalName, capiValue.value); 
       }
     }, this);
     

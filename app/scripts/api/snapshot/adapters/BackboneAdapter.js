@@ -31,6 +31,7 @@ var BackboneAdapter = function(options){
     {
 
       var simCapiParams = params;
+      var originalName = varName;
       var alias = params.alias || varName;
       
       var capiValue = new SimCapiValue({
@@ -40,7 +41,9 @@ var BackboneAdapter = function(options){
         readonly: params.readonly
       });
 
-      
+      if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+        capiValue.value = '[' + model.get(originalName).toString() + ']';
+      }
 
       // listen to the model by attaching event handler on the model
       model.on('change:' + varName, _.bind(function(m, value){
@@ -51,12 +54,16 @@ var BackboneAdapter = function(options){
           readonly: simCapiParams.readonly
         });
 
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          capiValue.value = '[' + model.get(originalName).toString() + ']';
+        }
+
         _transporter.setValue(capiValue);
       },this));
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {model: model, originalName: varName};
+      modelsMapping[alias] = {model: model, originalName: originalName};
       
     }
     
@@ -83,7 +90,8 @@ var BackboneAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var model = modelsMapping[capiValue.key].model;
         var originalName = modelsMapping[capiValue.key].originalName;
-        model.set(originalName, capiValue.value);
+        
+        model.set(originalName, capiValue.value); 
       }
     }, this);
     
