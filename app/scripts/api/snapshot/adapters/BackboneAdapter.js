@@ -91,20 +91,7 @@ var BackboneAdapter = function(options){
         var model = modelsMapping[capiValue.key].model;
         var originalName = modelsMapping[capiValue.key].originalName;
         
-        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
-          var newArray = [];
-
-          var elements = capiValue.value.replace(/^\[|\]$/g, '').split(',');
-
-          for(var i=0;i<elements.length; ++i){
-            newArray.push(elements[i].trim());
-          }
-
-          model.set(originalName, newArray);
-        }
-        else{
-          model.set(originalName, capiValue.value); 
-        }
+        model.set(originalName, capiValue.value); 
       }
     }, this);
     

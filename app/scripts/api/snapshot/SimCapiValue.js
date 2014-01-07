@@ -100,6 +100,19 @@ var SimCapiValue = function(options) {
     else if(this.value !== undefined && this.value !== null){
       //we don't have a type but we have a value, we can infer the type
       this.type = getType(this.value);
+
+      //If determined to be of type array but value is a string, convert it.
+      if(this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()){
+        var newArray = [];
+
+        var elements = this.value.replace(/^\[|\]$/g, '').split(',');
+
+        for(var i=0;i<elements.length; ++i){
+          newArray.push(elements[i].trim());
+        }
+
+        this.value = newArray;
+      }
     }
     else{
       throw new Error ('Value nor type was given');

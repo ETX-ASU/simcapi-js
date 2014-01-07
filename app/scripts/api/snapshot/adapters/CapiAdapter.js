@@ -79,20 +79,7 @@ var CapiAdapter = function(options){
         var parent = modelsMapping[capiValue.key].parent;
         var originalName = modelsMapping[capiValue.key].originalName;
 
-        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
-          var newArray = [];
-
-          var elements = capiValue.value.replace(/^\[|\]$/g, '').split(',');
-
-          for(var i=0;i<elements.length; ++i){
-            newArray.push(elements[i].trim());
-          }
-
-          parent.set(originalName, newArray);
-        }
-        else{
-          parent.set(originalName, capiValue.value); 
-        }
+        parent.set(originalName, capiValue.value); 
       }
     }, this);
     
