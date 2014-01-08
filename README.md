@@ -26,6 +26,13 @@ There are two phases to use Pipit, _setup_ and _setup-completion_.
 
 To use Pipit, you must use an `adapter` to be able to interface with AELP. There exists two Adapters, `CapiAdapter` and `BackboneAdapter`. 
 
+### Capi Model ###
+If you choose to use the `CapiAdapter`, you must use a `CapiModel` to be able to interface with the Adapter. If you choose to use the `BackboneAdapter`, you must you a `Backbone Model`.
+
+The `Capi Model` holds the data that is communicated between the sim and AELP. During the setup phase, you choose which of the data to expose that exists in the model.
+
+Without a model, you can not expose data of the sim to AELP. 
+
 ### Setup ###
 
 In the setup phase, you must tell Pipit what you want the Sim to expose. To expose the properties of the simulation, you use the method _watch_.
