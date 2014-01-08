@@ -38,8 +38,14 @@ var Transporter = function(options) {
 
     // holds callbacks that may be needed
     var callback = {
-        check : null
+        check : null,
+        getData: null
     };
+
+    //current get data requests
+    var getRequests = {};
+    //current set data requests
+    var setRequests = {};
 
     this.getHandshake = function(){
         return handshake;
@@ -65,6 +71,12 @@ var Transporter = function(options) {
         case SimCapiMessage.TYPES.CHECK_RESPONSE:
             handleCheckResponse(message);
             break;
+        case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
+            handleGetDataResponse(message);
+            break;
+        case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
+            handleSetDataResponse(message);
+            break;
         }
     };
 
@@ -75,6 +87,120 @@ var Transporter = function(options) {
     this.removeAllChangeListeners = function(){
       changeListeners = [];
     };
+
+    /*
+     *   Handles the get data message
+     */
+    var handleGetDataResponse = function(message){
+        if(message.handshake.authToken === handshake.authToken){
+            if(message.values.responseType === 'success'){
+                getRequests[message.values.simId][message.values.key].onSuccess(
+                        message.values.key,
+                        message.values.value
+                    );
+            }
+            else if(message.values.responseType === 'error'){
+                getRequests[message.values.simId][message.values.key].onError(
+                        message.values.key,
+                        message.values.value
+                    );
+            }
+            delete getRequests[message.values.simId][message.values.key];
+        }
+    };
+
+    /*
+     *   Handles the set data message
+     */
+    var handleSetDataResponse = function(message){
+        if(message.handshake.authToken === handshake.authToken){
+            if(message.values.responseType === 'success'){
+                setRequests[message.values.simId][message.values.key].onSuccess(
+                        message.values.key,
+                        message.values.value
+                    );    
+            }
+            else if(message.values.responseType === 'error'){
+                setRequests[message.values.simId][message.values.key].onError(
+                        message.values.key,
+                        message.values.value
+                    );
+            }
+            delete setRequests[message.values.simId][message.values.key];
+        }
+    };
+
+
+    /*
+     * Sends the GET_DATA Request
+     */
+    var getDataRequest = function(simId, key, onSuccess, onError){
+
+        onSuccess = onSuccess || function(){};
+        onError = onError || function(){};
+
+        var getDataRequestMsg = new SimCapiMessage({
+            type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+            handshake: handshake,
+            values:{
+                key: key,
+                simId: simId
+            }
+        });
+
+        if(!getRequests[simId] || !getRequests[simId][key]){
+            //return false indicating that there is the same request
+            //in progress
+            return false;
+        }
+
+        getRequests[simId] = getRequests[simId] || {};
+        getRequests[simId][key] = {
+            onSuccess: onSuccess,
+            onError: onError
+        };
+
+        // send the message to the viewer
+        self.sendMessage(getDataRequestMsg);
+
+        return true;
+    };
+
+    /*
+     * Sends the GET_DATA Request
+     */
+    var setDataRequest = function(simId, key, value, onSuccess, onError){
+        onSuccess = onSuccess || function(){};
+        onError = onError || function(){};
+
+        var setDataRequestMsg = new SimCapiMessage({
+            type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+            handshake: handshake,
+            values:{
+                key: key,
+                value: value,
+                simId: simId
+            }
+        });
+
+        if(!setRequests[simId] || !setRequests[simId][key]){
+            //return false indicating that there is the same request
+            //in progress
+            return false;
+        }
+
+        setRequests[simId] = setRequests[simId] || {};
+        setRequests[simId][key] = {
+            onSuccess: onSuccess,
+            onError: onError
+        };        
+
+        // send the message to the viewer
+        self.sendMessage(setDataRequestMsg);
+
+        return true;
+    };
+
 
     /*
      * Handles check complete event
