@@ -29,8 +29,8 @@
 </head>
 
     <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-    <script src="http://static.smartpsparrow.com/pipit-0.42.js"></script>
-    <script src="./graphHelper.js"></script>
+    <script src="../pipit.js"></script>
+    <script src="../graphHelper.js"></script>
 
 <body>
     <h2> Pipit CapiAdapter Example </h2>
@@ -45,8 +45,7 @@
             slope:45,
             showSlope: true
         });
-        
-        //this will listen to changes to slope attribute on the model and will be called when a change of value occurs everytime.
+           
         model.on('change:slope', function(model,values) {
             var v = values.slope;
             if(v >= 0 && v <= 90){
@@ -57,7 +56,6 @@
             
         });
 
-        //this will listen to changes to showSlope attribute on the model and will be called when a change of value occurs everytime.
         model.on('change:showSlope', function(model,values) {
             graph.hideProportionalityLine(values.showSlope);
             if(values.showSlope){
@@ -109,11 +107,10 @@
 
         init();
        
-        //Tells pipit to expose the following attributes 
+        //Capi Watch
         pipit.CapiAdapter.watch('slope', model);
         pipit.CapiAdapter.watch('showSlope', model);
 
-        // Tells pipit that the sim model is ready
         pipit.Controller.notifyOnReady();
 
     </script>
