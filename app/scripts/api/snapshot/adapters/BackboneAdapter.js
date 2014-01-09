@@ -40,7 +40,10 @@ var BackboneAdapter = function(options){
         readonly: params.readonly
       });
 
-      var watchFunc = _.bind(function(m,value){
+      
+
+      // listen to the model by attaching event handler on the model
+      model.on('change:' + varName, _.bind(function(m, value){
         var capiValue = new SimCapiValue({
           key: alias,
           value: value,
@@ -49,51 +52,14 @@ var BackboneAdapter = function(options){
         });
 
         _transporter.setValue(capiValue);
-      }, this);
-
-      // listen to the model by attaching event handler on the model
-      model.on('change:' + varName, watchFunc);
+      },this));
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {
-        alias:        alias,
-        model:        model, 
-        originalName: varName,
-        watchFunc:    watchFunc
-      };
+      modelsMapping[alias] = {model: model, originalName: varName};
       
     }
     
-  };
-
-  /*
-   * Allows the 'attributes' to be unwatched.
-   * @param attrName - The 'attribute name'
-   * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function. 
-   */
-  this.unwatch = function(varName, model){
-    
-    var modelMap;
-
-    if(modelsMapping[varName]){
-      modelMap = modelsMapping[varName];
-    }
-    else{
-      //could be under an alias
-      modelMap = _.findWhere(modelsMapping, {originalName: varName});
-    }
-
-    if(modelMap){
-      model.off('change:'+varName, modelMap.watchFunc);
-
-      _transporter.removeValue(modelMap.alias);
-
-      modelsMapping[modelMap.alias] = null;
-    }
-    else{
-      throw new Error(varName + " doesn't exist on model.");
-    }
   };
 
   /*
