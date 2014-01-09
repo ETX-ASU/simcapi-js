@@ -36,6 +36,8 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
+    var pendingQueue = [];
+
     // holds callbacks that may be needed
     var callback = {
         check : null,
@@ -134,7 +136,11 @@ var Transporter = function(options) {
     /*
      * Sends the GET_DATA Request
      */
-    var getDataRequest = function(simId, key, onSuccess, onError){
+    this.getDataRequest = function(simId, key, onSuccess, onError){
+
+        if(!simId || !key){
+            throw new Error('simId or key is not defined');
+        }
 
         onSuccess = onSuccess || function(){};
         onError = onError || function(){};
@@ -148,20 +154,29 @@ var Transporter = function(options) {
             }
         });
 
-        if(!getRequests[simId] || !getRequests[simId][key]){
+        if(!getRequests[simId]){
+            getRequests[simId] = {};
+        }
+
+        if(getRequests[simId][key]){
             //return false indicating that there is the same request
             //in progress
             return false;
         }
 
-        getRequests[simId] = getRequests[simId] || {};
         getRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
         };
 
-        // send the message to the viewer
-        self.sendMessage(getDataRequestMsg);
+
+        if(!handshake.authToken){
+            pendingQueue.push(getDataRequestMsg);
+        }
+        else{
+            // send the message to the viewer
+            self.sendMessage(getDataRequestMsg);
+        }
 
         return true;
     };
@@ -169,12 +184,17 @@ var Transporter = function(options) {
     /*
      * Sends the GET_DATA Request
      */
-    var setDataRequest = function(simId, key, value, onSuccess, onError){
+    this.setDataRequest = function(simId, key, value, onSuccess, onError){
+
+        if(!simId || !key){
+            throw new Error('simId or key is not defined');
+        }
+
         onSuccess = onSuccess || function(){};
         onError = onError || function(){};
 
         var setDataRequestMsg = new SimCapiMessage({
-            type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+            type: SimCapiMessage.TYPES.SET_DATA_REQUEST,
             handshake: handshake,
             values:{
                 key: key,
@@ -183,20 +203,30 @@ var Transporter = function(options) {
             }
         });
 
-        if(!setRequests[simId] || !setRequests[simId][key]){
+        if(!setRequests[simId]){
+            setRequests[simId] = {};
+        }
+
+        if(setRequests[simId][key]){
             //return false indicating that there is the same request
             //in progress
             return false;
         }
 
-        setRequests[simId] = setRequests[simId] || {};
         setRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
         };        
 
-        // send the message to the viewer
-        self.sendMessage(setDataRequestMsg);
+        
+
+        if(!handshake.authToken){
+            pendingQueue.push(setDataRequestMsg);
+        }
+        else{
+            // send the message to the viewer
+            self.sendMessage(setDataRequestMsg);
+        }
 
         return true;
     };
@@ -276,6 +306,12 @@ var Transporter = function(options) {
 
             if (pendingOnReady) {
                 self.notifyOnReady();
+
+                //trigger queue
+                for(var i=0; i< pendingQueue.length; ++i){
+                    self.sendMessage(pendingQueue[i]);
+                }
+                pendingQueue = [];
             }
         }
     };
