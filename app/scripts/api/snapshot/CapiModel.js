@@ -67,6 +67,22 @@ var CapiModel = function(attrs, methods){
     }, this);      
   };
 
+  this.off = function(eventNames, funct){
+    var eventNamesArray = eventNames.split(" ");
+
+    _.each(eventNamesArray, function(eventName){
+      var array = this._eventsMap[eventName];
+
+      if(array){
+        var indexOf = array.indexOf(funct);
+
+        if(indexOf !== -1){
+          array.splice(indexOf, 1);
+        }
+      }
+    }, this); 
+  };
+
   this.trigger = function(eventName){
     if(this._eventsMap[eventName]){
       _.each(this._eventsMap[eventName], function(funct){
