@@ -36,7 +36,7 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
-    var pendingQueue = [];
+    var pendingMessages = [];
 
     // holds callbacks that may be needed
     var callback = {
@@ -161,7 +161,7 @@ var Transporter = function(options) {
         };
 
         if(!handshake.authToken){
-            pendingQueue.push(getDataRequestMsg);
+            pendingMessages.push(getDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -208,7 +208,7 @@ var Transporter = function(options) {
         };        
 
         if(!handshake.authToken){
-            pendingQueue.push(setDataRequestMsg);
+            pendingMessages.push(setDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -295,10 +295,10 @@ var Transporter = function(options) {
                 self.notifyOnReady();
 
                 //trigger queue
-                for(var i=0; i< pendingQueue.length; ++i){
-                    self.sendMessage(pendingQueue[i]);
+                for(var i=0; i< pendingMessages.length; ++i){
+                    self.sendMessage(pendingMessages[i]);
                 }
-                pendingQueue = [];
+                pendingMessages = [];
             }
         }
     };
