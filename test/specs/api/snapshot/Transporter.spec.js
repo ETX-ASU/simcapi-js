@@ -499,8 +499,8 @@ define(function(require){
 
         describe('GET_DATA_RESPONSE', function(){
             it('should receive a get data response of success', function(){
-                transporter.getDataRequest('sim', 'key', function(key){
-                    expect(key).to.equal('key');
+                transporter.getDataRequest('sim', 'key', function(tData){
+                    expect(tData.key).to.equal('key');
                 });
 
                 doHandShake();
@@ -595,8 +595,8 @@ define(function(require){
 
         describe('SET_DATA_RESPONSE', function(){
             it('should receive a set data response of success', function(){
-                transporter.setDataRequest('sim', 'key', 'value', function(key){
-                    expect(key).to.equal('key');
+                transporter.setDataRequest('sim', 'key', 'value', function(tData){
+                    expect(tData.key).to.equal('key');
                 });
 
                 doHandShake();
