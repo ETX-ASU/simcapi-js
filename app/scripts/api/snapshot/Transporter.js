@@ -96,16 +96,13 @@ var Transporter = function(options) {
     var handleGetDataResponse = function(message){
         if(message.handshake.authToken === handshake.authToken){
             if(message.values.responseType === 'success'){
-                getRequests[message.values.simId][message.values.key].onSuccess(
-                        message.values.key,
-                        message.values.value
-                    );
+                getRequests[message.values.simId][message.values.key].onSuccess({
+                        key: message.values.key,
+                        value: message.values.value
+                    });
             }
             else if(message.values.responseType === 'error'){
-                getRequests[message.values.simId][message.values.key].onError(
-                        message.values.key,
-                        message.values.value
-                    );
+                getRequests[message.values.simId][message.values.key].onError(message.values.error);
             }
             delete getRequests[message.values.simId][message.values.key];
         }
@@ -117,16 +114,13 @@ var Transporter = function(options) {
     var handleSetDataResponse = function(message){
         if(message.handshake.authToken === handshake.authToken){
             if(message.values.responseType === 'success'){
-                setRequests[message.values.simId][message.values.key].onSuccess(
-                        message.values.key,
-                        message.values.value
-                    );    
+                setRequests[message.values.simId][message.values.key].onSuccess({
+                        key: message.values.key,
+                        value: message.values.value
+                    });    
             }
             else if(message.values.responseType === 'error'){
-                setRequests[message.values.simId][message.values.key].onError(
-                        message.values.key,
-                        message.values.value
-                    );
+                setRequests[message.values.simId][message.values.key].onError(message.values.error);
             }
             delete setRequests[message.values.simId][message.values.key];
         }
@@ -137,10 +131,8 @@ var Transporter = function(options) {
      * Sends the GET_DATA Request
      */
     this.getDataRequest = function(simId, key, onSuccess, onError){
-
-        if(!simId || !key){
-            throw new Error('simId or key is not defined');
-        }
+        check(simId).isString();
+        check(key).isString();
 
         onSuccess = onSuccess || function(){};
         onError = onError || function(){};
@@ -159,16 +151,14 @@ var Transporter = function(options) {
         }
 
         if(getRequests[simId][key]){
-            //return false indicating that there is the same request
-            //in progress
-            return false;
+            //indicating that there is the same request in progress
+            return new Error('Get data request of ' + key + ' already in progress.');
         }
 
         getRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
         };
-
 
         if(!handshake.authToken){
             pendingQueue.push(getDataRequestMsg);
@@ -186,9 +176,9 @@ var Transporter = function(options) {
      */
     this.setDataRequest = function(simId, key, value, onSuccess, onError){
 
-        if(!simId || !key){
-            throw new Error('simId or key is not defined');
-        }
+        check(simId).isString();
+        check(key).isString();
+        check(value).isString();
 
         onSuccess = onSuccess || function(){};
         onError = onError || function(){};
@@ -208,17 +198,14 @@ var Transporter = function(options) {
         }
 
         if(setRequests[simId][key]){
-            //return false indicating that there is the same request
-            //in progress
-            return false;
+            //indicating that there is the same request in progress
+            return new Error('Set data request of ' + key + ' already in progress.');
         }
 
         setRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
         };        
-
-        
 
         if(!handshake.authToken){
             pendingQueue.push(setDataRequestMsg);
