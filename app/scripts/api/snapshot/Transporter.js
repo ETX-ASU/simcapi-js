@@ -44,9 +44,11 @@ var Transporter = function(options) {
         getData: null
     };
 
-    //current get data requests
+    /*
+     * Gets/SetsRequest callbacks
+     * simId -> { key -> { onSucess -> function, onError -> function } }   
+     */
     var getRequests = {};
-    //current set data requests
     var setRequests = {};
 
     this.getHandshake = function(){

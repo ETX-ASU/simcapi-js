@@ -493,8 +493,8 @@ define(function(require){
                     ignoreHidden : true,
                     callback : {
                         check : function() {},
-                        onGetDataRequest: function(key, simId, options){
-                            expect(key).to.equal("test");
+                        onGetDataRequest: function(options){
+                            expect(options.key).to.equal("test");
                             options.onSuccess(5);
                         }
                     }

@@ -101,7 +101,9 @@ var SimCapiHandler = function(options) {
         };
 
         if(callback.onGetDataRequest){
-            callback.onGetDataRequest(message.values.key, message.values.simId, {
+            callback.onGetDataRequest({
+                key: message.values.key, 
+                simId: message.values.simId,
                 onSuccess: function(value){
                     //broadcast response
                     reponseMessage.values = {
@@ -137,12 +139,16 @@ var SimCapiHandler = function(options) {
         };
 
         if(callback.onSetDataRequest){
-             callback.onSetDataRequest(message.values.key, message.values.value, message.values.simId, {
+             callback.onSetDataRequest({
+                key: message.values.key, 
+                value: message.values.value, 
+                simId: message.values.simId,
                 onSuccess: function(){
                     //broadcast response
                     reponseMessage.values = {
                         simId: message.values.simId,
                         key: message.values.key,
+                        value: message.values.value,
                         responseType: "success" 
                     };
 
