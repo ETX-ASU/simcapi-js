@@ -104,7 +104,7 @@ var SimCapiHandler = function(options) {
             callback.onGetDataRequest({
                 key: message.values.key, 
                 simId: message.values.simId,
-                onSuccess: function(value){
+                onSuccess: function(key, value){
                     //broadcast response
                     reponseMessage.values = {
                         simId: message.values.simId,
