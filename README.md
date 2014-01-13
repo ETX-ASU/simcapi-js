@@ -16,7 +16,7 @@ With Pipit, the platform can control the Simulation. Simulations by themselves, 
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://github.com/SmartSparrow/pipit/dist/pipit.min.js">
+<script src= "http://static.smartpsparrow.com/pipit-0.42.js">
 ```
 
 
