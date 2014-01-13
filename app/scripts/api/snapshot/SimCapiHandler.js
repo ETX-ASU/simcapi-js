@@ -19,7 +19,9 @@ var SimCapiHandler = function(options) {
     options.callback = options.callback || {};
     var callback = {
         check : options.callback.check,
-        onSnapshotChange : options.callback.onSnapshotChange
+        onSnapshotChange : options.callback.onSnapshotChange,
+        onGetDataRequest : options.callback.onGetDataRequest,
+        onSetDataRequest : options.callback.onSetDataRequest
     };
     var tokenToId = {}; // token -> iframeid
     var idToToken = {}; // iframeid -> token
@@ -80,6 +82,90 @@ var SimCapiHandler = function(options) {
         case SimCapiMessage.TYPES.CHECK_REQUEST:
             handleCheckTrigger(message);
             break;
+        case SimCapiMessage.TYPES.GET_DATA_REQUEST:
+            handleGetData(message);
+            break;
+        case SimCapiMessage.TYPES.SET_DATA_REQUEST:
+            handleSetData(message);
+            break;
+        }
+    };
+
+    var handleGetData = function(message){
+        // create a message
+        var reponseMessage = new SimCapiMessage();
+        reponseMessage.type = SimCapiMessage.TYPES.GET_DATA_RESPONSE;
+        reponseMessage.handshake = {
+            authToken   : message.handshake.authToken,
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        if(callback.onGetDataRequest){
+            callback.onGetDataRequest({
+                key: message.values.key, 
+                simId: message.values.simId,
+                onSuccess: function(key, value){
+                    //broadcast response
+                    reponseMessage.values = {
+                        simId: message.values.simId,
+                        key: message.values.key,
+                        value: value,
+                        responseType: "success" 
+                    };
+
+                    self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
+                },
+                onError: function(error){
+                    //broadcast response
+                    reponseMessage.values = {
+                        simId: message.values.simId,
+                        key: message.values.key,
+                        error: error,
+                        responseType: "error" 
+                    };
+
+                    self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
+                }
+            });
+        }
+    };
+
+    var handleSetData = function(message){
+        var reponseMessage = new SimCapiMessage();
+        reponseMessage.type = SimCapiMessage.TYPES.SET_DATA_RESPONSE;
+        reponseMessage.handshake = {
+            authToken   : message.handshake.authToken,
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        if(callback.onSetDataRequest){
+             callback.onSetDataRequest({
+                key: message.values.key, 
+                value: message.values.value, 
+                simId: message.values.simId,
+                onSuccess: function(){
+                    //broadcast response
+                    reponseMessage.values = {
+                        simId: message.values.simId,
+                        key: message.values.key,
+                        value: message.values.value,
+                        responseType: "success" 
+                    };
+
+                    self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
+                },
+                onError: function(error){
+                    //broadcast response
+                    reponseMessage.values = {
+                        simId: message.values.simId,
+                        key: message.values.key,
+                        error: error,
+                        responseType: "error" 
+                    };
+
+                    self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
+                }
+             });
         }
     };
 

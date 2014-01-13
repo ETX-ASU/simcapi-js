@@ -446,6 +446,198 @@ define(function(require){
             });
         });
 
+        describe('GET_DATA_REQUEST', function(){
+
+            it('should place a get data request in pendingQueue', function() {
+
+                mockPostMessage(function(){});
+
+                transporter.getDataRequest('sim', 'key');
+
+                expect(window.addEventListener.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(false);
+            });
+
+            it('should send a get data request', function(){
+                doHandShake();
+                // mock out handshake request upon initialization
+                mockPostMessage(function(message){
+                    // verify that the handshake request has a request token
+                    expect(message.type).to.be(SimCapiMessage.TYPES.GET_DATA_REQUEST);
+                    expect(message.handshake.authToken).to.be("testToken");
+                });
+
+                transporter.getDataRequest('sim', 'key');
+
+                expect(window.addEventListener.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(true);
+            });
+
+            it('should throw an error if simId or key is not given', function(){
+                var failed = true;
+                var failed2 = true;
+                try{
+                   transporter.getDataRequest(undefined, 'key'); 
+                }
+                catch(err){
+                    failed = false;
+                }
+
+                try{
+                   transporter.getDataRequest('simId', undefined); 
+                }
+                catch(err){
+                    failed2 = false;
+                }
+
+                expect(failed).to.be(false);
+                expect(failed2).to.be(false);
+                
+            });
+
+        });
+
+        describe('GET_DATA_RESPONSE', function(){
+            it('should receive a get data response of success', function(){
+                transporter.getDataRequest('sim', 'key', function(tData){
+                    expect(tData.key).to.equal('key');
+                });
+
+                doHandShake();
+                var getDataResponse = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+                    handshake : {
+                        authToken : authToken
+                    },
+                    values: {
+                        responseType: "success",
+                        simId: 'sim',
+                        key: 'key'
+                    }
+                });
+
+                transporter.capiMessageHandler(getDataResponse);
+            });
+
+            it('should receive a get data response of error', function(){
+                var error = sinon.stub();
+                transporter.getDataRequest('sim', 'key', function(){}, error);
+
+                doHandShake();
+                var getDataResponse = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+                    handshake : {
+                        authToken : authToken
+                    },
+                    values: {
+                        responseType: "error",
+                        simId: 'sim',
+                        key: 'key'
+                    }
+                });
+
+                transporter.capiMessageHandler(getDataResponse);
+                expect(error.called).to.equal(true);
+            });
+        });
+
+
+        describe('SET_DATA_REQUEST', function(){
+
+            it('should place a set data request in pendingQueue', function() {
+
+                mockPostMessage(function(){});
+
+                transporter.getDataRequest('sim', 'key', 'value');
+
+                expect(window.addEventListener.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(false);
+            });
+
+            it('should send a set data request', function(){
+                doHandShake();
+                // mock out handshake request upon initialization
+                mockPostMessage(function(message){
+                    // verify that the handshake request has a request token
+                    expect(message.type).to.be(SimCapiMessage.TYPES.SET_DATA_REQUEST);
+                    expect(message.handshake.authToken).to.be("testToken");
+                });
+
+                transporter.setDataRequest('sim', 'key', 'value');
+
+                expect(window.addEventListener.called).to.be(true);
+                expect(transporter.sendMessage.called).to.be(true);
+            });
+
+            it('should throw an error if simId or key is not given', function(){
+                var failed = true;
+                var failed2 = true;
+                try{
+                   transporter.getDataRequest(undefined, 'key'); 
+                }
+                catch(err){
+                    failed = false;
+                }
+
+                try{
+                   transporter.getDataRequest('simId', undefined); 
+                }
+                catch(err){
+                    failed2 = false;
+                }
+
+                expect(failed).to.be(false);
+                expect(failed2).to.be(false);
+                
+            });
+
+        });
+
+        describe('SET_DATA_RESPONSE', function(){
+            it('should receive a set data response of success', function(){
+                transporter.setDataRequest('sim', 'key', 'value', function(tData){
+                    expect(tData.key).to.equal('key');
+                });
+
+                doHandShake();
+                var setDataResponse = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake : {
+                        authToken : authToken
+                    },
+                    values: {
+                        responseType: "success",
+                        simId: 'sim',
+                        key: 'key',
+                        value: 'value'
+                    }
+                });
+
+                transporter.capiMessageHandler(setDataResponse);
+            });
+
+            it('should receive a set data response of error', function(){
+                var error = sinon.stub();
+                transporter.setDataRequest('sim', 'key', 'value', function(){}, error);
+
+                doHandShake();
+                var setDataResponse = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake : {
+                        authToken : authToken
+                    },
+                    values: {
+                        responseType: "error",
+                        simId: 'sim',
+                        key: 'key'
+                    }
+                });
+
+                transporter.capiMessageHandler(setDataResponse);
+                expect(error.called).to.equal(true);
+            });
+        });
+
     });
 
 });
