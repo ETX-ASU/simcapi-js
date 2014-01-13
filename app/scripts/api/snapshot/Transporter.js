@@ -100,7 +100,8 @@ var Transporter = function(options) {
             if(message.values.responseType === 'success'){
                 getRequests[message.values.simId][message.values.key].onSuccess({
                         key: message.values.key,
-                        value: message.values.value
+                        value: message.values.value,
+                        exists: message.values.exists
                     });
             }
             else if(message.values.responseType === 'error'){
