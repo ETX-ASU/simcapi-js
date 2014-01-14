@@ -10,7 +10,7 @@ Teachers are generally looking to do two things with a sim;
 1. Set it up in a specific way for a specific question (eg. disable certain controls or pre-fill certain fields), and
 2. Determine what the student has done in the sim so they can provide appropriate feedback.
 
-Pipit allows you to make both these things happen. In other words, by including Pipit in your simulation you can allow AELP (and therefore the teacher) to control the sim.
+Pipit allows you to make both these things happen. In other words, by including Pipit in your simulation, you can allow AELP (and therefore the teacher) to control the sim.
 
 
 ## How? ##
@@ -40,12 +40,12 @@ AMD compatible or use the following script tag:
 
 ## How to setup ##
 
-There are three phases to use Pipit, _setup data_, _expose data_ and _finalise setup_.
+There are three phases to setup Pipit, _setup data_, _expose data_ and _finalise setup_.
 
 
 ### Setup Data ###
 
-This in the setup data phase, you just have to create a `CapiModel`. 
+In the setup data phase, you just have to create a `CapiModel`. 
 
 For example:
 
@@ -56,7 +56,7 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 });
 ```
 
-This `CapiModel` capi model has two variables inside it that can be exposed to AELP. 
+This `CapiModel` has two variables inside it that can be exposed to AELP. 
 
 ### Expose Data ###
 
@@ -68,12 +68,12 @@ pipit.CapiAdapter.expose(variableName, model, options);
 
 Here is the list of what you must pass to _expose_.
 
-variableName - String - name of the variable on the model
-model        - Object - the model that the variable belongs to.
+variableName - String    - name of the variable on the model
+model        - CapiModel - the model that the variable belongs to.
 options      - Object  
-                       - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable. 
-                       - alias    - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
-                       - readonly - Boolean             - if the variable is readonly 
+                         - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable. 
+                         - alias    - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
+                         - readonly - Boolean             - if the variable is readonly 
 
 
 Inversely, if you want to unexpose your data, you can tell the `CapiAdapter`.
@@ -84,20 +84,20 @@ pipit.CapiAdapter.unexpose(variableName, model);
 
 Here is the list of what you must pass to _unexpose_.
 
-variableName - String - name of the variable on the model
-model        - Object - the model that the variable belongs to.
+variableName - String    - name of the variable on the model
+model        - CapiModel - the model that the variable belongs to.
 
 
 ### Finalise Setup ###
 
-This phase require you to tell Pipit you have finished setting up the model. This is with the command below:
+This phase require you to tell Pipit you have finished setting up the `Capimodel`. This is with the command below:
 
 
 ```
 pipit.Controller.notifyOnReady();
 ```
 
-This must be called when the model has finished being setup. It is to tell Pipit that the Sim model is ready to sync with the AELP. If this is not called, AELP will not sync to the `CapiModel` because it thinks the `CapiModel` is not ready.
+This must be called when the model has finished being setup. It is to tell Pipit that the `CapiModel` is ready to sync with the AELP. If this is not called, AELP will not sync to the `CapiModel` because it thinks the `CapiModel` is not ready.
 
 
 
@@ -112,9 +112,9 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 
 ...
 
-pipit.CapiAdapter.watch(‘demoMode’, simModel, 
+pipit.CapiAdapter.expose(‘demoMode’, simModel, 
                                     {readonly: false});
-pipit.CapiAdapter.watch(‘studentResponse’, simModel, 
+pipit.CapiAdapter.expose(‘studentResponse’, simModel, 
                                           {alias: “studentAnswer”, 
                                            readonly: true});
 
