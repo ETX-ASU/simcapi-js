@@ -110,8 +110,8 @@
         init();
        
         //Tells pipit to expose the following attributes 
-        pipit.CapiAdapter.watch('slope', model);
-        pipit.CapiAdapter.watch('showSlope', model);
+        pipit.CapiAdapter.expose('slope', model);
+        pipit.CapiAdapter.expose('showSlope', model);
 
         // Tells pipit that the sim model is ready
         pipit.Controller.notifyOnReady();
