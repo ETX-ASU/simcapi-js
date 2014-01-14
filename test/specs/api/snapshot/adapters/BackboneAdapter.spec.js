@@ -57,7 +57,7 @@ define(function(require){
         expect(capiValue).to.be.a(SimCapiValue);
       });
 
-      adapter.watch('attr1', model, {readonly:false});
+      adapter.expose('attr1', model, {readonly:false});
 
       expect(transporter.setValue.callCount).to.be(1);
     });
@@ -67,11 +67,11 @@ define(function(require){
         expect(capiValue.value).to.be('[]');
       });
 
-      adapter.watch('attr2', model, {readonly:false});
+      adapter.expose('attr2', model, {readonly:false});
     });
 
     it('should set new values when recieved', function(){
-      adapter.watch('attr1', model);
+      adapter.expose('attr1', model);
 
       sandbox.stub(model, 'set');
 
@@ -81,7 +81,7 @@ define(function(require){
     });
 
     it('should set new value of array type to be an array when recieved', function(){
-      adapter.watch('attr2', model);
+      adapter.expose('attr2', model);
 
       sandbox.stub(model, 'set', function(m,v){
         expect(v).to.be.a(Array);
@@ -100,8 +100,8 @@ define(function(require){
             expect(eventName).to.equal('change:attr1');
         });
 
-        adapter.watch('attr1', model, {readonly: false, alias:"attr1.newName"});
-        adapter.unwatch('attr1', model);
+        adapter.expose('attr1', model, {readonly: false, alias:"attr1.newName"});
+        adapter.unexpose('attr1', model);
 
         expect(transporter.removeValue.callCount).to.equal(1);
     });

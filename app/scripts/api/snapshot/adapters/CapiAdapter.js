@@ -14,7 +14,7 @@ var CapiAdapter = function(options){
   var modelsMapping = {};
 
   /*
-   * Allows the 'attributes' to be watched.
+   * Allows the 'attributes' to be exposed.
    * @param attrName - The 'attribute name'
    * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
@@ -23,7 +23,7 @@ var CapiAdapter = function(options){
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
-  this.watch = function(varName, parent, params) {
+  this.expose = function(varName, parent, params) {
     params = params || {};
 
     if(parent.has(varName))
@@ -74,11 +74,11 @@ var CapiAdapter = function(options){
   };
 
   /*
-   * Allows the 'attributes' to be unwatched.
+   * Allows the 'attributes' to be unexposed.
    * @param attrName - the 'attribute name'
    * @param parent - the model the attribute belongs to
    */
-  this.unwatch = function(varName, parent){
+  this.unexpose = function(varName, parent){
 
     var modelMap;
 

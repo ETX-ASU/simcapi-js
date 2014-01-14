@@ -14,7 +14,7 @@ var BackboneAdapter = function(options){
 
 
   /*
-   * Allows the 'attributes' to be watched.
+   * Allows the 'attributes' to be exposed.
    * @param attrName - The 'attribute name'
    * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function. 
    * @param params : {
@@ -23,7 +23,7 @@ var BackboneAdapter = function(options){
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
-  this.watch = function(varName, model, params) {
+  this.expose = function(varName, model, params) {
 
     params = params || {};
 
@@ -46,7 +46,7 @@ var BackboneAdapter = function(options){
       }
 
 
-      var watchFunc = _.bind(function(m,value){
+      var exposeFunc = _.bind(function(m,value){
         var capiValue = new SimCapiValue({
           key: alias,
           value: value,
@@ -62,7 +62,7 @@ var BackboneAdapter = function(options){
       }, this);
 
       // listen to the model by attaching event handler on the model
-      model.on('change:' + varName, watchFunc);
+      model.on('change:' + varName, exposeFunc);
       
       _transporter.setValue(capiValue);
 
@@ -70,7 +70,7 @@ var BackboneAdapter = function(options){
         alias: alias,
         model: model, 
         originalName: originalName,
-        watchFunc: watchFunc
+        exposeFunc: exposeFunc
       };
       
     }
@@ -78,11 +78,11 @@ var BackboneAdapter = function(options){
   };
 
   /*
-   * Allows the 'attributes' to be unwatched
+   * Allows the 'attributes' to be unexposed
    * @param attrName - The 'attribute name'
    * @param model - The model the attribute belongs to.
    */
-  this.unwatch = function(varName, model){
+  this.unexpose = function(varName, model){
     
     var modelMap;
 
@@ -95,7 +95,7 @@ var BackboneAdapter = function(options){
     }
 
     if(modelMap){
-      model.off('change:'+varName, modelMap.watchFunc);
+      model.off('change:'+varName, modelMap.exposeFunc);
 
       _transporter.removeValue(modelMap.alias);
 
