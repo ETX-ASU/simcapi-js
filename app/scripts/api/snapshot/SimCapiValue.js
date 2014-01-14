@@ -10,6 +10,25 @@ function parseBoolean(value){
   return value;
 }
 
+function parseArray(value){
+    if(check(value).passive().isArray()){
+        return value;
+    }
+    else if(isArray(value)){
+        var newArray = [];
+
+        var elements = value.substring(1, value -1).split(',');
+
+        for(var i=0;i<elements.length; ++i){
+          newArray.push(elements[i].trim());
+        }
+
+        return newArray;
+    }
+
+    return value;
+}
+
 function isArray(value){
     return value.charAt(0) === '[' && 
         value.charAt(value.length-1) === ']';
@@ -53,7 +72,10 @@ var SimCapiValue = function(options) {
         case SimCapiValue.TYPES.BOOLEAN:
           value = parseBoolean(value);
           check(value).isBoolean();
-          break;                
+          break; 
+        case SimCapiValue.TYPES.ARRAY:
+          value = parseArray(value);
+          check(value).isArray();
       }
 
       return value;
@@ -103,15 +125,7 @@ var SimCapiValue = function(options) {
 
       //If determined to be of type array but value is a string, convert it.
       if(this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()){
-        var newArray = [];
-
-        var elements = this.value.substring(1, this.value -1).split(',');
-
-        for(var i=0;i<elements.length; ++i){
-          newArray.push(elements[i].trim());
-        }
-
-        this.value = newArray;
+        this.value = parseArray(this.value);
       }
     }
     else{
