@@ -77,6 +77,11 @@ var BackboneAdapter = function(options){
     
   };
 
+  /*
+   * Allows the 'attributes' to be unwatched
+   * @param attrName - The 'attribute name'
+   * @param model - The model the attribute belongs to.
+   */
   this.unwatch = function(varName, model){
     
     var modelMap;
@@ -95,6 +100,9 @@ var BackboneAdapter = function(options){
       _transporter.removeValue(modelMap.alias);
 
       modelsMapping[modelMap.alias] = null;
+    }
+    else{
+      throw new Error(varName + " doesn't exist on the model.");
     }
   };
 
