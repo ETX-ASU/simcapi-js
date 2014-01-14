@@ -17,7 +17,7 @@ function parseArray(value){
     else if(isArray(value)){
         var newArray = [];
 
-        var elements = value.substring(1, value -1).split(',');
+        var elements = value.substring(1, value.length -1).split(',');
 
         for(var i=0;i<elements.length; ++i){
           newArray.push(elements[i].trim());
