@@ -43,9 +43,7 @@ var CapiAdapter = function(options){
         capiValue.value = '[' + parent.get(originalName).toString() + ']';
       }
 
-
-      // listen to the model by attaching event handler on the parent
-      parent.on('change:' + varName, _.bind(function(m, values){
+      var watchFunc = _.bind(function(m, values){
         var capiValue = new SimCapiValue({
           key: alias,
           value: values[originalName],
@@ -58,16 +56,48 @@ var CapiAdapter = function(options){
         }
 
         _transporter.setValue(capiValue);
-      },this));
+      },this);
+
+      // listen to the model by attaching event handler on the parent
+      parent.on('change:' + varName, watchFunc);
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {parent:parent, originalName:originalName};
+      modelsMapping[alias] = {
+        alias: alias,
+        parent:parent, 
+        originalName:originalName,
+        watchFunc: watchFunc
+      };
       
     }
   };
 
+  this.unwatch = function(varName, parent){
 
+    var modelMap, alias;
+
+    if(modelsMapping[varName]){
+      modelMap = modelsMapping[varName];
+      alias = varName;
+    }
+    else{
+      //could be under an alias
+      modelMap = _.findWhere(modelsMapping, {originalName:varName});
+
+      if(modelMap){
+        alias = modelMap.alias;
+      }
+    }
+
+    if(modelMap){
+      parent.off('change:'+varName, modelMap.watchFunc);
+
+      _transporter.removeValue(alias);
+
+      modelsMapping[alias] = null;
+    }
+  };
 
   /*
   * values - Array of SimCapiValue

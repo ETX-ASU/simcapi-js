@@ -394,6 +394,15 @@ var Transporter = function(options) {
       this.notifyValueChange();
     };
 
+    /*
+     * key - the key of the SimCapiValue to be removed
+     */
+    this.removeValue = function(key){
+        outgoingMap[key] = null;
+
+        this.notifyValueChange();
+    };
+
     // Helper to send message to viewer
     this.sendMessage = function(message) {
         // window.parent can be itself if it's not inside an iframe

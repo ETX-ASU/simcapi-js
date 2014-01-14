@@ -45,8 +45,8 @@ var BackboneAdapter = function(options){
         capiValue.value = '[' + model.get(originalName).toString() + ']';
       }
 
-      // listen to the model by attaching event handler on the model
-      model.on('change:' + varName, _.bind(function(m, value){
+
+      var watchFunc = _.bind(function(m,value){
         var capiValue = new SimCapiValue({
           key: alias,
           value: value,
@@ -58,15 +58,49 @@ var BackboneAdapter = function(options){
           capiValue.value = '[' + model.get(originalName).toString() + ']';
         }
 
-        _transporter.setValue(capiValue);
-      },this));
+        _transporter.setValue(capiValue); 
+      }, this);
+
+      // listen to the model by attaching event handler on the model
+      model.on('change:' + varName, watchFunc);
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {model: model, originalName: originalName};
+      modelsMapping[alias] = {
+        alias: alias
+        model: model, 
+        originalName: originalName,
+        watchFunc: watchFunc
+      };
       
     }
     
+  };
+
+  this.unwatch = function(varName, model){
+    
+    var modelMap, alias;
+
+    if(modelsMapping[varName]){
+      modelMap = modelsMapping[varName];
+      alias = varName;
+    }
+    else{
+      //could be under an alias
+      modelMap = _.findWhere(modelsMapping, {originalName:varName});
+
+      if(modelMap){
+        alias = modelMap.alias;
+      }
+    }
+
+    if(modelMap){
+      model.off('change:'+varName, modelMap.watchFunc);
+
+      _transporter.removeValue(alias);
+
+      modelsMapping[alias] = null;
+    }
   };
 
   /*
