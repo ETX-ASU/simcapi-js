@@ -115,7 +115,7 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 pipit.CapiAdapter.expose(‘demoMode’, simModel, 
                                     {readonly: false});
 pipit.CapiAdapter.expose(‘studentResponse’, simModel, 
-                                          {alias: “studentAnswer”, 
+                                          {alias: “studentAnswer�?, 
                                            readonly: true});
 
 ...
@@ -186,7 +186,7 @@ var simModel = new SimModel();
 pipit.BackboneAdapter.expose(‘demoMode’, simModel, 
 	                                          {readonly: false});
 pipit.BackboneAdapter.expose(‘studentResponse’, simModel, 
-                                               {alias: “studentAnswer”, 
+                                               {alias: “studentAnswer�?, 
                                                 readonly: true});
 
 …
