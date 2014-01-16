@@ -23,7 +23,8 @@ define(function(require){
       sandbox = sinon.sandbox.create();
 
       modelAttributes = {
-        'attr1'    : 5
+        'attr1'    : 5,
+        'attr2'    : []
       };
 
       model = {
@@ -34,7 +35,8 @@ define(function(require){
         on: function(){},
         has: function(varName){
           return varName;
-        }
+        },
+        off: function(){}
       };
 
       transporter = new Transporter();
@@ -55,19 +57,53 @@ define(function(require){
         expect(capiValue).to.be.a(SimCapiValue);
       });
 
-      adapter.watch('attr1', model, {readonly:false});
+      adapter.expose('attr1', model, {readonly:false});
 
       expect(transporter.setValue.callCount).to.be(1);
     });
 
+    it('should create SimCapiValues properly when of type array', function(){
+      sandbox.stub(transporter, 'setValue', function(capiValue){
+        expect(capiValue.value).to.be('[]');
+      });
+
+      adapter.expose('attr2', model, {readonly:false});
+    });
+
     it('should set new values when recieved', function(){
-      adapter.watch('attr1', model);
+      adapter.expose('attr1', model);
 
       sandbox.stub(model, 'set');
 
       adapter.handleValueChange([new SimCapiValue({key:'attr1', value:6})]);
 
       expect(model.set.callCount).to.be(1);
+    });
+
+    it('should set new value of array type to be an array when recieved', function(){
+      adapter.expose('attr2', model);
+
+      sandbox.stub(model, 'set', function(m,v){
+        expect(v).to.be.a(Array);
+      });
+
+      adapter.handleValueChange([new SimCapiValue({key:'attr2', value:'[10]'})]);
+
+    });
+
+    it('should remove SimCapiValues when unwatch', function(){
+        sandbox.stub(transporter, 'removeValue', function(alias){
+            expect(alias).to.equal('attr1.newName');
+        });
+
+        sandbox.stub(model, 'off', function(eventName, funct){
+            expect(eventName).to.equal('change:attr1');
+        });
+
+        adapter.expose('attr1', model, {readonly: false, alias:"attr1.newName"});
+        adapter.unexpose('attr1', model);
+
+        expect(transporter.removeValue.callCount).to.equal(1);
     });
   });
     

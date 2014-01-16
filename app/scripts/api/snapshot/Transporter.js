@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.4;
+    var version = 0.5;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -36,10 +36,20 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
+    var pendingMessages = [];
+
     // holds callbacks that may be needed
     var callback = {
-        check : null
+        check : null,
+        getData: null
     };
+
+    /*
+     * Gets/SetsRequest callbacks
+     * simId -> { key -> { onSucess -> function, onError -> function } }   
+     */
+    var getRequests = {};
+    var setRequests = {};
 
     this.getHandshake = function(){
         return handshake;
@@ -65,6 +75,12 @@ var Transporter = function(options) {
         case SimCapiMessage.TYPES.CHECK_RESPONSE:
             handleCheckResponse(message);
             break;
+        case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
+            handleGetDataResponse(message);
+            break;
+        case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
+            handleSetDataResponse(message);
+            break;
         }
     };
 
@@ -75,6 +91,140 @@ var Transporter = function(options) {
     this.removeAllChangeListeners = function(){
       changeListeners = [];
     };
+
+    /*
+     *   @since 0.5 
+     *   Handles the get data message
+     */
+    var handleGetDataResponse = function(message){
+        if(message.handshake.authToken === handshake.authToken){
+            if(message.values.responseType === 'success'){
+                getRequests[message.values.simId][message.values.key].onSuccess({
+                        key: message.values.key,
+                        value: message.values.value,
+                        exists: message.values.exists
+                    });
+            }
+            else if(message.values.responseType === 'error'){
+                getRequests[message.values.simId][message.values.key].onError(message.values.error);
+            }
+            delete getRequests[message.values.simId][message.values.key];
+        }
+    };
+
+    /*
+     *   @since 0.5
+     *   Handles the set data message
+     */
+    var handleSetDataResponse = function(message){
+        if(message.handshake.authToken === handshake.authToken){
+            if(message.values.responseType === 'success'){
+                setRequests[message.values.simId][message.values.key].onSuccess({
+                        key: message.values.key,
+                        value: message.values.value
+                    });    
+            }
+            else if(message.values.responseType === 'error'){
+                setRequests[message.values.simId][message.values.key].onError(message.values.error);
+            }
+            delete setRequests[message.values.simId][message.values.key];
+        }
+    };
+
+
+    /*
+     * @since 0.5
+     * Sends the GET_DATA Request
+     */
+    this.getDataRequest = function(simId, key, onSuccess, onError){
+        check(simId).isString();
+        check(key).isString();
+
+        onSuccess = onSuccess || function(){};
+        onError = onError || function(){};
+
+        var getDataRequestMsg = new SimCapiMessage({
+            type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+            handshake: handshake,
+            values:{
+                key: key,
+                simId: simId
+            }
+        });
+
+        if(!getRequests[simId]){
+            getRequests[simId] = {};
+        }
+
+        if(getRequests[simId][key]){
+            //indicating that there is the same request in progress
+            return new Error('Get data request of ' + key + ' already in progress.');
+        }
+
+        getRequests[simId][key] = {
+            onSuccess: onSuccess,
+            onError: onError
+        };
+
+        if(!handshake.authToken){
+            pendingMessages.push(getDataRequestMsg);
+        }
+        else{
+            // send the message to the viewer
+            self.sendMessage(getDataRequestMsg);
+        }
+
+        return true;
+    };
+
+    /*
+     * @since 0.5
+     * Sends the GET_DATA Request
+     */
+    this.setDataRequest = function(simId, key, value, onSuccess, onError){
+
+        check(simId).isString();
+        check(key).isString();
+        check(value).isString();
+
+        onSuccess = onSuccess || function(){};
+        onError = onError || function(){};
+
+        var setDataRequestMsg = new SimCapiMessage({
+            type: SimCapiMessage.TYPES.SET_DATA_REQUEST,
+            handshake: handshake,
+            values:{
+                key: key,
+                value: value,
+                simId: simId
+            }
+        });
+
+        if(!setRequests[simId]){
+            setRequests[simId] = {};
+        }
+
+        if(setRequests[simId][key]){
+            //indicating that there is the same request in progress
+            return new Error('Set data request of ' + key + ' already in progress.');
+        }
+
+        setRequests[simId][key] = {
+            onSuccess: onSuccess,
+            onError: onError
+        };        
+
+        if(!handshake.authToken){
+            pendingMessages.push(setDataRequestMsg);
+        }
+        else{
+            // send the message to the viewer
+            self.sendMessage(setDataRequestMsg);
+        }
+
+        return true;
+    };
+
 
     /*
      * Handles check complete event
@@ -150,6 +300,12 @@ var Transporter = function(options) {
 
             if (pendingOnReady) {
                 self.notifyOnReady();
+
+                //trigger queue
+                for(var i=0; i< pendingMessages.length; ++i){
+                    self.sendMessage(pendingMessages[i]);
+                }
+                pendingMessages = [];
             }
         }
     };
@@ -240,6 +396,15 @@ var Transporter = function(options) {
       outgoingMap[simCapiValue.key] = simCapiValue;
 
       this.notifyValueChange();
+    };
+
+    /*
+     * key - the key of the SimCapiValue to be removed
+     */
+    this.removeValue = function(key){
+        outgoingMap[key] = null;
+
+        this.notifyValueChange();
     };
 
     // Helper to send message to viewer
