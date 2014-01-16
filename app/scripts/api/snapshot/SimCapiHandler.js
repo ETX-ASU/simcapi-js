@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.5 - Added get/set data
      * 0.4 - Added check events
      * 0.3 - Minor changes
      * 0.2 - Rewrite of the client slide implementation
@@ -91,6 +92,10 @@ var SimCapiHandler = function(options) {
         }
     };
 
+    /*
+     * @since 0.5
+     * Handles the set data
+     */
     var handleGetData = function(message){
         // create a message
         var reponseMessage = new SimCapiMessage();
@@ -131,6 +136,10 @@ var SimCapiHandler = function(options) {
         }
     };
 
+    /*
+     * @since 0.5
+     * Handles the set data
+     */
     var handleSetData = function(message){
         var reponseMessage = new SimCapiMessage();
         reponseMessage.type = SimCapiMessage.TYPES.SET_DATA_RESPONSE;
@@ -170,6 +179,10 @@ var SimCapiHandler = function(options) {
         }
     };
 
+    /*
+     * @since 0.4
+     * Handles the check trigger
+     */
     var handleCheckTrigger = function(message) {
         pendingCheckResponses[message.handshake.authToken] = true;
 
