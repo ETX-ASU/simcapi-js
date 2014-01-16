@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.4;
+    var version = 0.5;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -93,6 +93,7 @@ var Transporter = function(options) {
     };
 
     /*
+     *   @since 0.5 
      *   Handles the get data message
      */
     var handleGetDataResponse = function(message){
@@ -112,6 +113,7 @@ var Transporter = function(options) {
     };
 
     /*
+     *   @since 0.5
      *   Handles the set data message
      */
     var handleSetDataResponse = function(message){
@@ -131,6 +133,7 @@ var Transporter = function(options) {
 
 
     /*
+     * @since 0.5
      * Sends the GET_DATA Request
      */
     this.getDataRequest = function(simId, key, onSuccess, onError){
@@ -175,6 +178,7 @@ var Transporter = function(options) {
     };
 
     /*
+     * @since 0.5
      * Sends the GET_DATA Request
      */
     this.setDataRequest = function(simId, key, value, onSuccess, onError){
