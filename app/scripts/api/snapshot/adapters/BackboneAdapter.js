@@ -10,7 +10,7 @@ var BackboneAdapter = function(options){
 
   var _transporter = options.transporter || Transporter.getInstance();
 
-  var modelsMapping = {};
+  var modelsMapping = options.modelsMapping || {};
 
 
   /*
@@ -99,7 +99,7 @@ var BackboneAdapter = function(options){
 
       _transporter.removeValue(modelMap.alias);
 
-      modelsMapping[modelMap.alias] = null;
+      delete modelsMapping[modelMap.alias];
     }
     else{
       throw new Error(varName + " doesn't exist on the model.");

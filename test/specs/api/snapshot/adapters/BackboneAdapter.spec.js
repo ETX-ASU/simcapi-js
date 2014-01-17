@@ -12,6 +12,7 @@ define(function(require){
       
     var model = null;
     var modelAttributes = {};
+    var modelsMapping = {};
     var sandbox = null;
     
 
@@ -39,9 +40,12 @@ define(function(require){
         off: function(){}
       };
 
+      modelsMapping = {};
+
       transporter = new Transporter();
       adapter = new BackboneAdapter({
-        transporter: transporter
+        transporter: transporter,
+        modelsMapping: modelsMapping
       });
 
     });
@@ -68,6 +72,16 @@ define(function(require){
       });
 
       adapter.expose('attr2', model, {readonly:false});
+    });
+
+    it('should delete attributes from its mapping when unexposed', function(){
+      adapter.expose('attr2', model, {readonly:false});
+
+      expect(modelsMapping['attr2']).to.not.equal(undefined);
+
+      adapter.unexpose('attr2', model);
+
+      expect(modelsMapping['attr2']).to.equal(undefined);
     });
 
     it('should set new values when recieved', function(){
