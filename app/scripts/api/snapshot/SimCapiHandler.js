@@ -34,11 +34,12 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
-     * 0.5 - Added get/set data
-     * 0.4 - Added check events
-     * 0.3 - Minor changes
-     * 0.2 - Rewrite of the client slide implementation
-     * 0.1 - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
+     * 0.51 - Bug fix for the adapters
+     * 0.5  - Added get/set data
+     * 0.4  - Added check events
+     * 0.3  - Minor changes
+     * 0.2  - Rewrite of the client slide implementation
+     * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
     
