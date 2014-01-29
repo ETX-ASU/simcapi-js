@@ -482,6 +482,40 @@ define(function(require){
 
         });
 
+        describe("get data request", function(){
+            it('should response to a get data request', function(){
+
+                // create handshake
+                var authToken = setupHandshake('iframe2', 'token1');
+
+                handler = new SimCapiHandler({
+                    $container : $container,
+                    ignoreHidden : true,
+                    callback : {
+                        check : function() {},
+                        onGetDataRequest: function(options){
+                            expect(options.key).to.equal("test");
+                            options.onSuccess(5);
+                        }
+                    }
+                });
+
+                // create a get data request 
+                var getDataRequestMsg = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.GET_DATA_REQUEST,
+                    handshake : {
+                        requestToken: null,
+                        authToken : authToken
+                    },
+                    values:{
+                        key: 'test'
+                    } 
+                });
+
+                handler.capiMessageHandler(getDataRequestMsg);
+            });
+        });
+
     });
     });
 });

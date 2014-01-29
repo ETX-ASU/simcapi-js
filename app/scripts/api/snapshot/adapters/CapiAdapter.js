@@ -11,10 +11,10 @@ var CapiAdapter = function(options){
 
   var _transporter = options.transporter || Transporter.getInstance();
 
-  var modelsMapping = {};
+  var modelsMapping = options.modelsMapping || {};
 
   /*
-   * Allows the 'attributes' to be watched.
+   * Allows the 'attributes' to be exposed.
    * @param attrName - The 'attribute name'
    * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
@@ -23,12 +23,13 @@ var CapiAdapter = function(options){
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
-  this.watch = function(varName, parent, params) {
+  this.expose = function(varName, parent, params) {
     params = params || {};
 
     if(parent.has(varName))
     {
       var simCapiParams = params;
+      var originalName = varName;
       var alias = params.alias || varName;
       
       var capiValue = new SimCapiValue({
@@ -38,27 +39,68 @@ var CapiAdapter = function(options){
         readonly: params.readonly
       });
 
+      if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+        capiValue.value = '[' + parent.get(originalName).toString() + ']';
+      }
 
-      // listen to the model by attaching event handler on the parent
-      parent.on('change:' + varName, _.bind(function(m, value){
+      var watchFunc = _.bind(function(m, values){
         var capiValue = new SimCapiValue({
           key: alias,
-          value: value,
+          value: values[originalName],
           type: simCapiParams.type,
           readonly: simCapiParams.readonly
         });
         
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          capiValue.value = '[' + parent.get(originalName).toString() + ']';
+        }
+
         _transporter.setValue(capiValue);
-      },this));
+      },this);
+
+      // listen to the model by attaching event handler on the parent
+      parent.on('change:' + varName, watchFunc);
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {parent:parent, originalName:varName};
+      modelsMapping[alias] = {
+        alias: alias,
+        parent:parent, 
+        originalName:originalName,
+        watchFunc: watchFunc
+      };
       
     }
   };
 
+  /*
+   * Allows the 'attributes' to be unexposed.
+   * @param attrName - the 'attribute name'
+   * @param parent - the model the attribute belongs to
+   */
+  this.unexpose = function(varName, parent){
 
+    var modelMap;
+
+    if(modelsMapping[varName]){
+      modelMap = modelsMapping[varName];
+    }
+    else{
+      //could be under an alias
+      modelMap = _.findWhere(modelsMapping, {originalName:varName});
+    }
+
+    if(modelMap){
+      parent.off('change:'+varName, modelMap.watchFunc);
+
+      _transporter.removeValue(modelMap.alias);
+
+      delete modelsMapping[modelMap.alias];
+    }
+    else{
+      throw new Error(varName + " doesn't exist on the model");
+    }
+  };
 
   /*
   * values - Array of SimCapiValue
@@ -69,7 +111,8 @@ var CapiAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var parent = modelsMapping[capiValue.key].parent;
         var originalName = modelsMapping[capiValue.key].originalName;
-        parent.set(originalName, capiValue.value);
+
+        parent.set(originalName, capiValue.value); 
       }
     }, this);
     
@@ -95,5 +138,4 @@ return {
   getInstance:getInstance,
   CapiAdapter: CapiAdapter
 };
-
 });

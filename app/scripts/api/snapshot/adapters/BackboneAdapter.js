@@ -10,11 +10,11 @@ var BackboneAdapter = function(options){
 
   var _transporter = options.transporter || Transporter.getInstance();
 
-  var modelsMapping = {};
+  var modelsMapping = options.modelsMapping || {};
 
 
   /*
-   * Allows the 'attributes' to be watched.
+   * Allows the 'attributes' to be exposed.
    * @param attrName - The 'attribute name'
    * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function. 
    * @param params : {
@@ -23,7 +23,7 @@ var BackboneAdapter = function(options){
    *      readonly : True if and only if, the attribute can be changed.
    * }
    */
-  this.watch = function(varName, model, params) {
+  this.expose = function(varName, model, params) {
 
     params = params || {};
 
@@ -31,6 +31,7 @@ var BackboneAdapter = function(options){
     {
 
       var simCapiParams = params;
+      var originalName = varName;
       var alias = params.alias || varName;
       
       var capiValue = new SimCapiValue({
@@ -40,10 +41,12 @@ var BackboneAdapter = function(options){
         readonly: params.readonly
       });
 
-      
+      if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+        capiValue.value = '[' + model.get(originalName).toString() + ']';
+      }
 
-      // listen to the model by attaching event handler on the model
-      model.on('change:' + varName, _.bind(function(m, value){
+
+      var exposeFunc = _.bind(function(m,value){
         var capiValue = new SimCapiValue({
           key: alias,
           value: value,
@@ -51,15 +54,56 @@ var BackboneAdapter = function(options){
           readonly: simCapiParams.readonly
         });
 
-        _transporter.setValue(capiValue);
-      },this));
+        if(capiValue.type === SimCapiValue.TYPES.ARRAY){
+          capiValue.value = '[' + model.get(originalName).toString() + ']';
+        }
+
+        _transporter.setValue(capiValue); 
+      }, this);
+
+      // listen to the model by attaching event handler on the model
+      model.on('change:' + varName, exposeFunc);
       
       _transporter.setValue(capiValue);
 
-      modelsMapping[alias] = {model: model, originalName: varName};
+      modelsMapping[alias] = {
+        alias: alias,
+        model: model, 
+        originalName: originalName,
+        exposeFunc: exposeFunc
+      };
       
     }
     
+  };
+
+  /*
+   * Allows the 'attributes' to be unexposed
+   * @param attrName - The 'attribute name'
+   * @param model - The model the attribute belongs to.
+   */
+  this.unexpose = function(varName, model){
+    
+    var modelMap;
+
+    if(modelsMapping[varName]){
+      modelMap = modelsMapping[varName];
+    }
+    else{
+      //could be under an alias
+      modelMap = _.findWhere(modelsMapping, {originalName:varName});
+    }
+
+    if(modelMap){
+      model.off('change:'+varName, modelMap.exposeFunc);
+
+      _transporter.removeValue(modelMap.alias);
+
+      delete modelsMapping[modelMap.alias];
+    }
+    else{
+      throw new Error(varName + " doesn't exist on the model.");
+    }
   };
 
   /*
@@ -83,7 +127,8 @@ var BackboneAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var model = modelsMapping[capiValue.key].model;
         var originalName = modelsMapping[capiValue.key].originalName;
-        model.set(originalName, capiValue.value);
+        
+        model.set(originalName, capiValue.value); 
       }
     }, this);
     

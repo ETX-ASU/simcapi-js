@@ -6,9 +6,27 @@ Pipit is an interface used by simulations to communicate between AELP (Smart Spa
 
 ## Why? ##
 
-Without Pipit, AELP can run the simulation... and that’s about it. This scenario makes any simulation on AELP pretty useless.
-With Pipit, the platform can control the Simulation. Simulations by themselves, do not expose information to what is happening inside the sim. So depending on what the Simulation exposes, can AELP control the Simulation.   
+Teachers are generally looking to do two things with a sim;
+1. Set it up in a specific way for a specific question (eg. disable certain controls or pre-fill certain fields), and
+2. Determine what the student has done in the sim so they can provide appropriate feedback.
 
+Pipit allows you to make both these things happen. In other words, by including Pipit in your simulation, you can allow AELP (and therefore the teacher) to control the sim.
+
+
+## How? ##
+
+The first half of pipit is the `CapiModel`. You can create variables on this data object which notify other objects whenever they've been changed.
+
+The second half of Pipit is the `CapiAdapter`, which is responsible for exposing variables on a `CapiModel` to AELP.
+
+Together, a connection is created between AELP and the model where the variables are keep in sync.
+
+In this way, a teacher can set an initial condition via AELP which will be sent through to the simulation. On the flip side, when a student uses the sim, the sim can report changes back to the AELP.
+
+
+## Backbone ##
+
+For those who use Backbone.js. It's possible to use Backbone Models instead of CapiModels. Pipit also supplies a `BackboneAdapter`.
 
 
 ## Installation ##
@@ -16,70 +34,162 @@ With Pipit, the platform can control the Simulation. Simulations by themselves, 
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://github.com/SmartSparrow/pipit/dist/pipit.min.js">
+<script src= "https://d1rpkia8qpfj4t.cloudfront.net/pipit-0.51.min.js"></script>
 ```
 
 
-## How to use ##
+## How to setup ##
 
-There are two phases to use Pipit, _setup_ and _setup-completion_.
+There are three phases to setup Pipit, _setup data_, _expose data_ and _finalise setup_.
 
-To use Pipit, you must use an `adapter` to be able to interface with AELP. There exists two Adapters, `CapiAdapter` and `BackboneAdapter`. 
 
-### Setup ###
+### Setup Data ###
 
-In the setup phase, you must tell Pipit what you want the Sim to expose. To expose the properties of the simulation, you use the method _watch_.
+In the setup data phase, you just have to create a `CapiModel`. 
+
+For example:
 
 ```
-adapter.watch(propertyName, model, options);
+var simModel = new pipit.CapiAdapter.CapiModel({
+    demoMode: true,
+    studentResponse: "5"
+});
 ```
 
-propertyName - String - name of the property on the model
-model        - Object - the model that the property belongs to.
+This `CapiModel` has two variables inside it that can be exposed to AELP. 
+
+### Expose Data ###
+
+In this phase, you must tell the `CapiAdapter` what you want to expose from the `CapiModel`.
+
+```
+pipit.CapiAdapter.expose(variableName, model, options);
+```
+
+Here is the list of what you must pass to _expose_.
+
+variableName - String    - name of the variable on the model
+model        - CapiModel - the model that the variable belongs to.
 options      - Object  
-                       - type     - SimCapiValue.TYPES  - the type of the property 
-                       - alias    - String              - nickname of the property that is only shown via AELP. Can contain '.' but will create a hierarchy for every '.'.
-                       - readonly - Boolean             - if the property is readonly 
+                         - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable. 
+                         - alias    - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
+                         - readonly - Boolean             - if the variable is readonly 
 
 
-### Setup-completion ###
+Inversely, if you want to unexpose your data, you can tell the `CapiAdapter`.
 
-This phase require you to tell Pipit you have finished setting up the model. This is with the command below:
+```
+pipit.CapiAdapter.unexpose(variableName, model);
+```
+
+Here is the list of what you must pass to _unexpose_.
+
+variableName - String    - name of the variable on the model
+model        - CapiModel - the model that the variable belongs to.
+
+
+### Finalise Setup ###
+
+This phase require you to tell Pipit you have finished setting up the `Capimodel`. This is with the command below:
 
 
 ```
 pipit.Controller.notifyOnReady();
 ```
 
-This must be called when the model has finished being setup. It is to tell Pipit that the Sim model is ready to recieve messages from AELP. If this is not called, AELP will not send any messages to the Sim because it thinks the Sim is not ready.
+This must be called when the model has finished being setup. It is to tell Pipit that the `CapiModel` is ready to sync with the AELP. If this is not called, AELP will not sync to the `CapiModel` because it thinks the `CapiModel` is not ready.
 
 
 
 ## Usage ##
 
 ### A simple example ###
+```
+var simModel = new pipit.CapiAdapter.CapiModel({
+    demoMode: true,
+    studentResponse: "5"
+});
+
+...
+
+pipit.CapiAdapter.expose("demoMode", simModel, 
+                                    {readonly: false});
+pipit.CapiAdapter.expose("studentResponse", simModel, 
+                                          {alias: "studentAnswer", 
+                                           readonly: true});
+
+...
+
+pipit.Controller.notifyOnReady();
+```
+
+
+For Pipit to work, you must use the following functions on the `CapiModel`:
+
+
+#### Get ####
+  To retrieve a variable from a `CapiModel`.
+
+  For example:
+
+  ```
+  var value = simModel.get('demoMode');
+  ```
+
+#### Set ####
+  To set a variable to the `CapiModel`.
+
+  For example:
+
+  ```
+  simModel.set('demoMode', false);
+  ```  
+
+#### On ####
+  To listen to changes to a variable that were sent from the AELP or changed in the simulation.
+
+  For example:
+
+  ```
+  simModel.on('change:demoMode', function(){
+    var changedValue = simModel.get('demoMode');
+  });
+  ```
+
+  That function will be called everytime _demoMode_ changes. 
+
+#### Has ####
+
+  Checks to see if a variable with the given name exists in the `CapiModel`
+
+  ```
+  var returnsTrue = simModel.has('demoMode')
+  ```
+
+
+
+### A backbone example ###
 
 ```
 var SimModel = Backbone.Model.extend({
   defaults:{
-    currentTime: 0,
-    selectedObject: ‘saturn’
+    demoMode: true,
+    studentResponse: "5"
   }
 });
-
 
 
 var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.watch(‘currentTime’, simModel, 
-                                            {readonly: true});
-pipit.BackboneAdapter.watch(‘selectedObject’, simModel, 
-                                               {alias: “selectedPlanet”, 
-                                                readonly: false});
+pipit.BackboneAdapter.expose("demoMode", simModel, 
+	                                          {readonly: false});
+pipit.BackboneAdapter.expose("studentResponse", simModel, 
+                                               {alias: "studentAnswer", 
+                                                readonly: true});
 
-…
+...
 
 pipit.Controller.notifyOnReady();
 ```
