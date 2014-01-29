@@ -34,7 +34,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "http://static.smartsparrow.com/pipit-0.5.js">
+<script src= "https://d1rpkia8qpfj4t.cloudfront.net/pipit-0.51.min.js"></script>
 ```
 
 
@@ -52,7 +52,7 @@ For example:
 ```
 var simModel = new pipit.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: ‘5’
+    studentResponse: "5"
 });
 ```
 
@@ -107,15 +107,15 @@ This must be called when the model has finished being setup. It is to tell Pipit
 ```
 var simModel = new pipit.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: ‘5’
+    studentResponse: "5"
 });
 
 ...
 
-pipit.CapiAdapter.expose(‘demoMode’, simModel, 
+pipit.CapiAdapter.expose("demoMode", simModel, 
                                     {readonly: false});
-pipit.CapiAdapter.expose(‘studentResponse’, simModel, 
-                                          {alias: “studentAnswer�?, 
+pipit.CapiAdapter.expose("studentResponse", simModel, 
+                                          {alias: "studentAnswer", 
                                            readonly: true});
 
 ...
@@ -174,7 +174,7 @@ For Pipit to work, you must use the following functions on the `CapiModel`:
 var SimModel = Backbone.Model.extend({
   defaults:{
     demoMode: true,
-    studentResponse: ‘5’
+    studentResponse: "5"
   }
 });
 
@@ -183,13 +183,13 @@ var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.expose(‘demoMode’, simModel, 
+pipit.BackboneAdapter.expose("demoMode", simModel, 
 	                                          {readonly: false});
-pipit.BackboneAdapter.expose(‘studentResponse’, simModel, 
-                                               {alias: “studentAnswer�?, 
+pipit.BackboneAdapter.expose("studentResponse", simModel, 
+                                               {alias: "studentAnswer", 
                                                 readonly: true});
 
-…
+...
 
 pipit.Controller.notifyOnReady();
 ```
