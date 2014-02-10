@@ -36,7 +36,10 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
-    var pendingMessages = [];
+    var pendingMessages = {
+      forHandshake: [],
+      forValueChange: []
+    };
 
     // holds callbacks that may be needed
     var callback = {
@@ -175,7 +178,7 @@ var Transporter = function(options) {
         };
 
         if(!handshake.authToken){
-            pendingMessages.push(getDataRequestMsg);
+            pendingMessages.forHandshake.push(getDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -223,7 +226,7 @@ var Transporter = function(options) {
         };        
 
         if(!handshake.authToken){
-            pendingMessages.push(setDataRequestMsg);
+            pendingMessages.forHandshake.push(setDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -310,10 +313,10 @@ var Transporter = function(options) {
                 self.notifyOnReady();
 
                 //trigger queue
-                for(var i=0; i< pendingMessages.length; ++i){
-                    self.sendMessage(pendingMessages[i]);
+                for(var i=0; i< pendingMessages.forHandshake.length; ++i){
+                    self.sendMessage(pendingMessages.forHandshake[i]);
                 }
-                pendingMessages = [];
+                pendingMessages.forHandshake = [];
             }
         }
     };
@@ -364,23 +367,15 @@ var Transporter = function(options) {
             throw new Error("You have already triggered a check event");
         }
         
-        if(currentTimeout === null){
-            callback.check = handlers.complete || function() {};
 
-            var triggerCheckMsg = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.CHECK_REQUEST,
-                handshake : handshake
-            });
-        
-            self.sendMessage(triggerCheckMsg);
-        }
-        else{
-            //We have to wait for the notify value change message to send
-            setTimeout(function(){
-                self.triggerCheck(handlers);
-            }, timeoutAmount);
-        }
-        
+        callback.check = handlers.complete || function() {};
+
+        var triggerCheckMsg = new SimCapiMessage({
+            type : SimCapiMessage.TYPES.CHECK_REQUEST,
+            handshake : handshake
+        });
+
+        pendingMessages.forValueChange.push(triggerCheckMsg);
     };
 
     /*
@@ -399,6 +394,13 @@ var Transporter = function(options) {
             self.sendMessage(valueChangeMsg);
 
             currentTimeout = null;
+
+            //trigger queue
+            for(var i=0; i< pendingMessages.forValueChange.length; ++i){
+                self.sendMessage(pendingMessages.forValueChange[i]);
+            }
+            pendingMessages.forValueChange = [];
+
           }, timeoutAmount);
         }           
       }
