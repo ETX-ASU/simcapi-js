@@ -376,6 +376,9 @@ var Transporter = function(options) {
         });
 
         pendingMessages.forValueChange.push(triggerCheckMsg);
+
+        //Ensure that there are no more set value calls to be able to send the message.
+        this.notifyValueChange();
     };
 
     /*
