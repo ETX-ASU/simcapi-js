@@ -1,4 +1,4 @@
-/*global window, document */
+/*global window, document, setTimeout */
 define(['jquery', 
         'underscore',
         'api/snapshot/util/uuid',
@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.51;
+    var version = 0.52;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -36,7 +36,10 @@ var Transporter = function(options) {
     // True if and only if we have a pending on ready message.
     var pendingOnReady = options.pendingOnReady || false;
 
-    var pendingMessages = [];
+    var pendingMessages = {
+      forHandshake: [],
+      forValueChange: []
+    };
 
     // holds callbacks that may be needed
     var callback = {
@@ -50,6 +53,14 @@ var Transporter = function(options) {
      */
     var getRequests = {};
     var setRequests = {};
+
+    /*
+    *   Throttles the value changed message to 25 milliseconds 
+    */
+    var setTimeoutStarted = false;
+    var currentTimeout = null;
+    var timeoutAmount = 25;
+
 
     this.getHandshake = function(){
         return handshake;
@@ -167,7 +178,7 @@ var Transporter = function(options) {
         };
 
         if(!handshake.authToken){
-            pendingMessages.push(getDataRequestMsg);
+            pendingMessages.forHandshake.push(getDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -215,7 +226,7 @@ var Transporter = function(options) {
         };        
 
         if(!handshake.authToken){
-            pendingMessages.push(setDataRequestMsg);
+            pendingMessages.forHandshake.push(setDataRequestMsg);
         }
         else{
             // send the message to the viewer
@@ -302,10 +313,10 @@ var Transporter = function(options) {
                 self.notifyOnReady();
 
                 //trigger queue
-                for(var i=0; i< pendingMessages.length; ++i){
-                    self.sendMessage(pendingMessages[i]);
+                for(var i=0; i< pendingMessages.forHandshake.length; ++i){
+                    self.sendMessage(pendingMessages.forHandshake[i]);
                 }
-                pendingMessages = [];
+                pendingMessages.forHandshake = [];
             }
         }
     };
@@ -355,6 +366,7 @@ var Transporter = function(options) {
         if (callback.check) {
             throw new Error("You have already triggered a check event");
         }
+        
 
         callback.check = handlers.complete || function() {};
 
@@ -362,7 +374,8 @@ var Transporter = function(options) {
             type : SimCapiMessage.TYPES.CHECK_REQUEST,
             handshake : handshake
         });
-        self.sendMessage(triggerCheckMsg);
+
+        pendingMessages.forValueChange.push(triggerCheckMsg);
     };
 
     /*
@@ -372,29 +385,49 @@ var Transporter = function(options) {
 
       if (handshake.authToken) {
 
-        //retrieve the VALUE_CHANGE message
-        
-        var valueChangeMsg = new SimCapiMessage({
-            type : SimCapiMessage.TYPES.VALUE_CHANGE,
-            handshake : this.getHandshake()
-        });
+        if(currentTimeout === null){
+          currentTimeout = setTimeout(function(){
+            //retrieve the VALUE_CHANGE message
+            var valueChangeMsg = self.createValueChangeMsg();
 
-        // populate the message with the values of the entire model
-        valueChangeMsg.values = outgoingMap;
+            // send the message to the viewer
+            self.sendMessage(valueChangeMsg);
 
-        // send the message to the viewer
-        self.sendMessage(valueChangeMsg);            
-        return valueChangeMsg;            
+            currentTimeout = null;
+
+            //trigger queue
+            for(var i=0; i< pendingMessages.forValueChange.length; ++i){
+                self.sendMessage(pendingMessages.forValueChange[i]);
+            }
+            pendingMessages.forValueChange = [];
+
+          }, timeoutAmount);
+        }           
       }
       return null;
     };
 
-    this.setValue = function(simCapiValue){
+    /*
+    *   Creates the value change message
+    */
+    this.createValueChangeMsg = function(){
+      //retrieve the VALUE_CHANGE message
+      var valueChangeMsg = new SimCapiMessage({
+          type : SimCapiMessage.TYPES.VALUE_CHANGE,
+          handshake : self.getHandshake()
+      });
 
+      // populate the message with the values of the entire model
+      valueChangeMsg.values = outgoingMap;
+
+      return valueChangeMsg;
+    };
+
+    this.setValue = function(simCapiValue){
       check(simCapiValue).isOfType(SimCapiValue);
 
       outgoingMap[simCapiValue.key] = simCapiValue;
-
+      
       this.notifyValueChange();
     };
 

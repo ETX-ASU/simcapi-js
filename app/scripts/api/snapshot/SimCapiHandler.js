@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.52 - Throttles the notifying of value changes.
      * 0.51 - Bug fix for the adapters
      * 0.5  - Added get/set data
      * 0.4  - Added check events

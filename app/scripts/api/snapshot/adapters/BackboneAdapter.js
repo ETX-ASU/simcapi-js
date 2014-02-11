@@ -107,13 +107,13 @@ var BackboneAdapter = function(options){
   };
 
   /*
-  * Watches a whole model. Model must have property `capiProperties` for the options of each
+  * Exposes a whole model. Model must have property `capiProperties` for the options of each
   * attribute to be exposed. 
   */
-  this.watchModel = function(model){
+  this.exposeModel = function(model){
     _.each(model.capiProperties, _.bind(function(params, varName){
       params.model = model;
-      this.watch(varName, params);
+      this.expose(varName, params);
     }, this));
   };
 
