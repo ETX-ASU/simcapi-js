@@ -1,4 +1,4 @@
-/*global window sinon */
+/*global window sinon setTimeout clearTimeout*/
 define(function(require){
 
     var Transporter = require('api/snapshot/Transporter').Transporter;
@@ -13,6 +13,7 @@ define(function(require){
         var authToken = 'testToken';
         var transporter = null;
         var sandbox = null;
+        var clock = null;
 
         beforeEach(function() {          
             sandbox = sinon.sandbox.create();
@@ -27,10 +28,12 @@ define(function(require){
                 requestToken : requestToken
             });
 
+            clock = sinon.useFakeTimers();
         });
         
         afterEach(function() {
           sandbox.restore();
+          clock.restore();
         });
 
         /*
@@ -61,6 +64,21 @@ define(function(require){
 
             // process handshake response so it remembers the auth token
             transporter.capiMessageHandler(handshakeResponse);
+        };
+
+        /*
+        *   Helper to test timeouts
+        */
+        var throttle = function(callback, timeAmount){
+            var timer;
+
+            return function(){
+                clearTimeout(timer);
+                var args = [].slice.call(arguments);
+                timer = setTimeout(function(){
+                    callback.apply(this,args);
+                }, timeAmount);
+            };
         };
         
         describe('HANDSHAKE_REQUEST', function(){
@@ -169,6 +187,10 @@ define(function(require){
                 var gotOnReady = -1;
                 var gotValueChange = -1;
 
+                var throttled = throttle(function(){
+                    expect(gotOnReady < gotValueChange).to.be(true);
+                }, 25);
+
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
                     // remember the order that we recieved messages
@@ -185,10 +207,13 @@ define(function(require){
                 });
 
                 transporter.notifyOnReady();
+                throttled();
+
+                clock.tick(25);
 
                 // verify that a message was sent
                 expect(transporter.sendMessage.called).to.be(true);
-                expect(gotOnReady < gotValueChange).to.be(true);
+                expect(gotValueChange === 2).to.be(true);
             });
 
             it('should remember pending ON_READY notification and send it after a succesfull HANDSHAKE_RESPONSE', function(){
@@ -198,6 +223,10 @@ define(function(require){
                 var gotValueChange = -1;
 
                 transporter.getHandshake().authToken = null;
+
+                var throttled = throttle(function(){
+                    expect(gotOnReady < gotValueChange).to.be(true);
+                }, 25);
 
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
@@ -227,9 +256,13 @@ define(function(require){
                 // process handshake response so it sends the pending notificaiton
                 transporter.capiMessageHandler(handshakeResponse);
 
+                throttled();
+
+                clock.tick(25);
+
                 // verify that a message was sent
                 expect(transporter.sendMessage.called).to.be(true);
-                expect(gotOnReady < gotValueChange).to.be(true);
+                expect(gotValueChange === 2).to.be(true);
             });
 
         });
@@ -332,7 +365,7 @@ define(function(require){
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
 
-                var expectedValueChangeMsg = transporter.notifyValueChange();
+                var expectedValueChangeMsg = transporter.createValueChangeMsg();
 
                 expect(expectedValueChangeMsg.values['these.are.fake.objects.attr1'].value).to.be(0.222);
                 expect(expectedValueChangeMsg.values.attr2.value).to.be('value2');
