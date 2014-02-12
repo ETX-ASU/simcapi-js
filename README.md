@@ -103,6 +103,28 @@ This must be called when the model has finished being setup. It is to tell Pipit
 
 ## Usage ##
 
+### Controller ###
+
+Apart from syncing, there may be other functionality that can be used via the `Controller`.
+
+Sims can have the ability to trigger `check` events the same way when a student clicks on the `check` button on AELP. 
+
+```
+pipit.Controller.triggerCheck({});  
+```
+
+The above code will click `check` on behave of the user when they interact with a sim in a certain way.
+
+It is also possible to pass a callback function to the `triggerCheck` that will be executed when the feedback panel is closed.
+
+```
+pipit.Controller.triggerCheck({
+    complete: function(){
+        //Do something when feedback panel is closed.
+    }
+});
+```
+
 ### A simple example ###
 ```
 var simModel = new pipit.CapiAdapter.CapiModel({
