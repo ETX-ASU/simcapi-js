@@ -110,7 +110,7 @@ Apart from syncing, there may be other functionality that can be used via the `C
 Sims can have the ability to trigger `check` events the same way when a student clicks on the `check` button on AELP. 
 
 ```
-pipit.Controller.triggerCheck({});  
+pipit.Controller.triggerCheck();  
 ```
 
 The above code will click `check` on behave of the user when they interact with a sim in a certain way.
