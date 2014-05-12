@@ -15,9 +15,9 @@ define(function(require){
         var sandbox = null;
         var clock = null;
 
-        beforeEach(function() {          
+        beforeEach(function() {
             sandbox = sinon.sandbox.create();
-            
+
             // mock out event registration on the window
             sandbox.stub(window, 'addEventListener', function(eventType, callback) {
                 expect(eventType).to.be('message');
@@ -30,7 +30,7 @@ define(function(require){
 
             clock = sinon.useFakeTimers();
         });
-        
+
         afterEach(function() {
           sandbox.restore();
           clock.restore();
@@ -51,7 +51,7 @@ define(function(require){
             config.setLessonId('1');
             config.setQuestionId('qid');
             config.setServicesBaseUrl('someurl');
-            
+
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
                 type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
@@ -80,7 +80,7 @@ define(function(require){
                 }, timeAmount);
             };
         };
-        
+
         describe('HANDSHAKE_REQUEST', function(){
 
             it('should send a requestHandshake when trying to send ON_READY notification', function() {
@@ -102,24 +102,24 @@ define(function(require){
         });
 
         describe('CONFIG_CHANGE', function() {
-            
+
             beforeEach(function() {
                 doHandShake();
-                
+
                 // verify old config
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('1');
                 expect(config.getData().questionId).to.be('qid');
                 expect(config.getData().servicesBaseUrl).to.be('someurl');
             });
-            
+
             var updateConfig = function(token) {
                 // update config
                 var newConfig = SharedSimData.getInstance();
                 newConfig.setLessonId('2');
                 newConfig.setQuestionId('newqid');
                 newConfig.setServicesBaseUrl('newurl');
-                
+
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
                     type : SimCapiMessage.TYPES.CONFIG_CHANGE,
@@ -130,29 +130,29 @@ define(function(require){
                 });
                 transporter.capiMessageHandler(configChangeMessage);
             };
-            
+
             it('should ignore CONFIG_CHANGE when authToken does not match', function() {
                 updateConfig('bad token');
-                
+
                 // verify that the config has changed
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
-            
+
             it('should update CONFIG_CHANGE when authToken matches', function() {
                 updateConfig(authToken);
-                
+
                 // verify that the config has changed
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
-            
+
         });
-        
+
         describe('HANDSHAKE_RESPONSE', function() {
 
             it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function(){
@@ -290,7 +290,7 @@ define(function(require){
                 // create a new instance with outgoingMap parameters
                 transporter = new Transporter({
                     requestToken : requestToken,
-                    authToken : authToken, 
+                    authToken : authToken,
                     outgoingMap : outgoingMap
                 });
 
@@ -313,7 +313,7 @@ define(function(require){
              * create a value change message that performs the following changes:
              * attr1 -> value1
              * attr2 -> value2
-             * attr3 -> value3 
+             * attr3 -> value3
              */
             var createGoodValueChangeMessage = function() {
                 return new SimCapiMessage({
@@ -343,7 +343,7 @@ define(function(require){
                         'attr4' : new SimCapiValue({
                             key: 'attr4',
                             type : SimCapiValue.TYPES.BOOLEAN,
-                            value : false 
+                            value : false
                         })
                     }
                 });
@@ -392,7 +392,7 @@ define(function(require){
 
 
                 transporter.capiMessageHandler(badValueChangeMsg);
-                
+
                 // verify that nothing was updated
                 expect(failed).to.be(false);
             });
@@ -415,7 +415,7 @@ define(function(require){
                 });
 
                 transporter.capiMessageHandler(badValueChangeMsg);
-                
+
                 // verify that nothing was updated
                 expect(failed).to.be(false);
             });
@@ -437,9 +437,9 @@ define(function(require){
             });
 
         });
-        
+
         describe('VALUE_CHANGE_REQUEST', function(){
-          
+
             // process change event
             var valueChangeRequestMessage = new SimCapiMessage({
                 type : SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST,
@@ -447,7 +447,7 @@ define(function(require){
                     authToken : authToken
                 }
             });
-  
+
             it('should send value change notification', function(){
                 doHandShake();
                 sandbox.stub(transporter, 'notifyValueChange', function () {});
@@ -510,14 +510,14 @@ define(function(require){
                 var failed = true;
                 var failed2 = true;
                 try{
-                   transporter.getDataRequest(undefined, 'key'); 
+                   transporter.getDataRequest(undefined, 'key');
                 }
                 catch(err){
                     failed = false;
                 }
 
                 try{
-                   transporter.getDataRequest('simId', undefined); 
+                   transporter.getDataRequest('simId', undefined);
                 }
                 catch(err){
                     failed2 = false;
@@ -525,7 +525,7 @@ define(function(require){
 
                 expect(failed).to.be(false);
                 expect(failed2).to.be(false);
-                
+
             });
 
         });
@@ -606,14 +606,14 @@ define(function(require){
                 var failed = true;
                 var failed2 = true;
                 try{
-                   transporter.getDataRequest(undefined, 'key'); 
+                   transporter.getDataRequest(undefined, 'key');
                 }
                 catch(err){
                     failed = false;
                 }
 
                 try{
-                   transporter.getDataRequest('simId', undefined); 
+                   transporter.getDataRequest('simId', undefined);
                 }
                 catch(err){
                     failed2 = false;
@@ -621,7 +621,7 @@ define(function(require){
 
                 expect(failed).to.be(false);
                 expect(failed2).to.be(false);
-                
+
             });
 
         });
@@ -671,6 +671,40 @@ define(function(require){
             });
         });
 
-    });
+        describe('INITIAL_SETUP_COMPLETE', function() {
+            var message;
+            beforeEach(function() {
+                message = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE,
+                    handshake : {
+                        requestToken : requestToken,
+                        authToken : authToken
+                    }
+                });
+            });
 
+            it('should call every registered handler', function() {
+                var a = 5, b = 10;
+                transporter.addInitialSetupCompleteListener(function() { a = 15; });
+                transporter.addInitialSetupCompleteListener(function() { b = 20; });
+
+                transporter.capiMessageHandler(message);
+
+                expect(a).to.equal(15);
+                expect(b).to.equal(20);
+            });
+
+            it('should not call anything if the handlers are removed', function() {
+                var a = 5, b = 10;
+                transporter.addInitialSetupCompleteListener(function() { a = 15; });
+                transporter.addInitialSetupCompleteListener(function() { b = 20; });
+
+                transporter.removeAllInitialSetupCompleteListeners();
+                transporter.capiMessageHandler(message);
+
+                expect(a).to.equal(5);
+                expect(b).to.equal(10);
+            });
+        });
+    });
 });

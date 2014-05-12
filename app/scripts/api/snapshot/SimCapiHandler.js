@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.55 - Added initial setup complete event
      * 0.54 - Updgraded jquery dependency.
      * 0.53 - Minor fix so no object can be passed to triggerCheck.
      * 0.52 - Throttles the notifying of value changes.
@@ -45,7 +46,7 @@ var SimCapiHandler = function(options) {
      * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
-    
+
     /*
      * A list of snapshots that have not been applied to a sim.
      * This can occur, when the sim is not ready.
@@ -111,7 +112,7 @@ var SimCapiHandler = function(options) {
 
         if(callback.onGetDataRequest){
             callback.onGetDataRequest({
-                key: message.values.key, 
+                key: message.values.key,
                 simId: message.values.simId,
                 onSuccess: function(key, value, exists){
                     //broadcast response
@@ -120,7 +121,7 @@ var SimCapiHandler = function(options) {
                         key: message.values.key,
                         value: value,
                         exists: exists,
-                        responseType: "success" 
+                        responseType: "success"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -131,7 +132,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         error: error,
-                        responseType: "error" 
+                        responseType: "error"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -154,8 +155,8 @@ var SimCapiHandler = function(options) {
 
         if(callback.onSetDataRequest){
              callback.onSetDataRequest({
-                key: message.values.key, 
-                value: message.values.value, 
+                key: message.values.key,
+                value: message.values.value,
                 simId: message.values.simId,
                 onSuccess: function(){
                     //broadcast response
@@ -163,7 +164,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         value: message.values.value,
-                        responseType: "success" 
+                        responseType: "success"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -174,7 +175,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         error: error,
-                        responseType: "error" 
+                        responseType: "error"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -286,7 +287,7 @@ var SimCapiHandler = function(options) {
             if (ignoreHidden) {
                 frames = $container.find('iframe:visible');
             }
-            
+
             // go through all iframes and send a reply if needed
             _.each(frames, function(iframe, index){
                 var $iframe = $(iframe);
@@ -331,7 +332,7 @@ var SimCapiHandler = function(options) {
         snapshot = {};
         descriptors = {};
     };
-    
+
     // Delete the given iframe from the list of known sims.
     this.removeIFrame = function(iframeid) {
       var token = idToToken[iframeid];
@@ -405,7 +406,7 @@ var SimCapiHandler = function(options) {
     this.sendMessage = function(message, iframeid) {
         // allow visible is needed for the flash side of things when the iframe begins as hidden
         // but still need to perform a handshake.
-        var frame = $container.find('#' + iframeid)[0]; 
+        var frame = $container.find('#' + iframeid)[0];
         if (ignoreHidden) {
             frame = $container.find('#' + iframeid + ':visible')[0];
         }
@@ -448,7 +449,7 @@ var SimCapiHandler = function(options) {
 
         return result;
     };
-    
+
     /*
      * Returns descriptors for the properties that match the given path.
      * A descriptor is a SimCapiValue.
@@ -471,16 +472,16 @@ var SimCapiHandler = function(options) {
 
         return result;
     };
-    
+
     /*
-     * Requests value change message 
+     * Requests value change message
      * @since 0.1
      */
     this.requestValueChange = function(iframeId) {
         if (!(idToSimVersion[iframeId] && idToSimVersion[iframeId] >= 0.1)) {
             throw new Error("Method requestValueChange is not supported by sim");
         }
-        
+
         // create a message
         var message = new SimCapiMessage();
         message.type = SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST;
@@ -493,7 +494,7 @@ var SimCapiHandler = function(options) {
 
         this.sendMessage(message, iframeId);
     };
-    
+
     /*
      * Notify clients that configuration is updated. (eg. the question has changed)
      */
@@ -509,12 +510,12 @@ var SimCapiHandler = function(options) {
                     // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
                     config      : SharedSimData.getInstance().getData()
                 };
-                
+
                 this.sendMessage(message, tokenToId[token]);
             }
         }, this));
     };
-    
+
     /*
      * Returns version of Transporter, used by the iframe
      */
