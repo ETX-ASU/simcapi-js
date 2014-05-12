@@ -318,6 +318,23 @@ var SimCapiHandler = function(options) {
             });
         }
     };
+    
+    var matchesPath = function(target, path) {
+        if (target.length <= path.length) {
+            var matches = true;
+            // e.g. targetPath = ['iframe', 'propertyA']; anything starting with iframe.propertyA.* will be added
+            for (var i = 0; i < target.length; i++) {
+                if (target[i] !== path[i]) {
+                    matches = false;
+                    break;
+                }
+            }
+          
+            return matches;
+        }
+      
+        return false;
+    };
 
     // clears the state machine
     this.resetState = function() {
@@ -431,12 +448,12 @@ var SimCapiHandler = function(options) {
         var result = {};
 
         // target path looks something like this : iframeid[.var]*
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
         _.each(snapshot, function(value, path){
-            if (path.indexOf(targetPath) !== -1) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
@@ -454,13 +471,12 @@ var SimCapiHandler = function(options) {
         var result = {};
 
         // target path looks something like this : iframeid
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
-        _.each(descriptors, function(value, path){
-            var parts = path.split('.');
-            if (parts[0] === targetPath) {
+        _.each(descriptors, function(value, path) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
