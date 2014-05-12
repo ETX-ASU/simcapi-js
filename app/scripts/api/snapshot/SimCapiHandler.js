@@ -453,7 +453,7 @@ var SimCapiHandler = function(options) {
 
         var result = {};
 
-        // target path looks something like this : iframeid[.var]*
+        // target path looks something like this : iframeid
         var targetPath = _.rest(snapshotSegment.path, 1).join('.');
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
@@ -514,8 +514,15 @@ var SimCapiHandler = function(options) {
     /*
      * Returns version of Transporter, used by the iframe
      */
-    this.getTransporterVersion = function (iframeId) {
+    this.getTransporterVersion = function(iframeId) {
         return idToSimVersion[iframeId];
+    };
+    
+    /*
+     * Get the token for a given iframe.
+     */
+    this.getToken = function(iframeid) {
+        return idToToken[iframeid];
     };
 };
 

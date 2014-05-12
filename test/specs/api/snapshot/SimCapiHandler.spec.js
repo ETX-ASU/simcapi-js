@@ -515,6 +515,22 @@ define(function(require){
                 handler.capiMessageHandler(getDataRequestMsg);
             });
         });
+        
+        describe('sendMessage', function() {
+            it('should not delete the token for a given iframe even if it is invisible', function() {
+                // create handshake
+                var authToken1 = setupHandshake('iframe1', 'token1');
+                var authToken2 = setupHandshake('iframe2', 'token2');
+                
+                $container.find('#iframe2').css('display', 'none');
+                
+                handler.sendMessage.restore();
+                handler.sendMessage(null, 'iframe2');
+                
+                expect(handler.getToken('iframe1')).to.be(authToken1);
+                expect(handler.getToken('iframe2')).to.be(authToken2);
+            });
+        });
 
     });
     });
