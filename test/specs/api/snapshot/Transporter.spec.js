@@ -698,29 +698,39 @@ define(function(require){
                         authToken : authToken
                     }
                 });
+
+                doHandShake();
             });
 
             it('should call every registered handler', function() {
-                var a = 5, b = 10;
-                transporter.addInitialSetupCompleteListener(function() { a = 15; });
-                transporter.addInitialSetupCompleteListener(function() { b = 20; });
+                var first = sinon.stub(), second = sinon.stub();
+                transporter.addInitialSetupCompleteListener(first);
+                transporter.addInitialSetupCompleteListener(second);
 
                 transporter.capiMessageHandler(message);
 
-                expect(a).to.equal(15);
-                expect(b).to.equal(20);
+                expect(first.called, 'first listener called').to.equal(true);
+                expect(second.called, 'second listener called').to.equal(true);
             });
 
             it('should not call anything if the handlers are removed', function() {
-                var a = 5, b = 10;
-                transporter.addInitialSetupCompleteListener(function() { a = 15; });
-                transporter.addInitialSetupCompleteListener(function() { b = 20; });
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
 
                 transporter.removeAllInitialSetupCompleteListeners();
                 transporter.capiMessageHandler(message);
 
-                expect(a).to.equal(5);
-                expect(b).to.equal(10);
+                expect(stubListener.called, 'listener called').to.equal(false);
+            });
+
+            it('should do nothing if the auth token is wrong', function() {
+                message.handshake.authToken = 42;
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
+
+                transporter.capiMessageHandler(message);
+
+                expect(stubListener.called, 'listener called').to.equal(false);
             });
         });
     });

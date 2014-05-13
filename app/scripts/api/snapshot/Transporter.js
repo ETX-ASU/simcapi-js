@@ -117,7 +117,8 @@ var Transporter = function(options) {
     this.removeAllInitialSetupCompleteListeners = function() {
         initialSetupCompleteListeners = [];
     };
-    var handleInitialSetupComplete = function(message) {
+    var handleInitialSetupComplete = function(message, force) {
+        if(message.handshake.authToken !== handshake.authToken) { return; }
         for(var i = 0; i < initialSetupCompleteListeners.length; ++i) {
             initialSetupCompleteListeners[i](message);
         }
@@ -470,7 +471,7 @@ var Transporter = function(options) {
         if (window !== window.parent) {
             window.parent.postMessage(JSON.stringify(message), '*');
         } else {
-            handleInitialSetupComplete({});
+            handleInitialSetupComplete({ handshake : handshake });
         }
     };
 
