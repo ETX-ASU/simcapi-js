@@ -95,7 +95,6 @@ define(function(require){
 
                 transporter.notifyOnReady();
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
@@ -504,7 +503,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
@@ -519,7 +517,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
@@ -600,7 +597,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key', 'value');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
@@ -615,7 +611,6 @@ define(function(require){
 
                 transporter.setDataRequest('sim', 'key', 'value');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
