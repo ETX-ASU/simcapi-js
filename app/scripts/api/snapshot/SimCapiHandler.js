@@ -48,10 +48,11 @@ var SimCapiHandler = function(options) {
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
 
     /*
-     * A list of snapshots that have not been applied to a sim.
-     * This can occur, when the sim is not ready.
+     * A queue of messages to be sent to sims.
+     * Messages are added to this when the sim is not ready.
+     * Queues are iframe specific
      */
-    var pendingApplySnapshot = [];
+    var pendingMessages = {};
 
     /*
      * A set of tokens that are pending on check responses
@@ -246,9 +247,7 @@ var SimCapiHandler = function(options) {
                 tokenToId[message.handshake.authToken]) {
 
             isReady[message.handshake.authToken] = true;
-            sendPendingApplySnapshot(tokenToId[message.handshake.authToken]);
-
-            notifyInitialSetupComplete();
+            sendPendingMessages(tokenToId[message.handshake.authToken]);
         }
     };
 
@@ -256,8 +255,8 @@ var SimCapiHandler = function(options) {
      * Filter and send any pending apply snapshots that has not been sent to
      * the given iframe associated with the given authToken.
      */
-    var sendPendingApplySnapshot = function(id) {
-        var remaining = [];
+    var sendPendingMessages = function(id) {
+        /*var remaining = [];
         var segmentsToSend = [];
 
         // filter out the segments for the given iframe.
@@ -274,7 +273,18 @@ var SimCapiHandler = function(options) {
 
         if (segmentsToSend.length > 0) {
             self.setSnapshot(segmentsToSend);
+        }*/
+        for(var iframeID in pendingMessages) {
+            sendMessagesOnQueue(iframeID, pendingMessages[iframeID]);
         }
+//        _.each(pendingMessages, function(messageQueue, iframeID) {
+//
+//        });
+    };
+    var sendMessagesOnQueue = function(iframeID, messageQueue) {
+        _.each(messageQueue, function(message) {
+            self.sendMessage(message, iframeID);
+        });
     };
 
     /*
@@ -370,32 +380,23 @@ var SimCapiHandler = function(options) {
             // eg stage.iframe1.blah
             var iframeId = segment.path[1];
 
-            // check if the sim is ready
-            if (isReady[idToToken[iframeId]]) {
-
-                // map each segment to separate iframe windows.
-                if (!messages[iframeId]) {
-                    messages[iframeId] = new SimCapiMessage({
-                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
-                        handshake: {
-                            requestToken: null,
-                            authToken: idToToken[iframeId]
-                        }
-                    });
-                }
-
-                var variable = _.rest(segment.path, 2).join('.');
-                messages[iframeId].values[variable] = new SimCapiValue({
-                    key: variable,
-                    type: SimCapiValue.TYPES.STRING,
-                    value: segment.value
+            // map each segment to separate iframe windows.
+            if (!messages[iframeId]) {
+                messages[iframeId] = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: null,
+                        authToken: idToToken[iframeId]
+                    }
                 });
-
-            } else {
-                // The sim for this id is not ready so we keep it pending until it sends
-                // an ON_READY message.
-                pendingApplySnapshot.push(segment);
             }
+
+            var variable = _.rest(segment.path, 2).join('.');
+            messages[iframeId].values[variable] = new SimCapiValue({
+                key: variable,
+                type: SimCapiValue.TYPES.STRING,
+                value: segment.value
+            });
         });
 
         // send message to each respective iframes
@@ -406,9 +407,16 @@ var SimCapiHandler = function(options) {
 
     // can't mock postMessage in ie9 so we wrap it and mock the wrap :D
     this.sendMessage = function(message, iframeid) {
-        // allow visible is needed for the flash side of things when the iframe begins as hidden
-        // but still need to perform a handshake.
+        var token = idToToken[iframeid];
+        if(!isReady[token]) {
+            if(!pendingMessages[iframeid]) { pendingMessages[iframeid] = []; }
+            pendingMessages[iframeid].push(message);
+            return;
+        }
+
         var frame = $container.find('#' + iframeid)[0];
+        // ignore hidden is needed for the flash side of things when the iframe begins as hidden
+        // but still need to perform a handshake.
         if (ignoreHidden) {
             frame = $container.find('#' + iframeid + ':visible')[0];
         }
@@ -416,10 +424,10 @@ var SimCapiHandler = function(options) {
             frame.contentWindow.postMessage(JSON.stringify(message), '*');
         } else {
             // the frame has been removed
-            var token = idToToken[iframeid];
             delete tokenToId[token]; // token -> iframeid
             delete idToToken[iframeid]; // iframeid -> token
             delete isReady[token]; // token -> true/false
+//            delete pendingMessages[iframeid];
 
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf('stage.' + iframeid) !== -1) {
@@ -522,19 +530,14 @@ var SimCapiHandler = function(options) {
      * @since 0.55
      * Notify clients that initial setup has been completely sent to them
      */
-    var notifyInitialSetupComplete = function() {
-        _.each(isReady, _.bind(function(ready, token) {
-            if (ready) {
-                // create handshake response message
-                var message = new SimCapiMessage();
-                message.type = SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE;
-                message.handshake = {
-                    authToken   : token
-                };
+    this.notifyInitializationComplete = function(iframeID) {
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE;
+        message.handshake = {
+            authToken : idToToken[iframeID]
+        };
 
-                this.sendMessage(message, tokenToId[token]);
-            }
-        }, self));
+        this.sendMessage(message, iframeID);
     };
 
     /*

@@ -733,6 +733,16 @@ define(function(require){
                 expect(stubListener.called, 'listener called').to.equal(false);
             });
 
+            it('should not call listeners if another message is received', function() {
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
+
+                transporter.capiMessageHandler(message);
+                transporter.capiMessageHandler(message);
+
+                expect(stubListener.callCount).to.equal(1);
+            });
+
             describe('adding listeners', function() {
                 it('should throw after initial setup has been completed', function() {
                     transporter.capiMessageHandler(message);

@@ -120,7 +120,7 @@ var Transporter = function(options) {
         initialSetupCompleteListeners = [];
     };
     var handleInitialSetupComplete = function(message) {
-        if(message.handshake.authToken !== handshake.authToken) { return; }
+        if(initialSetupComplete || message.handshake.authToken !== handshake.authToken) { return; }
         for(var i = 0; i < initialSetupCompleteListeners.length; ++i) {
             initialSetupCompleteListeners[i](message);
         }
