@@ -517,6 +517,25 @@ var SimCapiHandler = function(options) {
     };
 
     /*
+     * @since 0.55
+     * Notify clients that initial setup has been completely sent to them
+     */
+    this.notifyInitialSetupComplete = function() {
+        _.each(isReady, _.bind(function(ready, token) {
+            if (ready) {
+                // create handshake response message
+                var message = new SimCapiMessage();
+                message.type = SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE;
+                message.handshake = {
+                    authToken   : token
+                };
+
+                this.sendMessage(message, tokenToId[token]);
+            }
+        }, this));
+    };
+
+    /*
      * Returns version of Transporter, used by the iframe
      */
     this.getTransporterVersion = function (iframeId) {
