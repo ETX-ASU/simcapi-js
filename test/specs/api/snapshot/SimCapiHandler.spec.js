@@ -353,7 +353,7 @@ define(function(require){
 
         describe('setSnapshot', function(){
 
-            it('should keep things pending until an ON_READY message has been recieved', function() {
+            it('should keep things pending until an ON_READY message has been received', function() {
 
                 // create handshake
                 var authToken = setupHandshake('iframe1', 'token1');
@@ -454,6 +454,89 @@ define(function(require){
                 expect(invoked).to.be(1);
             });
 
+            it('should send snapshot when a second ON_READY is received', function() {
+                // create handshake
+                var authToken = setupHandshake('iframe1', 'token1');
+                var authToken2 = setupHandshake('iframe2', 'token2');
+
+                handler.sendMessage.restore();
+                var frame = $container.find('#iframe1')[0];
+                frame.contentWindow.postMessage = sinon.stub();
+
+                // force a pending messages
+                var segment = new SnapshotSegment('stage.iframe1.value', '1');
+                handler.setSnapshot([segment]);
+                segment = new SnapshotSegment('stage.iframe2.value', '2');
+                handler.setSnapshot([segment]);
+
+                // create an ON_READY messages
+                var onReadyMsg = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.ON_READY,
+                    handshake : {
+                        requestToken: null,
+                        authToken : authToken
+                    }
+                });
+
+                var invoked = 0;
+                mockPostMessage(function(response, iframeid){
+                    expect(_.size(response.values)).to.be(1);
+                    expect(response.values['value'].value).to.be('1');
+                    expect(iframeid).to.be('iframe1');
+
+                    invoked++;
+                });
+
+                handler.capiMessageHandler(onReadyMsg);
+
+                // a quicker way of checking if the mock is invoked.
+                expect(invoked).to.be(1);
+
+                mockPostMessage(function(response, iframeid){
+                    expect(_.size(response.values)).to.be(1);
+                    expect(response.values['value'].value).to.be('2');
+                    expect(iframeid).to.be('iframe2');
+
+                    invoked++;
+                });
+                onReadyMsg.handshake.authToken = authToken2;
+                handler.capiMessageHandler(onReadyMsg);
+
+                expect(invoked).to.be(2);
+            });
+
+            it('should not send the same snapshot if a second on ready occurs', function() {
+                var authToken = setupHandshake('iframe1', 'token1');
+
+                handler.sendMessage.restore();
+                var frame = $container.find('#iframe1')[0];
+                frame.contentWindow.postMessage = sinon.stub();
+
+                // force a pending messages
+                var segment = new SnapshotSegment('stage.iframe1.value', '1');
+                handler.setSnapshot([segment]);
+
+                // create an ON_READY messages
+                var onReadyMsg = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.ON_READY,
+                    handshake : {
+                        requestToken: null,
+                        authToken : authToken
+                    }
+                });
+
+                var invoked = 0;
+                mockPostMessage(function(response, iframeid){
+                    invoked++;
+                });
+
+                handler.capiMessageHandler(onReadyMsg);
+                handler.capiMessageHandler(onReadyMsg);
+
+                // a quicker way of checking if the mock is invoked.
+                expect(invoked).to.be(1);
+            });
+
             it('should handle multiple snapshots in a single call', function(){
                 // create handshake
                 var authToken = setupHandshake('iframe2', 'token1');
@@ -521,6 +604,22 @@ define(function(require){
                 });
 
                 handler.capiMessageHandler(getDataRequestMsg);
+            });
+        });
+
+        describe('sendMessage', function() {
+            it('should not delete the token for a given iframe even if it is invisible', function() {
+                // create handshake
+                var authToken1 = setupHandshake('iframe1', 'token1');
+                var authToken2 = setupHandshake('iframe2', 'token2');
+
+                $container.find('#iframe2').css('display', 'none');
+
+                handler.sendMessage.restore();
+                handler.sendMessage(null, 'iframe2');
+
+                expect(handler.getToken('iframe1')).to.be(authToken1);
+                expect(handler.getToken('iframe2')).to.be(authToken2);
             });
         });
 
