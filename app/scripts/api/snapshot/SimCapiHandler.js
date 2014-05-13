@@ -321,16 +321,14 @@ var SimCapiHandler = function(options) {
     
     var matchesPath = function(target, path) {
         if (target.length <= path.length) {
-            var matches = true;
             // e.g. targetPath = ['iframe', 'propertyA']; anything starting with iframe.propertyA.* will be added
             for (var i = 0; i < target.length; i++) {
                 if (target[i] !== path[i]) {
-                    matches = false;
-                    break;
+                    return false;
                 }
             }
           
-            return matches;
+            return true;
         }
       
         return false;
