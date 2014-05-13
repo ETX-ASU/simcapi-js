@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.55 - Do not delete tokens for invisible iframes
      * 0.54 - Updgraded jquery dependency.
      * 0.53 - Minor fix so no object can be passed to triggerCheck.
      * 0.52 - Throttles the notifying of value changes.
@@ -317,6 +318,21 @@ var SimCapiHandler = function(options) {
             });
         }
     };
+    
+    var matchesPath = function(target, path) {
+        if (target.length <= path.length) {
+            // e.g. targetPath = ['iframe', 'propertyA']; anything starting with iframe.propertyA.* will be added
+            for (var i = 0; i < target.length; i++) {
+                if (target[i] !== path[i]) {
+                    return false;
+                }
+            }
+          
+            return true;
+        }
+      
+        return false;
+    };
 
     // clears the state machine
     this.resetState = function() {
@@ -412,12 +428,6 @@ var SimCapiHandler = function(options) {
         if (frame) {
             frame.contentWindow.postMessage(JSON.stringify(message), '*');
         } else {
-            // the frame has been removed
-            var token = idToToken[iframeid];
-            delete tokenToId[token]; // token -> iframeid
-            delete idToToken[iframeid]; // iframeid -> token
-            delete isReady[token]; // token -> true/false
-
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf('stage.' + iframeid) !== -1) {
                     delete snapshot[iframeid];
@@ -436,12 +446,12 @@ var SimCapiHandler = function(options) {
         var result = {};
 
         // target path looks something like this : iframeid[.var]*
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
         _.each(snapshot, function(value, path){
-            if (path.indexOf(targetPath) !== -1) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
@@ -458,13 +468,13 @@ var SimCapiHandler = function(options) {
 
         var result = {};
 
-        // target path looks something like this : iframeid[.var]*
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        // target path looks something like this : iframeid
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
-        _.each(descriptors, function(value, path){
-            if (path.indexOf(targetPath) !== -1) {
+        _.each(descriptors, function(value, path) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
@@ -518,8 +528,15 @@ var SimCapiHandler = function(options) {
     /*
      * Returns version of Transporter, used by the iframe
      */
-    this.getTransporterVersion = function (iframeId) {
+    this.getTransporterVersion = function(iframeId) {
         return idToSimVersion[iframeId];
+    };
+    
+    /*
+     * Get the token for a given iframe.
+     */
+    this.getToken = function(iframeid) {
+        return idToToken[iframeid];
     };
 };
 
