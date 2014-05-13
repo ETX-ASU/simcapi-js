@@ -732,6 +732,16 @@ define(function(require){
 
                 expect(stubListener.called, 'listener called').to.equal(false);
             });
+
+            describe('adding listeners', function() {
+                it('should throw after initial setup has been completed', function() {
+                    transporter.capiMessageHandler(message);
+
+                    expect(function() {
+                        transporter.addInitialSetupCompleteListener(sinon.stub());
+                    }).to.throwException();
+                });
+            });
         });
     });
 });

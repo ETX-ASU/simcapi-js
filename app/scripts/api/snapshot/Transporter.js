@@ -111,17 +111,20 @@ var Transporter = function(options) {
      * Allows sims to watch for when the initial setup has been applied to the sim.
      *
      */
+    var initialSetupComplete = false;
     this.addInitialSetupCompleteListener = function(listener) {
+        if(initialSetupComplete) { throw new Error('Initial setup already complete. This listener will never be called'); }
         initialSetupCompleteListeners.push(listener);
     };
     this.removeAllInitialSetupCompleteListeners = function() {
         initialSetupCompleteListeners = [];
     };
-    var handleInitialSetupComplete = function(message, force) {
+    var handleInitialSetupComplete = function(message) {
         if(message.handshake.authToken !== handshake.authToken) { return; }
         for(var i = 0; i < initialSetupCompleteListeners.length; ++i) {
             initialSetupCompleteListeners[i](message);
         }
+        initialSetupComplete = true;
     };
 
     /*
