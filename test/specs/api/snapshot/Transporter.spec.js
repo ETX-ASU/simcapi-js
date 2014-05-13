@@ -99,6 +99,23 @@ define(function(require){
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
+            it('should call the initial setup complete listeners when running locally', function() {
+                var completeStub = sinon.stub();
+                transporter.addInitialSetupCompleteListener(completeStub);
+
+                transporter.notifyOnReady();
+
+                expect(completeStub.called, 'initial setup complete listener called').to.equal(true);
+            });
+
+            it('should not call initial setup complete listeners when a message that isn\'t on is sent', function() {
+                var completeStub = sinon.stub();
+                transporter.addInitialSetupCompleteListener(completeStub);
+
+                transporter.notifyValueChange();
+
+                expect(completeStub.called, 'initial setup complete listener called').to.equal(false);
+            });
         });
 
         describe('CONFIG_CHANGE', function() {

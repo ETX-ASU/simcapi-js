@@ -469,6 +469,8 @@ var Transporter = function(options) {
         // window.parent can be itself if it's not inside an iframe
         if (window !== window.parent) {
             window.parent.postMessage(JSON.stringify(message), '*');
+        } else {
+            handleInitialSetupComplete({});
         }
     };
 
