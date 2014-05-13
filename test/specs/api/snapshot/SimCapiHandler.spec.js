@@ -1,4 +1,4 @@
-/*global window, document sinon*/
+/*global window, document sinon, iframe1, iframe2, iframe3*/
 define(function(require){
 
     var $               = require('jquery');
@@ -60,16 +60,29 @@ define(function(require){
 
         // Helper to mock postMessage event
         var mockPostMessage = function(assertCallback) {
-
             var callback = function(message, id) {
                 expect(id).not.to.be('iframe3');
                 assertCallback(message, id);
             };
 
             if (handler.sendMessage.hasOwnProperty('restore')) {
-              handler.sendMessage.restore();
+                handler.sendMessage.restore();
             }
             sandbox.stub(handler, 'sendMessage', callback);
+        };
+        var mockSendMessageToFrame = function(assertCallback) {
+            if(handler.sendMessage.hasOwnProperty('restore')) {
+                handler.sendMessage.restore();
+            }
+            var callback = function(message, id) {
+                expect(id).not.to.be('iframe3');
+                assertCallback(message, id);
+            };
+
+            if (handler.sendMessageToFrame.hasOwnProperty('restore')) {
+                handler.sendMessageToFrame.restore();
+            }
+            sandbox.stub(handler, 'sendMessageToFrame', callback);
         };
 
         it('should broadcast a reply to an HANDSHAKE_REQUEST message with a HANDSHAKE_RESPONSE', function() {
@@ -326,23 +339,22 @@ define(function(require){
             });
 
             it('should remove knowledge of the given sim', function() {
-                //mockPostMessage(function(response, iframeid) {});
-                handler.sendMessage.restore();
-                var frame = $container.find('#iframe1')[0];
-                var stub = sinon.stub();
-                frame.contentWindow.postMessage = stub;
+                var calls = 0;
+                mockSendMessageToFrame(function() {
+                    ++calls;
+                });
 
                 // send a snapshot to check if the iframe is known
                 var segment = new SnapshotSegment('stage.iframe1.value', '1');
                 handler.setSnapshot([segment]);
-                expect(stub.callCount).to.be(1);
+                expect(calls).to.be(1);
 
                 // remove knowledge of the sim and send another snapshot
                 handler.removeIFrame('iframe1');
                 handler.setSnapshot([segment]);
 
                 // should not send a message to the sim because its no longer known
-                expect(stub.callCount).to.be(1);
+                expect(calls).to.be(1);
 
                 // verify that the snapshots and descriptors for that sim are deleted
                 expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
@@ -358,17 +370,17 @@ define(function(require){
                 // create handshake
                 var authToken = setupHandshake('iframe1', 'token1');
 
-                handler.sendMessage.restore();
-                var frame = $container.find('#iframe1')[0];
-                var stub = sinon.stub();
-                frame.contentWindow.postMessage = stub;
+                var calls = 0;
+                mockSendMessageToFrame(function() {
+                    ++calls;
+                });
 
                 // force a pending messages
                 var segment = new SnapshotSegment('stage.iframe1.value', '1');
                 handler.setSnapshot([segment]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(stub.called, 'message sent to iframe').to.be(false);
+                expect(calls, 'message sent to iframe').to.be(0);
 
                 // create an ON_READY messages
                 var onReadyMsg = new SimCapiMessage({
@@ -404,15 +416,14 @@ define(function(require){
                 setupHandshake('iframe2', 'token1');
                 handler.sendMessage.restore();
 
-                var frame = $container.find('#iframe2')[0];
-                var stub = sinon.stub();
-                frame.contentWindow.postMessage = stub;
+                var calls = 0;
+                mockSendMessageToFrame(function() { ++calls; });
 
                 var segment = new SnapshotSegment('stage.iframe2.value2', '1');
                 handler.setSnapshot([segment]);
 
                 // a quicker way of checking if the mock is invoked.
-                expect(stub.called, 'message sent').to.be(false);
+                expect(calls, 'message sent').to.be(0);
             });
 
             it('should send snapshot immediately when ON_READY has been established', function(){
@@ -459,9 +470,7 @@ define(function(require){
                 var authToken = setupHandshake('iframe1', 'token1');
                 var authToken2 = setupHandshake('iframe2', 'token2');
 
-                handler.sendMessage.restore();
-                var frame = $container.find('#iframe1')[0];
-                frame.contentWindow.postMessage = sinon.stub();
+                mockSendMessageToFrame(function() {});
 
                 // force a pending messages
                 var segment = new SnapshotSegment('stage.iframe1.value', '1');
@@ -508,9 +517,7 @@ define(function(require){
             it('should not send the same snapshot if a second on ready occurs', function() {
                 var authToken = setupHandshake('iframe1', 'token1');
 
-                handler.sendMessage.restore();
-                var frame = $container.find('#iframe1')[0];
-                frame.contentWindow.postMessage = sinon.stub();
+                mockSendMessageToFrame(function() {});
 
                 // force a pending messages
                 var segment = new SnapshotSegment('stage.iframe1.value', '1');

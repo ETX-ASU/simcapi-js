@@ -380,6 +380,9 @@ var Transporter = function(options) {
             // send initial value snapshot
             self.notifyValueChange();
         }
+        if(!isInIframe()) {
+            handleInitialSetupComplete({ handshake : handshake });
+        }
     };
 
     /*
@@ -471,11 +474,12 @@ var Transporter = function(options) {
     // Helper to send message to viewer
     this.sendMessage = function(message) {
         // window.parent can be itself if it's not inside an iframe
-        if (window !== window.parent) {
+        if (isInIframe()) {
             window.parent.postMessage(JSON.stringify(message), '*');
-        } else {
-            handleInitialSetupComplete({ handshake : handshake });
         }
+    };
+    var isInIframe = function() {
+        return window !== window.parent;
     };
 
     // Returns the initial configuration passed in the handshake

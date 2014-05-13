@@ -404,15 +404,7 @@ var SimCapiHandler = function(options) {
             return;
         }
 
-        var frame = $container.find('#' + iframeid)[0];
-        // ignore hidden is needed for the flash side of things when the iframe begins as hidden
-        // but still need to perform a handshake.
-        if (ignoreHidden) {
-            frame = $container.find('#' + iframeid + ':visible')[0];
-        }
-        if (frame) {
-            frame.contentWindow.postMessage(JSON.stringify(message), '*');
-        } else {
+        if (!this.sendMessageToFrame(message, iframeid)) {
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf('stage.' + iframeid) !== -1) {
                     delete snapshot[iframeid];
@@ -420,6 +412,17 @@ var SimCapiHandler = function(options) {
                 }
             });
         }
+    };
+    this.sendMessageToFrame = function(message, iframeid) {
+        var frame = $container.find('#' + iframeid)[0];
+        // ignore hidden is needed for the flash side of things when the iframe begins as hidden
+        // but still need to perform a handshake.
+        if (ignoreHidden) {
+            frame = $container.find('#' + iframeid + ':visible')[0];
+        }
+        if(!frame) { return false; }
+        frame.contentWindow.postMessage(JSON.stringify(message), '*');
+        return true;
     };
 
     /*
