@@ -1,5 +1,5 @@
 /*global window, document, setTimeout */
-define(['jquery', 
+define(['jquery',
         'underscore',
         'api/snapshot/util/uuid',
         'api/snapshot/SimCapiMessage',
@@ -25,6 +25,7 @@ var Transporter = function(options) {
 
     //The list of change listeners
     var changeListeners = [];
+    var initialSetupCompleteListeners = [];
 
     // Authentication handshake used for communicating to viewer
     var handshake = {
@@ -49,13 +50,13 @@ var Transporter = function(options) {
 
     /*
      * Gets/SetsRequest callbacks
-     * simId -> { key -> { onSucess -> function, onError -> function } }   
+     * simId -> { key -> { onSucess -> function, onError -> function } }
      */
     var getRequests = {};
     var setRequests = {};
 
     /*
-    *   Throttles the value changed message to 25 milliseconds 
+    *   Throttles the value changed message to 25 milliseconds
     */
     var setTimeoutStarted = false;
     var currentTimeout = null;
@@ -71,40 +72,63 @@ var Transporter = function(options) {
      */
     this.capiMessageHandler = function(message) {
         switch(message.type) {
-        case SimCapiMessage.TYPES.HANDSHAKE_RESPONSE:
-            handleHandshakeResponse(message);
-            break;
-        case SimCapiMessage.TYPES.VALUE_CHANGE:
-            handleValueChangeMessage(message);
-            break;
-        case SimCapiMessage.TYPES.CONFIG_CHANGE:
-            handleConfigChangeMessage(message);
-            break;
-        case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
-            handleValueChangeRequestMessage(message);
-            break;
-        case SimCapiMessage.TYPES.CHECK_RESPONSE:
-            handleCheckResponse(message);
-            break;
-        case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
-            handleGetDataResponse(message);
-            break;
-        case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
-            handleSetDataResponse(message);
-            break;
+            case SimCapiMessage.TYPES.HANDSHAKE_RESPONSE:
+                handleHandshakeResponse(message);
+                break;
+            case SimCapiMessage.TYPES.VALUE_CHANGE:
+                handleValueChangeMessage(message);
+                break;
+            case SimCapiMessage.TYPES.CONFIG_CHANGE:
+                handleConfigChangeMessage(message);
+                break;
+            case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
+                handleValueChangeRequestMessage(message);
+                break;
+            case SimCapiMessage.TYPES.CHECK_RESPONSE:
+                handleCheckResponse(message);
+                break;
+            case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
+                handleGetDataResponse(message);
+                break;
+            case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
+                handleSetDataResponse(message);
+                break;
+            case SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE:
+                handleInitialSetupComplete(message);
+                break;
         }
     };
 
     this.addChangeListener = function(changeListener){
-      changeListeners.push(changeListener);
+        changeListeners.push(changeListener);
     };
-
     this.removeAllChangeListeners = function(){
-      changeListeners = [];
+        changeListeners = [];
     };
 
     /*
-     *   @since 0.5 
+     * @since 0.55
+     * Allows sims to watch for when the initial setup has been applied to the sim.
+     *
+     */
+    var initialSetupComplete = false;
+    this.addInitialSetupCompleteListener = function(listener) {
+        if(initialSetupComplete) { throw new Error('Initial setup already complete. This listener will never be called'); }
+        initialSetupCompleteListeners.push(listener);
+    };
+    this.removeAllInitialSetupCompleteListeners = function() {
+        initialSetupCompleteListeners = [];
+    };
+    var handleInitialSetupComplete = function(message) {
+        if(initialSetupComplete || message.handshake.authToken !== handshake.authToken) { return; }
+        for(var i = 0; i < initialSetupCompleteListeners.length; ++i) {
+            initialSetupCompleteListeners[i](message);
+        }
+        initialSetupComplete = true;
+    };
+
+    /*
+     *   @since 0.5
      *   Handles the get data message
      */
     var handleGetDataResponse = function(message){
@@ -133,7 +157,7 @@ var Transporter = function(options) {
                 setRequests[message.values.simId][message.values.key].onSuccess({
                         key: message.values.key,
                         value: message.values.value
-                    });    
+                    });
             }
             else if(message.values.responseType === 'error'){
                 setRequests[message.values.simId][message.values.key].onError(message.values.error);
@@ -223,7 +247,7 @@ var Transporter = function(options) {
         setRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
-        };        
+        };
 
         if(!handshake.authToken){
             pendingMessages.forHandshake.push(setDataRequestMsg);
@@ -255,7 +279,7 @@ var Transporter = function(options) {
             handshake.config = message.handshake.config;
         }
     };
-    
+
     /*
      * Handles request to report about value changes
      */
@@ -264,7 +288,7 @@ var Transporter = function(options) {
             self.notifyValueChange();
         }
     };
-    
+
 
     /*
      * Handles value change messages and update the model accordingly. If the
@@ -282,10 +306,10 @@ var Transporter = function(options) {
 
                     if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
                       //By calling set value, we parse the string of capiValue.value
-                      //to whatever type the outgoingMap has stored  
+                      //to whatever type the outgoingMap has stored
                       outgoingMap[key].setValue(capiValue.value);
                       changed.push(outgoingMap[key]);
-                    } 
+                    }
                 }
             });
 
@@ -295,7 +319,7 @@ var Transporter = function(options) {
                 changeListener(changed);
               });
             }
-            
+
         }
     };
 
@@ -356,6 +380,9 @@ var Transporter = function(options) {
             // send initial value snapshot
             self.notifyValueChange();
         }
+        if(!isInIframe()) {
+            handleInitialSetupComplete({ handshake : handshake });
+        }
     };
 
     /*
@@ -366,7 +393,7 @@ var Transporter = function(options) {
         if (callback.check) {
             throw new Error("You have already triggered a check event");
         }
-        
+
         handlers = handlers || function() {};
 
         callback.check = handlers.complete || function() {};
@@ -406,7 +433,7 @@ var Transporter = function(options) {
             pendingMessages.forValueChange = [];
 
           }, timeoutAmount);
-        }           
+        }
       }
       return null;
     };
@@ -431,7 +458,7 @@ var Transporter = function(options) {
       check(simCapiValue).isOfType(SimCapiValue);
 
       outgoingMap[simCapiValue.key] = simCapiValue;
-      
+
       this.notifyValueChange();
     };
 
@@ -447,9 +474,12 @@ var Transporter = function(options) {
     // Helper to send message to viewer
     this.sendMessage = function(message) {
         // window.parent can be itself if it's not inside an iframe
-        if (window !== window.parent) {
+        if (isInIframe()) {
             window.parent.postMessage(JSON.stringify(message), '*');
         }
+    };
+    var isInIframe = function() {
+        return window !== window.parent;
     };
 
     // Returns the initial configuration passed in the handshake
@@ -467,7 +497,7 @@ var Transporter = function(options) {
       catch(e){
         //silently ignore - occuring in test
       }
-        
+
     };
 
     // we have to wait until the dom is ready to attach anything or sometimes the js files
