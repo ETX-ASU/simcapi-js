@@ -8,17 +8,13 @@ module.exports = function(grunt) {
 
     // Clean
     clean: {
-      local: {
-        src: ['temp/local', 'dist']
-      },
-      test: {
-        src: ['temp/specs']
-      }
+      src: ['temp', 'dist']
     },
 
     // Lint
     jshint: {
-      all : ['grunt.js', 'app/scripts/api/**/*.js', 'test/specs/**/*.js'],
+      all : ['Gruntfile.js', 'app/scripts/**/*.js', 'test/specs/**/*.js', 
+             '!app/scripts/intro.js', '!app/scripts/outro.js'],
       options: {
         curly  : true,
         eqeqeq : true,
@@ -30,12 +26,16 @@ module.exports = function(grunt) {
         undef  : true,
         boss   : true,
         eqnull : true,
+        onecase : true,
+        scripturl: true,
         globals: {
           exports   : true,
           module    : false,
           define    : false,
           describe  : false,
+          xdescribe : false,
           it        : false,
+          xit       : false,
           beforeEach: false,
           afterEach : false,
           expect    : false,
@@ -72,7 +72,16 @@ module.exports = function(grunt) {
     },
     
     mocha : {
-      index : ['test/index.html']
+      dot: {
+        src : ['test/index.html']
+      },
+      bamboo : {
+        src : '<%= mocha.dot.src %>',
+        options : {
+          reporter : 'bamboo-mocha-reporter/lib/bamboo.js'
+        },
+        dest : 'temp/test/mocha.json'
+      }
     },
     
     // Watch
@@ -141,13 +150,14 @@ module.exports = function(grunt) {
 
   // Default task
   grunt.registerTask('default', 'dist:local');
-  grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha']);
+  grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:dot']);
+  grunt.registerTask('test-rel', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:bamboo']);
   
   // Custom tasks
-  grunt.registerTask('dist:local', ['clean:local', 'jshint', 'copy:local', 'test', 'requirejs:local']);
+  grunt.registerTask('dist:local', ['clean', 'jshint', 'copy:local', 'test', 'requirejs:local']);
 
   grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified', 'requirejs:handlerMinified']);
-  grunt.registerTask('rel', ['clean', 'jshint', 'copy:local', 'test', 'requirejs:exploded', 'requirejs:minified']);
+  grunt.registerTask('rel', ['clean', 'jshint', 'copy:local', 'test-rel', 'requirejs:exploded', 'requirejs:minified']);
 
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');
