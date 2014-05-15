@@ -1,4 +1,4 @@
-/*global window sinon setTimeout clearTimeout*/
+/*global window, sinon, setTimeout, clearTimeout*/
 define(function(require){
 
     var Transporter = require('api/snapshot/Transporter').Transporter;

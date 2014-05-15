@@ -16,11 +16,13 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "grunt-contrib": "0.4.0",
-    "grunt-lib-phantomjs": "0.2.0",
-    "grunt-mocha": "",
+    "grunt-contrib": "0.8.0",
+    "grunt-lib-phantomjs": "0.5.0",
+    "mocha": "~1.14",
+    "grunt-mocha": "0.4.10",
     "coverjs" : "0.0.11-alpha",
-    "grunt": "0.4.1"
+    "grunt": "0.4.2",
+    "bamboo-mocha-reporter" : "git+https://git.smartsparrow.com/platform/bamboo-mocha-reporter.git"
   },
   "keywords": []
 }

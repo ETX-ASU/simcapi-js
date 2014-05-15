@@ -1,4 +1,4 @@
-/*global window, document sinon, iframe1, iframe2, iframe3*/
+/*global window, document, sinon, iframe1, iframe2, iframe3*/
 define(function(require){
 
     var $               = require('jquery');
