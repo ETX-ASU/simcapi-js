@@ -76,7 +76,6 @@ var SimCapiHandler = function(options) {
      * A router to call appropriate functions for handling different types of CapiMessages.
      */
     this.capiMessageHandler = function(message) {
-        window.console.log(message);
         switch (message.type) {
         case SimCapiMessage.TYPES.HANDSHAKE_REQUEST:
             replyToHandshake(message.handshake);
@@ -423,7 +422,6 @@ var SimCapiHandler = function(options) {
         }
         if(!frame) { return false; }
 
-        window.console.log(message);
         frame.contentWindow.postMessage(JSON.stringify(message), '*');
         return true;
     };
