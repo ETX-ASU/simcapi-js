@@ -14,7 +14,7 @@ module.exports = function(grunt) {
     // Lint
     jshint: {
       all : ['Gruntfile.js', 'app/scripts/**/*.js', 'test/specs/**/*.js', 
-             '!app/scripts/intro.js', '!app/scripts/outro.js'],
+             '!app/scripts/intro*.js', '!app/scripts/outro*.js'],
       options: {
         curly  : true,
         eqeqeq : true,
@@ -108,18 +108,33 @@ module.exports = function(grunt) {
           out           : process.env.HTDOCS + '/aelp/local/js/pipit.js'
         }
       },
-      handlerMinified : {
+
+      handler_exploded : {
         options : {
+          optimize      : "none",
           baseUrl       : 'temp/local/scripts',
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/SimCapiHandler'],
-          wrap          : false,
-          out           : 'dist/handler_min/js/pipit.js'
+          out           : 'dist/pipit-handler-<%= version %>.js',
+          wrap          : {
+            startFile: 'app/scripts/intro-handler.js',
+            endFile  : 'app/scripts/outro-handler.js'
+          }
+        }
+      },
+      handler_minified : {
+        options: {
+          baseUrl        : '<%= requirejs.handler_exploded.options.baseUrl %>',
+          mainConfigFile : '<%= requirejs.handler_exploded.options.mainConfigFile %>',
+          name           : '<%= requirejs.handler_exploded.options.name %>',
+          include        : '<%= requirejs.handler_exploded.options.include %>',
+          out            : 'dist/pipit-handler-<%= version %>.min.js',
+          wrap           : '<%= requirejs.handler_exploded.options.wrap %>'
         }
       },
 
-      exploded:{
+      sim_exploded:{
         options:{
           optimize      : "none",
           baseUrl       : 'temp/local/scripts',
@@ -135,14 +150,14 @@ module.exports = function(grunt) {
           }
         }
       },
-      minified:{
+      sim_minified:{
         options: {
-          baseUrl        : '<%= requirejs.exploded.options.baseUrl %>',
-          mainConfigFile : '<%= requirejs.exploded.options.mainConfigFile %>',
-          name           : '<%= requirejs.exploded.options.name %>',
-          include        : '<%= requirejs.exploded.options.include %>',
+          baseUrl        : '<%= requirejs.sim_exploded.options.baseUrl %>',
+          mainConfigFile : '<%= requirejs.sim_exploded.options.mainConfigFile %>',
+          name           : '<%= requirejs.sim_exploded.options.name %>',
+          include        : '<%= requirejs.sim_exploded.options.include %>',
           out            : 'dist/pipit-<%= version %>.min.js',
-          wrap           : '<%= requirejs.exploded.options.wrap %>'
+          wrap           : '<%= requirejs.sim_exploded.options.wrap %>'
         }
       }
     }
@@ -152,12 +167,12 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'dist:local');
   grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:dot']);
   grunt.registerTask('test-rel', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:bamboo']);
-  
+
   // Custom tasks
   grunt.registerTask('dist:local', ['clean', 'jshint', 'copy:local', 'test', 'requirejs:local']);
 
-  grunt.registerTask('dist:release', ['dist:local', 'requirejs:exploded', 'requirejs:minified', 'requirejs:handlerMinified']);
-  grunt.registerTask('rel', ['clean', 'jshint', 'copy:local', 'test-rel', 'requirejs:exploded', 'requirejs:minified']);
+  grunt.registerTask('rel', ['clean', 'jshint', 'copy:local', 'test-rel', 'requirejs:sim_minified',
+                             'requirejs:sim_exploded', 'requirejs:handler_minified', 'requirejs:handler_exploded']);
 
   // Loading plugins
   grunt.loadNpmTasks('grunt-contrib');

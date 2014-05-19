@@ -274,7 +274,7 @@ define(function(require){
                     handler.capiMessageHandler(valueChangeMsg);
 
                     // retrieve the snapshot from the handler
-                    var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1'));
+                    var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1.'));
 
                     // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
                     expect(_.size(descriptors)).to.be(3);
@@ -623,7 +623,7 @@ define(function(require){
                     $container.find('#iframe2').css('display', 'none');
 
                     handler.sendMessage.restore();
-                    handler.sendMessage(null, 'iframe2');
+                    handler.sendMessage(new SimCapiMessage(), 'iframe2');
 
                     expect(handler.getToken('iframe1')).to.be(authToken1);
                     expect(handler.getToken('iframe2')).to.be(authToken2);
