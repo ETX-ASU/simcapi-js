@@ -453,16 +453,40 @@ define(function(require){
                         }
                     });
 
+                    var segment = new SnapshotSegment('stage.iframe2.value2', '1');
+                    handler.setSnapshot([segment]);
+
                     handler.capiMessageHandler(onReadyMsg);
 
                     // a quicker way of checking if the mock is invoked.
-                    expect(invoked).to.be(0);
+                    expect(invoked).to.be(1);
+                });
+
+                it('should send the snapshot with the correct auth token if the handshake happens later than the snapshot', function() {
+                    var sentMessage;
+                    mockSendMessageToFrame(function(message, frameid) {
+                        sentMessage = message;
+                    });
 
                     var segment = new SnapshotSegment('stage.iframe2.value2', '1');
                     handler.setSnapshot([segment]);
 
-                    // a quicker way of checking if the mock is invoked.
-                    expect(invoked).to.be(1);
+                    // create handshake
+                    var authToken = setupHandshake('iframe2', 'token1');
+                    handler.sendMessage.restore();
+
+                    // create an ON_READY messages
+                    var onReadyMsg = new SimCapiMessage({
+                        type : SimCapiMessage.TYPES.ON_READY,
+                        handshake : {
+                            requestToken: null,
+                            authToken : authToken
+                        }
+                    });
+
+                    handler.capiMessageHandler(onReadyMsg);
+
+                    expect(sentMessage.handshake.authToken).to.equal(authToken);
                 });
 
                 it('should send snapshot when a second ON_READY is received', function() {
@@ -517,7 +541,10 @@ define(function(require){
                 it('should not send the same snapshot if a second on ready occurs', function() {
                     var authToken = setupHandshake('iframe1', 'token1');
 
-                    mockSendMessageToFrame(function() {});
+                    var invoked = 0;
+                    mockSendMessageToFrame(function(response, iframeid){
+                        invoked++;
+                    });
 
                     // force a pending messages
                     var segment = new SnapshotSegment('stage.iframe1.value', '1');
@@ -530,11 +557,6 @@ define(function(require){
                             requestToken: null,
                             authToken : authToken
                         }
-                    });
-
-                    var invoked = 0;
-                    mockPostMessage(function(response, iframeid){
-                        invoked++;
                     });
 
                     handler.capiMessageHandler(onReadyMsg);
