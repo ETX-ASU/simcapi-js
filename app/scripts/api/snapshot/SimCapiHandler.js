@@ -404,6 +404,7 @@ var SimCapiHandler = function(options) {
             return;
         }
 
+        if(!message.handshake.authToken) { message.handshake.authToken = idToToken[iframeid]; }
         if (!this.sendMessageToFrame(message, iframeid)) {
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf('stage.' + iframeid) !== -1) {
@@ -413,6 +414,9 @@ var SimCapiHandler = function(options) {
             });
         }
     };
+    // NOTE: Do not try to stub window.postMessage due to IE9 not allowing it
+    // Tests should run in all supported browsers
+    // This method should almost never be used directly, use send message instead.
     this.sendMessageToFrame = function(message, iframeid) {
         var frame = $container.find('#' + iframeid)[0];
         // ignore hidden is needed for the flash side of things when the iframe begins as hidden

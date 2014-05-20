@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
-    version: '0.56',
+    version: '0.57',
 
     // Clean
     clean: {
@@ -13,7 +13,7 @@ module.exports = function(grunt) {
 
     // Lint
     jshint: {
-      all : ['Gruntfile.js', 'app/scripts/**/*.js', 'test/specs/**/*.js', 
+      all : ['Gruntfile.js', 'app/scripts/**/*.js', 'test/specs/**/*.js',
              '!app/scripts/intro*.js', '!app/scripts/outro*.js'],
       options: {
         curly  : true,
@@ -70,7 +70,7 @@ module.exports = function(grunt) {
         }
       }
     },
-    
+
     mocha : {
       dot: {
         src : ['test/index.html']
@@ -83,7 +83,7 @@ module.exports = function(grunt) {
         dest : 'temp/test/mocha.json'
       }
     },
-    
+
     // Watch
     watch: {
       jsscripts: {
