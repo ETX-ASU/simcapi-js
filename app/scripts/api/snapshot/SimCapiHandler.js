@@ -310,7 +310,7 @@ var SimCapiHandler = function(options) {
         if (target.length <= path.length) {
             // e.g. targetPath = ['iframe', 'propertyA']; anything starting with iframe.propertyA.* will be added
             for (var i = 0; i < target.length; i++) {
-                if (target[i] !== path[i]) {
+                if (target[i].length > 0 && target[i] !== path[i]) {
                     return false;
                 }
             }
@@ -398,7 +398,7 @@ var SimCapiHandler = function(options) {
     // can't mock postMessage in ie9 so we wrap it and mock the wrap :D
     this.sendMessage = function(message, iframeid) {
         var token = idToToken[iframeid];
-        if(!isReady[token]) {
+        if(message.type !== SimCapiMessage.TYPES.HANDSHAKE_RESPONSE && !isReady[token]) {
             if(!pendingMessages[iframeid]) { pendingMessages[iframeid] = []; }
             pendingMessages[iframeid].push(message);
             return;
@@ -425,6 +425,7 @@ var SimCapiHandler = function(options) {
             frame = $container.find('#' + iframeid + ':visible')[0];
         }
         if(!frame) { return false; }
+
         frame.contentWindow.postMessage(JSON.stringify(message), '*');
         return true;
     };
