@@ -322,9 +322,7 @@ var Transporter = function(options) {
 
             //Ensure that changed object has something in it.
             if(changed.length !==0){
-              _.each(changeListeners, function(changeListener){
-                changeListener(changed);
-              });
+                callChangeListeners(changed);
             }
 
         }
@@ -470,6 +468,9 @@ var Transporter = function(options) {
       if(toBeApplied[simCapiValue.key]){
          simCapiValue.setValue(toBeApplied[simCapiValue.key]);
          delete toBeApplied[simCapiValue.key];
+
+         //Tell the sim the values changed.
+         callChangeListeners([simCapiValue]);
       }
 
       this.notifyValueChange();
@@ -493,6 +494,13 @@ var Transporter = function(options) {
     };
     var isInIframe = function() {
         return window !== window.parent;
+    };
+
+    // Calls all the changeListeners
+    var callChangeListeners = function(values){
+        _.each(changeListeners, function(changeListener){
+            changeListener(values);
+        });
     };
 
     // Returns the initial configuration passed in the handshake
