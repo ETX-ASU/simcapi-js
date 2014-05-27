@@ -23,6 +23,9 @@ var Transporter = function(options) {
     // The mapping of watched 'attributes'
     var outgoingMap = options.outgoingMap || {};
 
+    //The mapping of capi values that were recieved and are waiting to be applied.
+    var toBeApplied = options.toBeApplied || {};
+
     //The list of change listeners
     var changeListeners = [];
     var initialSetupCompleteListeners = [];
@@ -310,6 +313,10 @@ var Transporter = function(options) {
                       outgoingMap[key].setValue(capiValue.value);
                       changed.push(outgoingMap[key]);
                     }
+                    else if(!outgoingMap[key]){
+                        //key hasn't been exposed yet. Could be a dynamic capi property.
+                        toBeApplied[key] = capiValue.value;
+                    }
                 }
             });
 
@@ -458,6 +465,12 @@ var Transporter = function(options) {
       check(simCapiValue).isOfType(SimCapiValue);
 
       outgoingMap[simCapiValue.key] = simCapiValue;
+
+      //Check if there needs a value to be applied
+      if(toBeApplied[simCapiValue.key]){
+         simCapiValue.setValue(toBeApplied[simCapiValue.key]);
+         delete toBeApplied[simCapiValue.key];
+      }
 
       this.notifyValueChange();
     };

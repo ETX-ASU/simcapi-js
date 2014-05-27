@@ -41,14 +41,14 @@ module.exports = function(grunt) {
           expect    : false,
           spyOn     : false
         }
-      },
+      }
     },
 
     // Copy
     copy: {
       local: {
         files: [
-          {dest : 'temp/local/scripts/', src : ['**'], cwd : 'app/scripts/', expand : true},
+          {dest : 'temp/local/scripts/', src : ['**'], cwd : 'app/scripts/', expand : true}
         ]
       },
       test: {
@@ -141,7 +141,7 @@ module.exports = function(grunt) {
           mainConfigFile: 'app/scripts/config.js',
           name          : '../../../bower_components/almond/almond',
           include       : ['api/snapshot/Transporter', 'api/snapshot/CapiModel', 'api/snapshot/Controller',
-                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter',
+                           'api/snapshot/adapters/CapiAdapter', 'api/snapshot/adapters/BackboneAdapter'
                            ],
           out           : 'dist/pipit-<%= version %>.js',
           wrap          : {
