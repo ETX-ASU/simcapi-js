@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.55;
+    var version = 0.58;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -22,6 +22,9 @@ var Transporter = function(options) {
 
     // The mapping of watched 'attributes'
     var outgoingMap = options.outgoingMap || {};
+
+    //The mapping of capi values that were recieved and are waiting to be applied.
+    var toBeApplied = options.toBeApplied || {};
 
     //The list of change listeners
     var changeListeners = [];
@@ -310,14 +313,16 @@ var Transporter = function(options) {
                       outgoingMap[key].setValue(capiValue.value);
                       changed.push(outgoingMap[key]);
                     }
+                    else if(!outgoingMap[key]){
+                        //key hasn't been exposed yet. Could be a dynamic capi property.
+                        toBeApplied[key] = capiValue.value;
+                    }
                 }
             });
 
             //Ensure that changed object has something in it.
             if(changed.length !==0){
-              _.each(changeListeners, function(changeListener){
-                changeListener(changed);
-              });
+                callChangeListeners(changed);
             }
 
         }
@@ -459,6 +464,15 @@ var Transporter = function(options) {
 
       outgoingMap[simCapiValue.key] = simCapiValue;
 
+      //Check if there needs a value to be applied
+      if(toBeApplied[simCapiValue.key]){
+         simCapiValue.setValue(toBeApplied[simCapiValue.key]);
+         delete toBeApplied[simCapiValue.key];
+
+         //Tell the sim the values changed.
+         callChangeListeners([simCapiValue]);
+      }
+
       this.notifyValueChange();
     };
 
@@ -480,6 +494,13 @@ var Transporter = function(options) {
     };
     var isInIframe = function() {
         return window !== window.parent;
+    };
+
+    // Calls all the changeListeners
+    var callChangeListeners = function(values){
+        _.each(changeListeners, function(changeListener){
+            changeListener(values);
+        });
     };
 
     // Returns the initial configuration passed in the handshake

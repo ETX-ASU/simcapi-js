@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.58 - Applies capi properties received before the expose.
      * 0.55 - Added initial setup complete event, true pending message queue, Do not delete tokens for invisible iframes
      * 0.54 - Updgraded jquery dependency.
      * 0.53 - Minor fix so no object can be passed to triggerCheck.

@@ -683,6 +683,57 @@ define(function(require){
             });
         });
 
+        describe('SET_VALUE', function(){
+            var message;
+            beforeEach(function() {
+                message = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake : {
+                        requestToken : requestToken,
+                        authToken : authToken
+                    },
+                    values: {
+                        'attr1' : new SimCapiValue({
+                            key: 'attr1',
+                            type : SimCapiValue.TYPES.NUMBER,
+                            value : 0.5
+                        })
+                    }
+                });
+
+                doHandShake();
+            });
+
+            it('should apply the value from a message sent before the set of the value in the transporter', function(){
+
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+
+                transporter.capiMessageHandler(message);
+
+                var exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 10
+                });
+
+                transporter.setValue(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(0.5);
+
+                //setting the value again shouldn't set the value to 0.5
+                exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 15
+                });
+
+                transporter.setValue(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(15);
+            });
+
+        });
+
         describe('INITIAL_SETUP_COMPLETE', function() {
             var message;
             beforeEach(function() {
