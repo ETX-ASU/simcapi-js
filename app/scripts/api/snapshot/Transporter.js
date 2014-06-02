@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.58;
+    var version = 0.59;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
