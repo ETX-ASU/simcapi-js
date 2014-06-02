@@ -45,9 +45,14 @@ var Transporter = function(options) {
       forValueChange: []
     };
 
+    //tracks if check has been triggered.
+    var checkTriggered = false;
+
     // holds callbacks that may be needed
     var callback = {
-        check : null,
+        check : {
+            complete: []
+        },
         getData: null
     };
 
@@ -88,7 +93,7 @@ var Transporter = function(options) {
                 handleValueChangeRequestMessage(message);
                 break;
             case SimCapiMessage.TYPES.CHECK_RESPONSE:
-                handleCheckResponse(message);
+                handleCheckCompleteResponse(message);
                 break;
             case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
                 handleGetDataResponse(message);
@@ -128,6 +133,15 @@ var Transporter = function(options) {
             initialSetupCompleteListeners[i](message);
         }
         initialSetupComplete = true;
+    };
+
+    /*
+     * @since 0.6
+     * Can listen to check complete event
+     *
+     */
+    this.addCheckCompleteListener = function(listener, once){
+        callback.check.complete.push({handler: listener, once: once});
     };
 
     /*
@@ -267,11 +281,23 @@ var Transporter = function(options) {
     /*
      * Handles check complete event
      */
-    var handleCheckResponse = function(message) {
-      if (callback.check) {
-        callback.check(message);
-        callback.check = null;
+    var handleCheckCompleteResponse = function(message) {
+      var toBeRemoved = [];
+
+      for(var i in callback.check.complete){
+
+        callback.check.complete[i].handler(message);
+
+        if(callback.check.complete[i].once){
+            toBeRemoved.push(callback.check.complete[i]);
+        }
       }
+
+      for(var r in toBeRemoved){
+        callback.check.complete.splice(callback.check.complete.indexOf(toBeRemoved[r]),1);
+      }
+
+      checkTriggered = false;
     };
 
     /*
@@ -395,13 +421,17 @@ var Transporter = function(options) {
      * Trigger a check event from the sim
      */
     this.triggerCheck = function(handlers) {
-        if (callback.check) {
+        if (checkTriggered) {
             throw new Error("You have already triggered a check event");
         }
 
-        handlers = handlers || function() {};
+        checkTriggered = true;
 
-        callback.check = handlers.complete || function() {};
+        handlers = handlers || {};
+
+        if(handlers.complete){
+            this.addCheckCompleteListener({handler: handlers.complete, once: true});
+        }
 
         var triggerCheckMsg = new SimCapiMessage({
             type : SimCapiMessage.TYPES.CHECK_REQUEST,
