@@ -30,18 +30,21 @@ function parseArray(value){
 }
 
 function isArray(value){
-    return value.charAt(0) === '[' && 
+    return value.charAt(0) === '[' &&
         value.charAt(value.length-1) === ']';
 }
 
 var SimCapiValue = function(options) {
 
-    var getType = function(value){
+    var getType = function(value, allowedValues){
       var passiveValue = check(value).passive();
       var type;
 
+      if(allowedValues){
+        type = SimCapiValue.TYPES.ENUM;
+      }
       //Booleans must be checked before strings.
-      if(passiveValue.isBoolean()){
+      else if(passiveValue.isBoolean()){
         type = SimCapiValue.TYPES.BOOLEAN;
       }
       else if(passiveValue.isNumber()){
@@ -60,7 +63,7 @@ var SimCapiValue = function(options) {
       return type;
     },
 
-    parseValue = function(value, type) {
+    parseValue = function(value, type, allowedValues) {
       switch (type) {
         case SimCapiValue.TYPES.NUMBER:
           check(parseFloat(value)).isNumber();
@@ -72,10 +75,15 @@ var SimCapiValue = function(options) {
         case SimCapiValue.TYPES.BOOLEAN:
           value = parseBoolean(value);
           check(value).isBoolean();
-          break; 
+          break;
         case SimCapiValue.TYPES.ARRAY:
           value = parseArray(value);
           check(value).isArray();
+          break;
+        case SimCapiValue.TYPES.ENUM:
+          check(value).isString();
+
+          if(allowedValues.indexOf(value) === -1) { throw new Error('value is not allowed.'); }
       }
 
       return value;
@@ -111,17 +119,17 @@ var SimCapiValue = function(options) {
     /*
     * List of possible values for enum
     */
-    this.enums = options.enums || null;
+    this.allowedValues = options.allowedValues || null;
 
 
-    
+
     if(this.type){
       //we have a type so we only need to parse the value
-      this.value = parseValue(this.value, this.type);
+      this.value = parseValue(this.value, this.type, this.allowedValues);
     }
     else if(this.value !== undefined && this.value !== null){
       //we don't have a type but we have a value, we can infer the type
-      this.type = getType(this.value);
+      this.type = getType(this.value, this.allowedValues);
 
       //If determined to be of type array but value is a string, convert it.
       if(this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()){
@@ -131,9 +139,9 @@ var SimCapiValue = function(options) {
     else{
       throw new Error ('Value nor type was given');
     }
-    
+
     this.setValue = function(value){
-      this.value = parseValue(value, this.type);
+      this.value = parseValue(value, this.type, this.allowedValues);
     };
 };
 
@@ -145,7 +153,8 @@ SimCapiValue.TYPES = {
     NUMBER  : 1,
     STRING  : 2,
     ARRAY   : 3,
-    BOOLEAN : 4
+    BOOLEAN : 4,
+    ENUM    : 5
 };
 
 return SimCapiValue;
