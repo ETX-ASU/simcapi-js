@@ -201,10 +201,10 @@ var SimCapiHandler = function(options) {
         }
     };
 
-    this.notifyCheckResponse = function() {
+    this.notifyCheckCompleteResponse = function() {
         // create a message
         var message = new SimCapiMessage();
-        message.type = SimCapiMessage.TYPES.CHECK_RESPONSE;
+        message.type = SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE;
         message.handshake = {
             // Config object is used to pass relevant information to the sim
             // like the lesson id, etc.
@@ -215,12 +215,27 @@ var SimCapiHandler = function(options) {
         var remainingResponses = pendingCheckResponses;
         pendingCheckResponses = {};
 
-        // broadcast check response to each sim
+        // broadcast check complete response to each sim
         _.each(remainingResponses, function(value, authToken) {
             message.handshake.authToken = authToken;
             self.sendMessage(message, tokenToId[authToken]);
         });
     };
+
+    this.notifyCheckStartResponse = function(){
+        //create message
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.CHECK_START_RESPONSE;
+        message.handshake = {
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        // broadcast check start response to each sim
+        _.each(idToToken, function(authToken, iframeId) {
+            message.handshake.authToken = authToken;
+            self.sendMessage(message, iframeId);
+        });
+    }
 
     /*
      * Update the snapshot with new values recieved from the appropriate iframe.

@@ -51,7 +51,8 @@ var Transporter = function(options) {
     // holds callbacks that may be needed
     var callback = {
         check : {
-            complete: []
+            complete: [],
+            start: []
         },
         getData: null
     };
@@ -92,8 +93,11 @@ var Transporter = function(options) {
             case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
                 handleValueChangeRequestMessage(message);
                 break;
-            case SimCapiMessage.TYPES.CHECK_RESPONSE:
+            case SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE:
                 handleCheckCompleteResponse(message);
+                break;
+            case SimCapiMessage.TYPES.CHECK_START_RESPONSE:
+                handleCheckStartResponse(message);
                 break;
             case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
                 handleGetDataResponse(message);
@@ -142,6 +146,10 @@ var Transporter = function(options) {
      */
     this.addCheckCompleteListener = function(listener, once){
         callback.check.complete.push({handler: listener, once: once});
+    };
+
+    this.addCheckStartListener = function(listener, once){
+        callback.check.start.push({handler:listener, once: once});
     };
 
     /*
@@ -282,22 +290,33 @@ var Transporter = function(options) {
      * Handles check complete event
      */
     var handleCheckCompleteResponse = function(message) {
+      handleCheckResponse('complete', message);
+
+      checkTriggered = false;
+    };
+
+    /*
+     * Handles check start event. Does not get invoked if the sim triggers the check event.
+     */
+    var handleCheckStartResponse = function(message){
+      handleCheckResponse('start', message);
+    };
+
+    var handleCheckResponse = function(eventName, message){
       var toBeRemoved = [];
 
-      for(var i in callback.check.complete){
+      for(var i in callback.check[eventName]){
 
-        callback.check.complete[i].handler(message);
+        callback.check[eventName][i].handler(message);
 
-        if(callback.check.complete[i].once){
-            toBeRemoved.push(callback.check.complete[i]);
+        if(callback.check[eventName][i].once){
+            toBeRemoved.push(callback.check[eventName][i]);
         }
       }
 
       for(var r in toBeRemoved){
-        callback.check.complete.splice(callback.check.complete.indexOf(toBeRemoved[r]),1);
+        callback.check[eventName].splice(callback.check[eventName].indexOf(toBeRemoved[r]),1);
       }
-
-      checkTriggered = false;
     };
 
     /*
