@@ -34,14 +34,6 @@ function isArray(value){
         value.charAt(value.length-1) === ']';
 }
 
-function checkAllowedValuesValid(allowedValues){
-    check(allowedValues).isArray();
-
-    for(var i=0;i<allowedValues.length; ++i){
-        check(allowedValues[i]).isString();
-    }
-}
-
 var SimCapiValue = function(options) {
 
     var getType = function(value, allowedValues){
@@ -49,7 +41,7 @@ var SimCapiValue = function(options) {
       var type;
 
       if(allowedValues){
-        checkAllowedValuesValid(allowedValues);
+        check(allowedValues).each().isString();
         type = SimCapiValue.TYPES.ENUM;
       }
       //Booleans must be checked before strings.
@@ -70,9 +62,9 @@ var SimCapiValue = function(options) {
       }
 
       return type;
-    },
+    };
 
-    parseValue = function(value, type, allowedValues) {
+    var parseValue = function(value, type, allowedValues) {
       switch (type) {
         case SimCapiValue.TYPES.NUMBER:
           check(parseFloat(value)).isNumber();
@@ -91,7 +83,7 @@ var SimCapiValue = function(options) {
           break;
         case SimCapiValue.TYPES.ENUM:
           check(value).isString();
-          checkAllowedValuesValid(allowedValues);
+          check(allowedValues).each().isString();
 
           if(allowedValues.indexOf(value) === -1) { throw new Error('value is not allowed.'); }
       }
