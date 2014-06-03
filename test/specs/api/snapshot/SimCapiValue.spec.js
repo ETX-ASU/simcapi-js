@@ -17,20 +17,21 @@ define(function(require){
     });
 
     it('should determine the type to be ENUM and throw error if value is not allowed', function(){
-        var value = new SimCapiValue({key:'test', value:"enum1", allowedValues:["enum1", "enum2", "enum3"]});
+        var allowedValues = ["enum1", "enum2", "enum3"];
+        var value = new SimCapiValue({key:'test', value:"enum1", allowedValues:allowedValues});
 
         expect(value.type).to.equal(SimCapiValue.TYPES.ENUM);
+        expect(value.allowedValues).to.equal(allowedValues);
 
-        var errorThrown = false;
+        expect(function() { value.setValue('enumUndefined'); }).throwError();
 
-        try{
-           value.setValue('enumUndefined');
-        }
-        catch(e){
-            errorThrown = true;
-        }
+    });
 
-        expect(errorThrown).to.equal(true);
+    it('should throw error allowed values is not valid', function(){
+
+        expect(function() { new SimCapiValue({key:'test', value:"enum1", allowedValues:"enum1"}); }).throwError();
+        expect(function() { new SimCapiValue({key:'test', value:1, allowedValues:[1]}); }).throwError();
+        expect(function() { new SimCapiValue({key:'test', value:1, allowedValues:null}); }).to.not.throwError();
 
     });
 
