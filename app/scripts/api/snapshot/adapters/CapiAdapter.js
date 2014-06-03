@@ -36,8 +36,7 @@ var CapiAdapter = function(options){
         key: alias,
         value: parent.get(varName),
         type: params.type,
-        readonly: params.readonly,
-        allowedValues: params.allowedValues
+        readonly: params.readonly
       });
 
       if(capiValue.type === SimCapiValue.TYPES.ARRAY){
@@ -49,8 +48,7 @@ var CapiAdapter = function(options){
           key: alias,
           value: values[originalName],
           type: simCapiParams.type,
-          readonly: simCapiParams.readonly,
-          allowedValues: params.allowedValues
+          readonly: simCapiParams.readonly
         });
 
         if(capiValue.type === SimCapiValue.TYPES.ARRAY){
