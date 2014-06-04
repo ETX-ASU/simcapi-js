@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.6  - Added Check Start Event
      * 0.58 - Applies capi properties received before the expose.
      * 0.55 - Added initial setup complete event, true pending message queue, Do not delete tokens for invisible iframes
      * 0.54 - Updgraded jquery dependency.
@@ -201,6 +202,11 @@ var SimCapiHandler = function(options) {
         }
     };
 
+    /*
+     * @since 0.6
+     * Replaced notifyCheckResponse
+     * Notify clients that check has been completed
+     */
     this.notifyCheckCompleteResponse = function() {
         // create a message
         var message = new SimCapiMessage();
@@ -222,6 +228,10 @@ var SimCapiHandler = function(options) {
         });
     };
 
+    /*
+     * @since 0.6
+     * Notify clients that check has been clicked
+     */
     this.notifyCheckStartResponse = function(){
         //create message
         var message = new SimCapiMessage();
