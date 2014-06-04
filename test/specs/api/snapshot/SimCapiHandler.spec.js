@@ -188,6 +188,26 @@ define(function(require){
                 });
             });
 
+            describe('notifyCheckStartResponse', function(){
+
+                beforeEach(function() {
+                    setupHandshake('iframe1', 'token1');
+                    setupHandshake('iframe2', 'token2');
+                });
+
+                it('should notify all sims that check was clicked', function(){
+
+                    mockPostMessage(function(response, id) {
+                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_START_RESPONSE);
+                        expect(response.handshake.authToken === handler.getToken('iframe1') || response.handshake.authToken === handler.getToken('iframe2')).to.be(true);
+                    });
+
+                    handler.notifyCheckStartResponse();
+
+                    expect(handler.sendMessage.callCount).to.be(2);
+                });
+            });
+
             describe('notifyConfigChange', function() {
 
                 var authToken = null;
