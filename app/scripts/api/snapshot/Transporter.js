@@ -449,7 +449,7 @@ var Transporter = function(options) {
         handlers = handlers || {};
 
         if(handlers.complete){
-            this.addCheckCompleteListener({handler: handlers.complete, once: true});
+            this.addCheckCompleteListener(handlers.complete, true);
         }
 
         var triggerCheckMsg = new SimCapiMessage({

@@ -157,7 +157,7 @@ define(function(require){
                 handler.capiMessageHandler(onReadyMsg);
             };
 
-            describe('notifyCheckResponse', function() {
+            describe('notifyCheckCompleteResponse', function() {
                 beforeEach(function() {
                     setupHandshake('iframe1', 'token1');
                     setupHandshake('iframe2', 'token2');
@@ -175,15 +175,15 @@ define(function(require){
                     handler.capiMessageHandler(message);
 
                     mockPostMessage(function(response, id) {
-                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_RESPONSE);
+                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE);
                         expect(response.handshake.authToken === 'token1' || response.handshake.authToken === 'token2').to.be(true);
                     });
 
-                    handler.notifyCheckResponse();
+                    handler.notifyCheckCompleteResponse();
                     expect(handler.sendMessage.callCount).to.be(2);
 
                     // should clear the pending queue and not send anything else
-                    handler.notifyCheckResponse();
+                    handler.notifyCheckCompleteResponse();
                     expect(handler.sendMessage.callCount).to.be(2);
                 });
             });

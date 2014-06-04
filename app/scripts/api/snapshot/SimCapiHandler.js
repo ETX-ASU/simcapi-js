@@ -235,7 +235,7 @@ var SimCapiHandler = function(options) {
             message.handshake.authToken = authToken;
             self.sendMessage(message, iframeId);
         });
-    }
+    };
 
     /*
      * Update the snapshot with new values recieved from the appropriate iframe.
