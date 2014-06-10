@@ -157,7 +157,7 @@ define(function(require){
                 handler.capiMessageHandler(onReadyMsg);
             };
 
-            describe('notifyCheckResponse', function() {
+            describe('notifyCheckCompleteResponse', function() {
                 beforeEach(function() {
                     setupHandshake('iframe1', 'token1');
                     setupHandshake('iframe2', 'token2');
@@ -175,15 +175,35 @@ define(function(require){
                     handler.capiMessageHandler(message);
 
                     mockPostMessage(function(response, id) {
-                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_RESPONSE);
+                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE);
                         expect(response.handshake.authToken === 'token1' || response.handshake.authToken === 'token2').to.be(true);
                     });
 
-                    handler.notifyCheckResponse();
+                    handler.notifyCheckCompleteResponse();
                     expect(handler.sendMessage.callCount).to.be(2);
 
                     // should clear the pending queue and not send anything else
-                    handler.notifyCheckResponse();
+                    handler.notifyCheckCompleteResponse();
+                    expect(handler.sendMessage.callCount).to.be(2);
+                });
+            });
+
+            describe('notifyCheckStartResponse', function(){
+
+                beforeEach(function() {
+                    setupHandshake('iframe1', 'token1');
+                    setupHandshake('iframe2', 'token2');
+                });
+
+                it('should notify all sims that check was clicked', function(){
+
+                    mockPostMessage(function(response, id) {
+                        expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_START_RESPONSE);
+                        expect(response.handshake.authToken === handler.getToken('iframe1') || response.handshake.authToken === handler.getToken('iframe2')).to.be(true);
+                    });
+
+                    handler.notifyCheckStartResponse();
+
                     expect(handler.sendMessage.callCount).to.be(2);
                 });
             });

@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.59;
+    var version = 0.6;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -45,9 +45,15 @@ var Transporter = function(options) {
       forValueChange: []
     };
 
+    //tracks if check has been triggered.
+    var checkTriggered = false;
+
     // holds callbacks that may be needed
     var callback = {
-        check : null,
+        check : {
+            complete: [],
+            start: []
+        },
         getData: null
     };
 
@@ -87,8 +93,11 @@ var Transporter = function(options) {
             case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
                 handleValueChangeRequestMessage(message);
                 break;
-            case SimCapiMessage.TYPES.CHECK_RESPONSE:
-                handleCheckResponse(message);
+            case SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE:
+                handleCheckCompleteResponse(message);
+                break;
+            case SimCapiMessage.TYPES.CHECK_START_RESPONSE:
+                handleCheckStartResponse(message);
                 break;
             case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
                 handleGetDataResponse(message);
@@ -128,6 +137,19 @@ var Transporter = function(options) {
             initialSetupCompleteListeners[i](message);
         }
         initialSetupComplete = true;
+    };
+
+    /*
+     * @since 0.6
+     * Can listen to check complete event
+     *
+     */
+    this.addCheckCompleteListener = function(listener, once){
+        callback.check.complete.push({handler: listener, once: once});
+    };
+
+    this.addCheckStartListener = function(listener, once){
+        callback.check.start.push({handler:listener, once: once});
     };
 
     /*
@@ -267,10 +289,33 @@ var Transporter = function(options) {
     /*
      * Handles check complete event
      */
-    var handleCheckResponse = function(message) {
-      if (callback.check) {
-        callback.check(message);
-        callback.check = null;
+    var handleCheckCompleteResponse = function(message) {
+      handleCheckResponse('complete', message);
+
+      checkTriggered = false;
+    };
+
+    /*
+     * Handles check start event. Does not get invoked if the sim triggers the check event.
+     */
+    var handleCheckStartResponse = function(message){
+      handleCheckResponse('start', message);
+    };
+
+    var handleCheckResponse = function(eventName, message){
+      var toBeRemoved = [];
+
+      for(var i in callback.check[eventName]){
+
+        callback.check[eventName][i].handler(message);
+
+        if(callback.check[eventName][i].once){
+            toBeRemoved.push(callback.check[eventName][i]);
+        }
+      }
+
+      for(var r in toBeRemoved){
+        callback.check[eventName].splice(callback.check[eventName].indexOf(toBeRemoved[r]),1);
       }
     };
 
@@ -395,13 +440,17 @@ var Transporter = function(options) {
      * Trigger a check event from the sim
      */
     this.triggerCheck = function(handlers) {
-        if (callback.check) {
+        if (checkTriggered) {
             throw new Error("You have already triggered a check event");
         }
 
-        handlers = handlers || function() {};
+        checkTriggered = true;
 
-        callback.check = handlers.complete || function() {};
+        handlers = handlers || {};
+
+        if(handlers.complete){
+            this.addCheckCompleteListener(handlers.complete, true);
+        }
 
         var triggerCheckMsg = new SimCapiMessage({
             type : SimCapiMessage.TYPES.CHECK_REQUEST,

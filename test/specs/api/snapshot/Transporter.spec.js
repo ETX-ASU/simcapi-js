@@ -475,7 +475,7 @@ define(function(require){
 
         describe('CHECK_*', function() {
             var checkResponseMessage = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.CHECK_RESPONSE,
+                type : SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE,
                 handshake : {
                     authToken : authToken
                 }

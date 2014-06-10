@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.6  - Added Check Start Event
      * 0.59 - Enums are finally implemented.
      * 0.58 - Applies capi properties received before the expose.
      * 0.55 - Added initial setup complete event, true pending message queue, Do not delete tokens for invisible iframes
@@ -202,10 +203,15 @@ var SimCapiHandler = function(options) {
         }
     };
 
-    this.notifyCheckResponse = function() {
+    /*
+     * @since 0.6
+     * Replaced notifyCheckResponse
+     * Notify clients that check has been completed
+     */
+    this.notifyCheckCompleteResponse = function() {
         // create a message
         var message = new SimCapiMessage();
-        message.type = SimCapiMessage.TYPES.CHECK_RESPONSE;
+        message.type = SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE;
         message.handshake = {
             // Config object is used to pass relevant information to the sim
             // like the lesson id, etc.
@@ -216,10 +222,29 @@ var SimCapiHandler = function(options) {
         var remainingResponses = pendingCheckResponses;
         pendingCheckResponses = {};
 
-        // broadcast check response to each sim
+        // broadcast check complete response to each sim
         _.each(remainingResponses, function(value, authToken) {
             message.handshake.authToken = authToken;
             self.sendMessage(message, tokenToId[authToken]);
+        });
+    };
+
+    /*
+     * @since 0.6
+     * Notify clients that check has been clicked
+     */
+    this.notifyCheckStartResponse = function(){
+        //create message
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.CHECK_START_RESPONSE;
+        message.handshake = {
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        // broadcast check start response to each sim
+        _.each(idToToken, function(authToken, iframeId) {
+            message.handshake.authToken = authToken;
+            self.sendMessage(message, iframeId);
         });
     };
 
