@@ -196,7 +196,7 @@ var SimCapiHandler = function(options) {
         pendingCheckResponses[message.handshake.authToken] = true;
 
         // only trigger check event when we aren't waiting for a response
-        if (Object.keys(pendingCheckResponses).length === 1) {
+        if (Object.keys(pendingCheckResponses).length >= 1) {
             if (callback.check) {
                 callback.check();
             }
@@ -244,6 +244,9 @@ var SimCapiHandler = function(options) {
         // broadcast check start response to each sim
         _.each(idToToken, function(authToken, iframeId) {
             message.handshake.authToken = authToken;
+
+            pendingCheckResponses[message.handshake.authToken] = true;
+
             self.sendMessage(message, iframeId);
         });
     };
