@@ -1,4 +1,4 @@
-define(['underscore', 
+define(['underscore',
         'api/snapshot/Transporter',
         'api/snapshot/SimCapiMessage',
         'api/snapshot/SimCapiValue',
@@ -18,7 +18,7 @@ var CapiAdapter = function(options){
    * @param attrName - The 'attribute name'
    * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
-   *      alias  : alias of the attributeName 
+   *      alias  : alias of the attributeName
    *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
    *      readonly : True if and only if, the attribute can be changed.
    * }
@@ -31,12 +31,13 @@ var CapiAdapter = function(options){
       var simCapiParams = params;
       var originalName = varName;
       var alias = params.alias || varName;
-      
+
       var capiValue = new SimCapiValue({
         key: alias,
         value: parent.get(varName),
         type: params.type,
-        readonly: params.readonly
+        readonly: params.readonly,
+        allowedValues: params.allowedValues
       });
 
       if(capiValue.type === SimCapiValue.TYPES.ARRAY){
@@ -48,9 +49,10 @@ var CapiAdapter = function(options){
           key: alias,
           value: values[originalName],
           type: simCapiParams.type,
-          readonly: simCapiParams.readonly
+          readonly: simCapiParams.readonly,
+          allowedValues: params.allowedValues
         });
-        
+
         if(capiValue.type === SimCapiValue.TYPES.ARRAY){
           capiValue.value = '[' + parent.get(originalName).toString() + ']';
         }
@@ -60,16 +62,17 @@ var CapiAdapter = function(options){
 
       // listen to the model by attaching event handler on the parent
       parent.on('change:' + varName, watchFunc);
-      
-      _transporter.setValue(capiValue);
 
       modelsMapping[alias] = {
         alias: alias,
-        parent:parent, 
+        parent:parent,
         originalName:originalName,
         watchFunc: watchFunc
       };
-      
+
+
+      _transporter.setValue(capiValue);
+
     }
   };
 
@@ -112,10 +115,10 @@ var CapiAdapter = function(options){
         var parent = modelsMapping[capiValue.key].parent;
         var originalName = modelsMapping[capiValue.key].originalName;
 
-        parent.set(originalName, capiValue.value); 
+        parent.set(originalName, capiValue.value);
       }
     }, this);
-    
+
   };
 
   _transporter.addChangeListener(_.bind(this.handleValueChange,this));
@@ -128,7 +131,7 @@ var _instance = null;
 var getInstance = function() {
     if(!_instance) {
         _instance = new CapiAdapter();
-        _instance.CapiModel = CapiModel; 
+        _instance.CapiModel = CapiModel;
     }
     return _instance;
 };

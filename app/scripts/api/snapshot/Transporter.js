@@ -1,5 +1,5 @@
 /*global window, document, setTimeout */
-define(['jquery', 
+define(['jquery',
         'underscore',
         'api/snapshot/util/uuid',
         'api/snapshot/SimCapiMessage',
@@ -12,7 +12,7 @@ _.noConflict();
 
 var Transporter = function(options) {
     // current version of Transporter
-    var version = 0.54;
+    var version = 0.6;
 
     // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
     // null checks
@@ -23,8 +23,12 @@ var Transporter = function(options) {
     // The mapping of watched 'attributes'
     var outgoingMap = options.outgoingMap || {};
 
+    //The mapping of capi values that were recieved and are waiting to be applied.
+    var toBeApplied = options.toBeApplied || {};
+
     //The list of change listeners
     var changeListeners = [];
+    var initialSetupCompleteListeners = [];
 
     // Authentication handshake used for communicating to viewer
     var handshake = {
@@ -41,21 +45,27 @@ var Transporter = function(options) {
       forValueChange: []
     };
 
+    //tracks if check has been triggered.
+    var checkTriggered = false;
+
     // holds callbacks that may be needed
     var callback = {
-        check : null,
+        check : {
+            complete: [],
+            start: []
+        },
         getData: null
     };
 
     /*
      * Gets/SetsRequest callbacks
-     * simId -> { key -> { onSucess -> function, onError -> function } }   
+     * simId -> { key -> { onSucess -> function, onError -> function } }
      */
     var getRequests = {};
     var setRequests = {};
 
     /*
-    *   Throttles the value changed message to 25 milliseconds 
+    *   Throttles the value changed message to 25 milliseconds
     */
     var setTimeoutStarted = false;
     var currentTimeout = null;
@@ -71,40 +81,79 @@ var Transporter = function(options) {
      */
     this.capiMessageHandler = function(message) {
         switch(message.type) {
-        case SimCapiMessage.TYPES.HANDSHAKE_RESPONSE:
-            handleHandshakeResponse(message);
-            break;
-        case SimCapiMessage.TYPES.VALUE_CHANGE:
-            handleValueChangeMessage(message);
-            break;
-        case SimCapiMessage.TYPES.CONFIG_CHANGE:
-            handleConfigChangeMessage(message);
-            break;
-        case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
-            handleValueChangeRequestMessage(message);
-            break;
-        case SimCapiMessage.TYPES.CHECK_RESPONSE:
-            handleCheckResponse(message);
-            break;
-        case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
-            handleGetDataResponse(message);
-            break;
-        case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
-            handleSetDataResponse(message);
-            break;
+            case SimCapiMessage.TYPES.HANDSHAKE_RESPONSE:
+                handleHandshakeResponse(message);
+                break;
+            case SimCapiMessage.TYPES.VALUE_CHANGE:
+                handleValueChangeMessage(message);
+                break;
+            case SimCapiMessage.TYPES.CONFIG_CHANGE:
+                handleConfigChangeMessage(message);
+                break;
+            case SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST:
+                handleValueChangeRequestMessage(message);
+                break;
+            case SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE:
+                handleCheckCompleteResponse(message);
+                break;
+            case SimCapiMessage.TYPES.CHECK_START_RESPONSE:
+                handleCheckStartResponse(message);
+                break;
+            case SimCapiMessage.TYPES.GET_DATA_RESPONSE:
+                handleGetDataResponse(message);
+                break;
+            case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
+                handleSetDataResponse(message);
+                break;
+            case SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE:
+                handleInitialSetupComplete(message);
+                break;
         }
     };
 
     this.addChangeListener = function(changeListener){
-      changeListeners.push(changeListener);
+        changeListeners.push(changeListener);
     };
-
     this.removeAllChangeListeners = function(){
-      changeListeners = [];
+        changeListeners = [];
     };
 
     /*
-     *   @since 0.5 
+     * @since 0.55
+     * Allows sims to watch for when the initial setup has been applied to the sim.
+     *
+     */
+    var initialSetupComplete = false;
+    this.addInitialSetupCompleteListener = function(listener) {
+        if(initialSetupComplete) { throw new Error('Initial setup already complete. This listener will never be called'); }
+        initialSetupCompleteListeners.push(listener);
+    };
+    this.removeAllInitialSetupCompleteListeners = function() {
+        initialSetupCompleteListeners = [];
+    };
+    var handleInitialSetupComplete = function(message) {
+        if(initialSetupComplete || message.handshake.authToken !== handshake.authToken) { return; }
+        for(var i = 0; i < initialSetupCompleteListeners.length; ++i) {
+            initialSetupCompleteListeners[i](message);
+        }
+        initialSetupComplete = true;
+    };
+
+    /*
+     * @since 0.6
+     * Can listen to check complete event
+     *
+     */
+    this.addCheckCompleteListener = function(listener, once){
+        callback.check.complete.push({handler: listener, once: once});
+    };
+
+    this.addCheckStartListener = function(listener, once){
+        callback.check.start.push({handler:listener, once: once});
+    };
+
+    /*
+     *   @since 0.5
      *   Handles the get data message
      */
     var handleGetDataResponse = function(message){
@@ -133,7 +182,7 @@ var Transporter = function(options) {
                 setRequests[message.values.simId][message.values.key].onSuccess({
                         key: message.values.key,
                         value: message.values.value
-                    });    
+                    });
             }
             else if(message.values.responseType === 'error'){
                 setRequests[message.values.simId][message.values.key].onError(message.values.error);
@@ -223,7 +272,7 @@ var Transporter = function(options) {
         setRequests[simId][key] = {
             onSuccess: onSuccess,
             onError: onError
-        };        
+        };
 
         if(!handshake.authToken){
             pendingMessages.forHandshake.push(setDataRequestMsg);
@@ -240,10 +289,33 @@ var Transporter = function(options) {
     /*
      * Handles check complete event
      */
-    var handleCheckResponse = function(message) {
-      if (callback.check) {
-        callback.check(message);
-        callback.check = null;
+    var handleCheckCompleteResponse = function(message) {
+      handleCheckResponse('complete', message);
+
+      checkTriggered = false;
+    };
+
+    /*
+     * Handles check start event. Does not get invoked if the sim triggers the check event.
+     */
+    var handleCheckStartResponse = function(message){
+      handleCheckResponse('start', message);
+    };
+
+    var handleCheckResponse = function(eventName, message){
+      var toBeRemoved = [];
+
+      for(var i in callback.check[eventName]){
+
+        callback.check[eventName][i].handler(message);
+
+        if(callback.check[eventName][i].once){
+            toBeRemoved.push(callback.check[eventName][i]);
+        }
+      }
+
+      for(var r in toBeRemoved){
+        callback.check[eventName].splice(callback.check[eventName].indexOf(toBeRemoved[r]),1);
       }
     };
 
@@ -255,7 +327,7 @@ var Transporter = function(options) {
             handshake.config = message.handshake.config;
         }
     };
-    
+
     /*
      * Handles request to report about value changes
      */
@@ -264,7 +336,7 @@ var Transporter = function(options) {
             self.notifyValueChange();
         }
     };
-    
+
 
     /*
      * Handles value change messages and update the model accordingly. If the
@@ -282,20 +354,22 @@ var Transporter = function(options) {
 
                     if(outgoingMap[key] && outgoingMap[key].value !== capiValue.value){
                       //By calling set value, we parse the string of capiValue.value
-                      //to whatever type the outgoingMap has stored  
+                      //to whatever type the outgoingMap has stored
                       outgoingMap[key].setValue(capiValue.value);
                       changed.push(outgoingMap[key]);
-                    } 
+                    }
+                    else if(!outgoingMap[key]){
+                        //key hasn't been exposed yet. Could be a dynamic capi property.
+                        toBeApplied[key] = capiValue.value;
+                    }
                 }
             });
 
             //Ensure that changed object has something in it.
             if(changed.length !==0){
-              _.each(changeListeners, function(changeListener){
-                changeListener(changed);
-              });
+                callChangeListeners(changed);
             }
-            
+
         }
     };
 
@@ -356,6 +430,9 @@ var Transporter = function(options) {
             // send initial value snapshot
             self.notifyValueChange();
         }
+        if(!isInIframe()) {
+            handleInitialSetupComplete({ handshake : handshake });
+        }
     };
 
     /*
@@ -363,13 +440,17 @@ var Transporter = function(options) {
      * Trigger a check event from the sim
      */
     this.triggerCheck = function(handlers) {
-        if (callback.check) {
+        if (checkTriggered) {
             throw new Error("You have already triggered a check event");
         }
-        
-        handlers = handlers || function() {};
 
-        callback.check = handlers.complete || function() {};
+        checkTriggered = true;
+
+        handlers = handlers || {};
+
+        if(handlers.complete){
+            this.addCheckCompleteListener(handlers.complete, true);
+        }
 
         var triggerCheckMsg = new SimCapiMessage({
             type : SimCapiMessage.TYPES.CHECK_REQUEST,
@@ -406,7 +487,7 @@ var Transporter = function(options) {
             pendingMessages.forValueChange = [];
 
           }, timeoutAmount);
-        }           
+        }
       }
       return null;
     };
@@ -431,7 +512,16 @@ var Transporter = function(options) {
       check(simCapiValue).isOfType(SimCapiValue);
 
       outgoingMap[simCapiValue.key] = simCapiValue;
-      
+
+      //Check if there needs a value to be applied
+      if(toBeApplied[simCapiValue.key]){
+         simCapiValue.setValue(toBeApplied[simCapiValue.key]);
+         delete toBeApplied[simCapiValue.key];
+
+         //Tell the sim the values changed.
+         callChangeListeners([simCapiValue]);
+      }
+
       this.notifyValueChange();
     };
 
@@ -447,9 +537,19 @@ var Transporter = function(options) {
     // Helper to send message to viewer
     this.sendMessage = function(message) {
         // window.parent can be itself if it's not inside an iframe
-        if (window !== window.parent) {
+        if (isInIframe()) {
             window.parent.postMessage(JSON.stringify(message), '*');
         }
+    };
+    var isInIframe = function() {
+        return window !== window.parent;
+    };
+
+    // Calls all the changeListeners
+    var callChangeListeners = function(values){
+        _.each(changeListeners, function(changeListener){
+            changeListener(values);
+        });
     };
 
     // Returns the initial configuration passed in the handshake
@@ -467,7 +567,7 @@ var Transporter = function(options) {
       catch(e){
         //silently ignore - occuring in test
       }
-        
+
     };
 
     // we have to wait until the dom is ready to attach anything or sometimes the js files

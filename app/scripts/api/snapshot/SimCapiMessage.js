@@ -26,7 +26,7 @@ var SimCapiMessage = function(options) {
 
 /*
  * Define message type enums as a class variable.
- * Next number is 13
+ * Next number is 15
  */
 SimCapiMessage.TYPES = {
     HANDSHAKE_REQUEST : 1,
@@ -36,11 +36,13 @@ SimCapiMessage.TYPES = {
     CONFIG_CHANGE : 5,
     VALUE_CHANGE_REQUEST : 6,
     CHECK_REQUEST : 7,
-    CHECK_RESPONSE : 8,
+    CHECK_COMPLETE_RESPONSE : 8,
     GET_DATA_REQUEST: 9,
     GET_DATA_RESPONSE: 10,
     SET_DATA_REQUEST: 11,
-    SET_DATA_RESPONSE: 12
+    SET_DATA_RESPONSE: 12,
+    INITIAL_SETUP_COMPLETE : 14,
+    CHECK_START_RESPONSE : 15
 };
 
 return SimCapiMessage;

@@ -1,4 +1,4 @@
-define(['underscore', 
+define(['underscore',
         'api/snapshot/Transporter',
         'api/snapshot/SimCapiMessage',
         'api/snapshot/SimCapiValue',
@@ -16,9 +16,9 @@ var BackboneAdapter = function(options){
   /*
    * Allows the 'attributes' to be exposed.
    * @param attrName - The 'attribute name'
-   * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function. 
+   * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
    * @param params : {
-   *      alias  : alias of the attributeName 
+   *      alias  : alias of the attributeName
    *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
    *      readonly : True if and only if, the attribute can be changed.
    * }
@@ -33,12 +33,13 @@ var BackboneAdapter = function(options){
       var simCapiParams = params;
       var originalName = varName;
       var alias = params.alias || varName;
-      
+
       var capiValue = new SimCapiValue({
         key: alias,
         value: model.get(varName),
         type: params.type,
-        readonly: params.readonly
+        readonly: params.readonly,
+        allowedValues: params.allowedValues
       });
 
       if(capiValue.type === SimCapiValue.TYPES.ARRAY){
@@ -51,30 +52,32 @@ var BackboneAdapter = function(options){
           key: alias,
           value: value,
           type: simCapiParams.type,
-          readonly: simCapiParams.readonly
+          readonly: simCapiParams.readonly,
+          allowedValues: params.allowedValues
         });
 
         if(capiValue.type === SimCapiValue.TYPES.ARRAY){
           capiValue.value = '[' + model.get(originalName).toString() + ']';
         }
 
-        _transporter.setValue(capiValue); 
+        _transporter.setValue(capiValue);
       }, this);
 
       // listen to the model by attaching event handler on the model
       model.on('change:' + varName, exposeFunc);
-      
-      _transporter.setValue(capiValue);
+
 
       modelsMapping[alias] = {
         alias: alias,
-        model: model, 
+        model: model,
         originalName: originalName,
         exposeFunc: exposeFunc
       };
-      
+
+
+      _transporter.setValue(capiValue);
     }
-    
+
   };
 
   /*
@@ -83,7 +86,7 @@ var BackboneAdapter = function(options){
    * @param model - The model the attribute belongs to.
    */
   this.unexpose = function(varName, model){
-    
+
     var modelMap;
 
     if(modelsMapping[varName]){
@@ -108,7 +111,7 @@ var BackboneAdapter = function(options){
 
   /*
   * Exposes a whole model. Model must have property `capiProperties` for the options of each
-  * attribute to be exposed. 
+  * attribute to be exposed.
   */
   this.exposeModel = function(model){
     _.each(model.capiProperties, _.bind(function(params, varName){
@@ -127,11 +130,11 @@ var BackboneAdapter = function(options){
       if(modelsMapping[capiValue.key]){
         var model = modelsMapping[capiValue.key].model;
         var originalName = modelsMapping[capiValue.key].originalName;
-        
-        model.set(originalName, capiValue.value); 
+
+        model.set(originalName, capiValue.value);
       }
     }, this);
-    
+
   };
 
   _transporter.addChangeListener(_.bind(this.handleValueChange,this));

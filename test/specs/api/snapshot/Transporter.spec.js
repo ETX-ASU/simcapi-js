@@ -1,4 +1,4 @@
-/*global window sinon setTimeout clearTimeout*/
+/*global window, sinon, setTimeout, clearTimeout*/
 define(function(require){
 
     var Transporter = require('api/snapshot/Transporter').Transporter;
@@ -15,9 +15,9 @@ define(function(require){
         var sandbox = null;
         var clock = null;
 
-        beforeEach(function() {          
+        beforeEach(function() {
             sandbox = sinon.sandbox.create();
-            
+
             // mock out event registration on the window
             sandbox.stub(window, 'addEventListener', function(eventType, callback) {
                 expect(eventType).to.be('message');
@@ -30,7 +30,7 @@ define(function(require){
 
             clock = sinon.useFakeTimers();
         });
-        
+
         afterEach(function() {
           sandbox.restore();
           clock.restore();
@@ -51,7 +51,7 @@ define(function(require){
             config.setLessonId('1');
             config.setQuestionId('qid');
             config.setServicesBaseUrl('someurl');
-            
+
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
                 type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
@@ -80,7 +80,7 @@ define(function(require){
                 }, timeAmount);
             };
         };
-        
+
         describe('HANDSHAKE_REQUEST', function(){
 
             it('should send a requestHandshake when trying to send ON_READY notification', function() {
@@ -95,31 +95,47 @@ define(function(require){
 
                 transporter.notifyOnReady();
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
+            it('should call the initial setup complete listeners when running locally', function() {
+                var completeStub = sinon.stub();
+                transporter.addInitialSetupCompleteListener(completeStub);
+
+                transporter.notifyOnReady();
+
+                expect(completeStub.called, 'initial setup complete listener called').to.equal(true);
+            });
+
+            it('should not call initial setup complete listeners when a message that isn\'t on is sent', function() {
+                var completeStub = sinon.stub();
+                transporter.addInitialSetupCompleteListener(completeStub);
+
+                transporter.notifyValueChange();
+
+                expect(completeStub.called, 'initial setup complete listener called').to.equal(false);
+            });
         });
 
         describe('CONFIG_CHANGE', function() {
-            
+
             beforeEach(function() {
                 doHandShake();
-                
+
                 // verify old config
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('1');
                 expect(config.getData().questionId).to.be('qid');
                 expect(config.getData().servicesBaseUrl).to.be('someurl');
             });
-            
+
             var updateConfig = function(token) {
                 // update config
                 var newConfig = SharedSimData.getInstance();
                 newConfig.setLessonId('2');
                 newConfig.setQuestionId('newqid');
                 newConfig.setServicesBaseUrl('newurl');
-                
+
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
                     type : SimCapiMessage.TYPES.CONFIG_CHANGE,
@@ -130,29 +146,29 @@ define(function(require){
                 });
                 transporter.capiMessageHandler(configChangeMessage);
             };
-            
+
             it('should ignore CONFIG_CHANGE when authToken does not match', function() {
                 updateConfig('bad token');
-                
+
                 // verify that the config has changed
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
-            
+
             it('should update CONFIG_CHANGE when authToken matches', function() {
                 updateConfig(authToken);
-                
+
                 // verify that the config has changed
                 var config = transporter.getConfig();
                 expect(config.getData().lessonId).to.be('2');
                 expect(config.getData().questionId).to.be('newqid');
                 expect(config.getData().servicesBaseUrl).to.be('newurl');
             });
-            
+
         });
-        
+
         describe('HANDSHAKE_RESPONSE', function() {
 
             it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function(){
@@ -290,7 +306,7 @@ define(function(require){
                 // create a new instance with outgoingMap parameters
                 transporter = new Transporter({
                     requestToken : requestToken,
-                    authToken : authToken, 
+                    authToken : authToken,
                     outgoingMap : outgoingMap
                 });
 
@@ -313,7 +329,7 @@ define(function(require){
              * create a value change message that performs the following changes:
              * attr1 -> value1
              * attr2 -> value2
-             * attr3 -> value3 
+             * attr3 -> value3
              */
             var createGoodValueChangeMessage = function() {
                 return new SimCapiMessage({
@@ -343,7 +359,7 @@ define(function(require){
                         'attr4' : new SimCapiValue({
                             key: 'attr4',
                             type : SimCapiValue.TYPES.BOOLEAN,
-                            value : false 
+                            value : false
                         })
                     }
                 });
@@ -392,7 +408,7 @@ define(function(require){
 
 
                 transporter.capiMessageHandler(badValueChangeMsg);
-                
+
                 // verify that nothing was updated
                 expect(failed).to.be(false);
             });
@@ -415,7 +431,7 @@ define(function(require){
                 });
 
                 transporter.capiMessageHandler(badValueChangeMsg);
-                
+
                 // verify that nothing was updated
                 expect(failed).to.be(false);
             });
@@ -437,9 +453,9 @@ define(function(require){
             });
 
         });
-        
+
         describe('VALUE_CHANGE_REQUEST', function(){
-          
+
             // process change event
             var valueChangeRequestMessage = new SimCapiMessage({
                 type : SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST,
@@ -447,7 +463,7 @@ define(function(require){
                     authToken : authToken
                 }
             });
-  
+
             it('should send value change notification', function(){
                 doHandShake();
                 sandbox.stub(transporter, 'notifyValueChange', function () {});
@@ -459,7 +475,7 @@ define(function(require){
 
         describe('CHECK_*', function() {
             var checkResponseMessage = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.CHECK_RESPONSE,
+                type : SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE,
                 handshake : {
                     authToken : authToken
                 }
@@ -487,7 +503,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
@@ -502,7 +517,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
@@ -510,14 +524,14 @@ define(function(require){
                 var failed = true;
                 var failed2 = true;
                 try{
-                   transporter.getDataRequest(undefined, 'key'); 
+                   transporter.getDataRequest(undefined, 'key');
                 }
                 catch(err){
                     failed = false;
                 }
 
                 try{
-                   transporter.getDataRequest('simId', undefined); 
+                   transporter.getDataRequest('simId', undefined);
                 }
                 catch(err){
                     failed2 = false;
@@ -525,7 +539,7 @@ define(function(require){
 
                 expect(failed).to.be(false);
                 expect(failed2).to.be(false);
-                
+
             });
 
         });
@@ -583,7 +597,6 @@ define(function(require){
 
                 transporter.getDataRequest('sim', 'key', 'value');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
@@ -598,7 +611,6 @@ define(function(require){
 
                 transporter.setDataRequest('sim', 'key', 'value');
 
-                expect(window.addEventListener.called).to.be(true);
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
@@ -606,14 +618,14 @@ define(function(require){
                 var failed = true;
                 var failed2 = true;
                 try{
-                   transporter.getDataRequest(undefined, 'key'); 
+                   transporter.getDataRequest(undefined, 'key');
                 }
                 catch(err){
                     failed = false;
                 }
 
                 try{
-                   transporter.getDataRequest('simId', undefined); 
+                   transporter.getDataRequest('simId', undefined);
                 }
                 catch(err){
                     failed2 = false;
@@ -621,7 +633,7 @@ define(function(require){
 
                 expect(failed).to.be(false);
                 expect(failed2).to.be(false);
-                
+
             });
 
         });
@@ -671,6 +683,121 @@ define(function(require){
             });
         });
 
-    });
+        describe('SET_VALUE', function(){
+            var message;
+            beforeEach(function() {
+                message = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake : {
+                        requestToken : requestToken,
+                        authToken : authToken
+                    },
+                    values: {
+                        'attr1' : new SimCapiValue({
+                            key: 'attr1',
+                            type : SimCapiValue.TYPES.NUMBER,
+                            value : 0.5
+                        })
+                    }
+                });
 
+                doHandShake();
+            });
+
+            it('should apply the value from a message sent before the set of the value in the transporter', function(){
+
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+
+                transporter.capiMessageHandler(message);
+
+                var exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 10
+                });
+
+                transporter.setValue(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(0.5);
+
+                //setting the value again shouldn't set the value to 0.5
+                exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 15
+                });
+
+                transporter.setValue(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(15);
+            });
+
+        });
+
+        describe('INITIAL_SETUP_COMPLETE', function() {
+            var message;
+            beforeEach(function() {
+                message = new SimCapiMessage({
+                    type : SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE,
+                    handshake : {
+                        requestToken : requestToken,
+                        authToken : authToken
+                    }
+                });
+
+                doHandShake();
+            });
+
+            it('should call every registered handler', function() {
+                var first = sinon.stub(), second = sinon.stub();
+                transporter.addInitialSetupCompleteListener(first);
+                transporter.addInitialSetupCompleteListener(second);
+
+                transporter.capiMessageHandler(message);
+
+                expect(first.called, 'first listener called').to.equal(true);
+                expect(second.called, 'second listener called').to.equal(true);
+            });
+
+            it('should not call anything if the handlers are removed', function() {
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
+
+                transporter.removeAllInitialSetupCompleteListeners();
+                transporter.capiMessageHandler(message);
+
+                expect(stubListener.called, 'listener called').to.equal(false);
+            });
+
+            it('should do nothing if the auth token is wrong', function() {
+                message.handshake.authToken = 42;
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
+
+                transporter.capiMessageHandler(message);
+
+                expect(stubListener.called, 'listener called').to.equal(false);
+            });
+
+            it('should not call listeners if another message is received', function() {
+                var stubListener = sinon.stub();
+                transporter.addInitialSetupCompleteListener(stubListener);
+
+                transporter.capiMessageHandler(message);
+                transporter.capiMessageHandler(message);
+
+                expect(stubListener.callCount).to.equal(1);
+            });
+
+            describe('adding listeners', function() {
+                it('should throw after initial setup has been completed', function() {
+                    transporter.capiMessageHandler(message);
+
+                    expect(function() {
+                        transporter.addInitialSetupCompleteListener(sinon.stub());
+                    }).to.throwException();
+                });
+            });
+        });
+    });
 });

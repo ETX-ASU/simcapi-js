@@ -34,6 +34,10 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.6  - Added Check Start Event
+     * 0.59 - Enums are finally implemented.
+     * 0.58 - Applies capi properties received before the expose.
+     * 0.55 - Added initial setup complete event, true pending message queue, Do not delete tokens for invisible iframes
      * 0.54 - Updgraded jquery dependency.
      * 0.53 - Minor fix so no object can be passed to triggerCheck.
      * 0.52 - Throttles the notifying of value changes.
@@ -45,12 +49,13 @@ var SimCapiHandler = function(options) {
      * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
      */
     var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
-    
+
     /*
-     * A list of snapshots that have not been applied to a sim.
-     * This can occur, when the sim is not ready.
+     * A queue of messages to be sent to sims.
+     * Messages are added to this when the sim is not ready.
+     * Queues are iframe specific
      */
-    var pendingApplySnapshot = [];
+    var pendingMessages = {};
 
     /*
      * A set of tokens that are pending on check responses
@@ -111,7 +116,7 @@ var SimCapiHandler = function(options) {
 
         if(callback.onGetDataRequest){
             callback.onGetDataRequest({
-                key: message.values.key, 
+                key: message.values.key,
                 simId: message.values.simId,
                 onSuccess: function(key, value, exists){
                     //broadcast response
@@ -120,7 +125,7 @@ var SimCapiHandler = function(options) {
                         key: message.values.key,
                         value: value,
                         exists: exists,
-                        responseType: "success" 
+                        responseType: "success"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -131,7 +136,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         error: error,
-                        responseType: "error" 
+                        responseType: "error"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -154,8 +159,8 @@ var SimCapiHandler = function(options) {
 
         if(callback.onSetDataRequest){
              callback.onSetDataRequest({
-                key: message.values.key, 
-                value: message.values.value, 
+                key: message.values.key,
+                value: message.values.value,
                 simId: message.values.simId,
                 onSuccess: function(){
                     //broadcast response
@@ -163,7 +168,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         value: message.values.value,
-                        responseType: "success" 
+                        responseType: "success"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -174,7 +179,7 @@ var SimCapiHandler = function(options) {
                         simId: message.values.simId,
                         key: message.values.key,
                         error: error,
-                        responseType: "error" 
+                        responseType: "error"
                     };
 
                     self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
@@ -198,10 +203,15 @@ var SimCapiHandler = function(options) {
         }
     };
 
-    this.notifyCheckResponse = function() {
+    /*
+     * @since 0.6
+     * Replaced notifyCheckResponse
+     * Notify clients that check has been completed
+     */
+    this.notifyCheckCompleteResponse = function() {
         // create a message
         var message = new SimCapiMessage();
-        message.type = SimCapiMessage.TYPES.CHECK_RESPONSE;
+        message.type = SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE;
         message.handshake = {
             // Config object is used to pass relevant information to the sim
             // like the lesson id, etc.
@@ -212,10 +222,29 @@ var SimCapiHandler = function(options) {
         var remainingResponses = pendingCheckResponses;
         pendingCheckResponses = {};
 
-        // broadcast check response to each sim
+        // broadcast check complete response to each sim
         _.each(remainingResponses, function(value, authToken) {
             message.handshake.authToken = authToken;
             self.sendMessage(message, tokenToId[authToken]);
+        });
+    };
+
+    /*
+     * @since 0.6
+     * Notify clients that check has been clicked
+     */
+    this.notifyCheckStartResponse = function(){
+        //create message
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.CHECK_START_RESPONSE;
+        message.handshake = {
+            config      : SharedSimData.getInstance().getData()
+        };
+
+        // broadcast check start response to each sim
+        _.each(idToToken, function(authToken, iframeId) {
+            message.handshake.authToken = authToken;
+            self.sendMessage(message, iframeId);
         });
     };
 
@@ -245,7 +274,7 @@ var SimCapiHandler = function(options) {
                 tokenToId[message.handshake.authToken]) {
 
             isReady[message.handshake.authToken] = true;
-            sendPendingApplySnapshot(tokenToId[message.handshake.authToken]);
+            sendPendingMessages(tokenToId[message.handshake.authToken]);
         }
     };
 
@@ -253,25 +282,11 @@ var SimCapiHandler = function(options) {
      * Filter and send any pending apply snapshots that has not been sent to
      * the given iframe associated with the given authToken.
      */
-    var sendPendingApplySnapshot = function(id) {
-        var remaining = [];
-        var segmentsToSend = [];
-
-        // filter out the segments for the given iframe.
-        _.each(pendingApplySnapshot, function(segment, index){
-            if (segment.path[1] !== id) {
-                remaining.push(segment);
-            } else {
-                segmentsToSend.push(segment);
-            }
+    var sendPendingMessages = function(id) {
+        _.each(pendingMessages[id], function(message) {
+            self.sendMessage(message, id);
         });
-
-        // update the remaining pending and send the segments.
-        pendingApplySnapshot = remaining;
-
-        if (segmentsToSend.length > 0) {
-            self.setSnapshot(segmentsToSend);
-        }
+        delete pendingMessages[id];
     };
 
     /*
@@ -286,7 +301,7 @@ var SimCapiHandler = function(options) {
             if (ignoreHidden) {
                 frames = $container.find('iframe:visible');
             }
-            
+
             // go through all iframes and send a reply if needed
             _.each(frames, function(iframe, index){
                 var $iframe = $(iframe);
@@ -318,6 +333,21 @@ var SimCapiHandler = function(options) {
         }
     };
 
+    var matchesPath = function(target, path) {
+        if (target.length <= path.length) {
+            // e.g. targetPath = ['iframe', 'propertyA']; anything starting with iframe.propertyA.* will be added
+            for (var i = 0; i < target.length; i++) {
+                if (target[i].length > 0 && target[i] !== path[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        return false;
+    };
+
     // clears the state machine
     this.resetState = function() {
         this.resetSnapshot();
@@ -331,7 +361,7 @@ var SimCapiHandler = function(options) {
         snapshot = {};
         descriptors = {};
     };
-    
+
     // Delete the given iframe from the list of known sims.
     this.removeIFrame = function(iframeid) {
       var token = idToToken[iframeid];
@@ -367,32 +397,23 @@ var SimCapiHandler = function(options) {
             // eg stage.iframe1.blah
             var iframeId = segment.path[1];
 
-            // check if the sim is ready
-            if (isReady[idToToken[iframeId]]) {
-
-                // map each segment to separate iframe windows.
-                if (!messages[iframeId]) {
-                    messages[iframeId] = new SimCapiMessage({
-                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
-                        handshake: {
-                            requestToken: null,
-                            authToken: idToToken[iframeId]
-                        }
-                    });
-                }
-
-                var variable = _.rest(segment.path, 2).join('.');
-                messages[iframeId].values[variable] = new SimCapiValue({
-                    key: variable,
-                    type: SimCapiValue.TYPES.STRING,
-                    value: segment.value
+            // map each segment to separate iframe windows.
+            if (!messages[iframeId]) {
+                messages[iframeId] = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: null,
+                        authToken: idToToken[iframeId]
+                    }
                 });
-
-            } else {
-                // The sim for this id is not ready so we keep it pending until it sends
-                // an ON_READY message.
-                pendingApplySnapshot.push(segment);
             }
+
+            var variable = _.rest(segment.path, 2).join('.');
+            messages[iframeId].values[variable] = new SimCapiValue({
+                key: variable,
+                type: SimCapiValue.TYPES.STRING,
+                value: segment.value
+            });
         });
 
         // send message to each respective iframes
@@ -403,21 +424,15 @@ var SimCapiHandler = function(options) {
 
     // can't mock postMessage in ie9 so we wrap it and mock the wrap :D
     this.sendMessage = function(message, iframeid) {
-        // allow visible is needed for the flash side of things when the iframe begins as hidden
-        // but still need to perform a handshake.
-        var frame = $container.find('#' + iframeid)[0]; 
-        if (ignoreHidden) {
-            frame = $container.find('#' + iframeid + ':visible')[0];
+        var token = idToToken[iframeid];
+        if(message.type !== SimCapiMessage.TYPES.HANDSHAKE_RESPONSE && !isReady[token]) {
+            if(!pendingMessages[iframeid]) { pendingMessages[iframeid] = []; }
+            pendingMessages[iframeid].push(message);
+            return;
         }
-        if (frame) {
-            frame.contentWindow.postMessage(JSON.stringify(message), '*');
-        } else {
-            // the frame has been removed
-            var token = idToToken[iframeid];
-            delete tokenToId[token]; // token -> iframeid
-            delete idToToken[iframeid]; // iframeid -> token
-            delete isReady[token]; // token -> true/false
 
+        if(!message.handshake.authToken) { message.handshake.authToken = idToToken[iframeid]; }
+        if (!this.sendMessageToFrame(message, iframeid)) {
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf('stage.' + iframeid) !== -1) {
                     delete snapshot[iframeid];
@@ -425,6 +440,21 @@ var SimCapiHandler = function(options) {
                 }
             });
         }
+    };
+    // NOTE: Do not try to stub window.postMessage due to IE9 not allowing it
+    // Tests should run in all supported browsers
+    // This method should almost never be used directly, use send message instead.
+    this.sendMessageToFrame = function(message, iframeid) {
+        var frame = $container.find('#' + iframeid)[0];
+        // ignore hidden is needed for the flash side of things when the iframe begins as hidden
+        // but still need to perform a handshake.
+        if (ignoreHidden) {
+            frame = $container.find('#' + iframeid + ':visible')[0];
+        }
+        if(!frame) { return false; }
+
+        frame.contentWindow.postMessage(JSON.stringify(message), '*');
+        return true;
     };
 
     /*
@@ -436,19 +466,19 @@ var SimCapiHandler = function(options) {
         var result = {};
 
         // target path looks something like this : iframeid[.var]*
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
         _.each(snapshot, function(value, path){
-            if (path.indexOf(targetPath) !== -1) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
 
         return result;
     };
-    
+
     /*
      * Returns descriptors for the properties that match the given path.
      * A descriptor is a SimCapiValue.
@@ -458,29 +488,29 @@ var SimCapiHandler = function(options) {
 
         var result = {};
 
-        // target path looks something like this : iframeid[.var]*
-        var targetPath = _.rest(snapshotSegment.path, 1).join('.');
+        // target path looks something like this : iframeid
+        var targetPath = _.rest(snapshotSegment.path, 1);
 
         // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
         // contained in iframe1
-        _.each(descriptors, function(value, path){
-            if (path.indexOf(targetPath) !== -1) {
+        _.each(descriptors, function(value, path) {
+            if (matchesPath(targetPath, path.split('.'))) {
                 result[path] = value;
             }
         });
 
         return result;
     };
-    
+
     /*
-     * Requests value change message 
+     * Requests value change message
      * @since 0.1
      */
     this.requestValueChange = function(iframeId) {
         if (!(idToSimVersion[iframeId] && idToSimVersion[iframeId] >= 0.1)) {
             throw new Error("Method requestValueChange is not supported by sim");
         }
-        
+
         // create a message
         var message = new SimCapiMessage();
         message.type = SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST;
@@ -493,7 +523,7 @@ var SimCapiHandler = function(options) {
 
         this.sendMessage(message, iframeId);
     };
-    
+
     /*
      * Notify clients that configuration is updated. (eg. the question has changed)
      */
@@ -509,17 +539,38 @@ var SimCapiHandler = function(options) {
                     // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
                     config      : SharedSimData.getInstance().getData()
                 };
-                
+
                 this.sendMessage(message, tokenToId[token]);
             }
         }, this));
     };
-    
+
+    /*
+     * @since 0.55
+     * Notify clients that initial setup has been completely sent to them
+     */
+    this.notifyInitializationComplete = function(iframeID) {
+        var message = new SimCapiMessage();
+        message.type = SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE;
+        message.handshake = {
+            authToken : idToToken[iframeID]
+        };
+
+        this.sendMessage(message, iframeID);
+    };
+
     /*
      * Returns version of Transporter, used by the iframe
      */
-    this.getTransporterVersion = function (iframeId) {
+    this.getTransporterVersion = function(iframeId) {
         return idToSimVersion[iframeId];
+    };
+
+    /*
+     * Get the token for a given iframe.
+     */
+    this.getToken = function(iframeid) {
+        return idToToken[iframeid];
     };
 };
 
