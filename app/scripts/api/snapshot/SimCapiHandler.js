@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.61 - Bug fix with Check start Event
      * 0.6  - Added Check Start Event
      * 0.59 - Enums are finally implemented.
      * 0.58 - Applies capi properties received before the expose.
@@ -196,7 +197,7 @@ var SimCapiHandler = function(options) {
         pendingCheckResponses[message.handshake.authToken] = true;
 
         // only trigger check event when we aren't waiting for a response
-        if (Object.keys(pendingCheckResponses).length === 1) {
+        if (Object.keys(pendingCheckResponses).length >= 1) {
             if (callback.check) {
                 callback.check();
             }
@@ -244,6 +245,9 @@ var SimCapiHandler = function(options) {
         // broadcast check start response to each sim
         _.each(idToToken, function(authToken, iframeId) {
             message.handshake.authToken = authToken;
+
+            pendingCheckResponses[message.handshake.authToken] = true;
+
             self.sendMessage(message, iframeId);
         });
     };

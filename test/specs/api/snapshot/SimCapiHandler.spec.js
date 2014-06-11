@@ -206,6 +206,22 @@ define(function(require){
 
                     expect(handler.sendMessage.callCount).to.be(2);
                 });
+
+                it('should remember what sims are waiting for a check response', function(){
+
+                    mockPostMessage(function(response, id) {
+                        expect(response.type === SimCapiMessage.TYPES.CHECK_START_RESPONSE || response.type === SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE).to.be(true);
+                        expect(response.handshake.authToken === handler.getToken('iframe1') || response.handshake.authToken === handler.getToken('iframe2')).to.be(true);
+                    });
+
+                    handler.notifyCheckStartResponse();
+
+                    expect(handler.sendMessage.callCount).to.be(2);
+
+                    handler.notifyCheckCompleteResponse();
+
+                    expect(handler.sendMessage.callCount).to.be(4);
+                });
             });
 
             describe('notifyConfigChange', function() {
