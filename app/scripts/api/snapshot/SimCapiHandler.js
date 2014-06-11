@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Tranporter versions:
+     * 0.61 - Bug fix with Check start Event
      * 0.6  - Added Check Start Event
      * 0.59 - Enums are finally implemented.
      * 0.58 - Applies capi properties received before the expose.
