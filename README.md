@@ -34,7 +34,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://d1rpkia8qpfj4t.cloudfront.net/pipit-0.51.min.js"></script>
+<script src= "https://d1rpkia8qpfj4t.cloudfront.net/js/pipit-0.61.min.js"></script>
 ```
 
 
@@ -45,7 +45,7 @@ There are three phases to setup Pipit, _setup data_, _expose data_ and _finalise
 
 ### Setup Data ###
 
-In the setup data phase, you just have to create a `CapiModel`. 
+In the setup data phase, you just have to create a `CapiModel`.
 
 For example:
 
@@ -56,7 +56,7 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 });
 ```
 
-This `CapiModel` has two variables inside it that can be exposed to AELP. 
+This `CapiModel` has two variables inside it that can be exposed to AELP.
 
 ### Expose Data ###
 
@@ -70,10 +70,10 @@ Here is the list of what you must pass to _expose_.
 
 variableName - String    - name of the variable on the model
 model        - CapiModel - the model that the variable belongs to.
-options      - Object  
-                         - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable. 
+options      - Object
+                         - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
                          - alias    - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
-                         - readonly - Boolean             - if the variable is readonly 
+                         - readonly - Boolean             - if the variable is readonly
 
 
 Inversely, if you want to unexpose your data, you can tell the `CapiAdapter`.
@@ -107,10 +107,10 @@ This must be called when the model has finished being setup. It is to tell Pipit
 
 Apart from syncing, there may be other functionality that can be used via the `Controller`.
 
-Sims can have the ability to trigger `check` events the same way when a student clicks on the `check` button on AELP. 
+Sims can have the ability to trigger `check` events the same way when a student clicks on the `check` button on AELP.
 
 ```
-pipit.Controller.triggerCheck();  
+pipit.Controller.triggerCheck();
 ```
 
 The above code will click `check` on behave of the user when they interact with a sim in a certain way.
@@ -134,10 +134,10 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 
 ...
 
-pipit.CapiAdapter.expose("demoMode", simModel, 
+pipit.CapiAdapter.expose("demoMode", simModel,
                                     {readonly: false});
-pipit.CapiAdapter.expose("studentResponse", simModel, 
-                                          {alias: "studentAnswer", 
+pipit.CapiAdapter.expose("studentResponse", simModel,
+                                          {alias: "studentAnswer",
                                            readonly: true});
 
 ...
@@ -165,7 +165,7 @@ For Pipit to work, you must use the following functions on the `CapiModel`:
 
   ```
   simModel.set('demoMode', false);
-  ```  
+  ```
 
 #### On ####
   To listen to changes to a variable that were sent from the AELP or changed in the simulation.
@@ -178,7 +178,7 @@ For Pipit to work, you must use the following functions on the `CapiModel`:
   });
   ```
 
-  That function will be called everytime _demoMode_ changes. 
+  That function will be called everytime _demoMode_ changes.
 
 #### Has ####
 
@@ -205,13 +205,80 @@ var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.expose("demoMode", simModel, 
-	                                          {readonly: false});
-pipit.BackboneAdapter.expose("studentResponse", simModel, 
-                                               {alias: "studentAnswer", 
+pipit.BackboneAdapter.expose("demoMode", simModel,
+                                              {readonly: false});
+pipit.BackboneAdapter.expose("studentResponse", simModel,
+                                               {alias: "studentAnswer",
                                                 readonly: true});
 
 ...
 
 pipit.Controller.notifyOnReady();
 ```
+
+### AllowedValues ###
+
+It's possible for pipit to supply the teacher with a choice of options for a particular property on a sim if it is possible.
+
+For example, you have a capi property named _color_ and depending whether the teacher inputs the strings 'red', 'blue', or 'green',
+the background will change to that color.
+
+Getting the teacher to type up the color may cause issues like spelling mistakes or the teacher not knowing what the valid values are.
+
+#### Simple Example ####
+
+```
+
+var simModel = new pipit.CapiAdapter.CapiModel({
+    color: 'red'
+});
+
+pipit.CapiAdapter.expose("color", simModel, {allowedValues: ['red', 'blue', 'green']});
+
+...
+
+pipit.Controller.notifyOnReady();
+
+```
+
+Note that using this will always return a string, even if you say the allowed values to be numbers.
+
+
+### Dynamic Capi ###
+
+It is possible to expose more capi properties depending on a change of another capi property.
+
+For example, you have a capi property named _numberOfColors_. For each color, you want more capi properties to appear for _name_ and _red_, _green_ and _blue_ properties. So 4 capi properties will be exposed for the numberOfColors that the teacher sets.
+
+
+#### Simple Example ####
+
+```
+
+var simModel = new pipit.CapiAdapter.CapiModel({
+    numberOfColors: 0
+});
+
+pipit.CapiAdapter.expose("numberOfColors", simModel);
+
+simModel.on('change:numberOfColors', function(m, attributes){
+    for(var i = 0; i< attributes.numberOfColors; ++i){
+        createProperty('color'+i+'Name', '');
+        createProperty('color'+i+'Red', 0);
+        createProperty('color'+i+'Green', 0);
+        createProperty('color'+i+'Blue', 0);
+    }
+});
+
+function createProperty(name, defaultValue){
+    simModel.set(name, defaultValue);
+    pipit.CapiAdapter.expose(name, simModel);
+}
+
+...
+
+pipit.Controller.notifyOnReady();
+
+```
+
+Take note that when numberOfColors change, we create the variables on the model and expose those values via pipit.
