@@ -22,6 +22,7 @@
     "grunt-mocha": "0.4.10",
     "coverjs" : "0.0.11-alpha",
     "grunt": "0.4.2",
+    "grunt-jsbeautifier" : "0.2.7",
     "bamboo-mocha-reporter" : "git+https://git.smartsparrow.com/platform/bamboo-mocha-reporter.git"
   },
   "keywords": []
