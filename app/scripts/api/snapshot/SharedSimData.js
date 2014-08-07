@@ -16,11 +16,16 @@ var SharedSimData = (function() {
     SharedSimData.data.servicesBaseUrl = servicesBaseUrl;
   };
 
+  SharedSimData.prototype.setLessonAttempt = function(lessonAttempt){
+    SharedSimData.data.lessonAttempt = lessonAttempt;
+  };
+
   SharedSimData.prototype.getData = function() {
     return {
       lessonId: SharedSimData.data.lessonId,
       questionId: SharedSimData.data.questionId,
-      servicesBaseUrl: SharedSimData.data.servicesBaseUrl
+      servicesBaseUrl: SharedSimData.data.servicesBaseUrl,
+      lessonAttempt: SharedSimData.data.lessonAttempt
     };
   };
 
