@@ -58,17 +58,17 @@ define(function(require){
 
     
     it('should create SimCapiValues properly', function(){
-      sandbox.stub(transporter, 'setValue', function(capiValue){
+      sandbox.stub(transporter, 'expose', function(capiValue){
         expect(capiValue).to.be.a(SimCapiValue);
       });
 
       adapter.expose('attr1', model, {readonly:false});
 
-      expect(transporter.setValue.callCount).to.be(1);
+      expect(transporter.expose.callCount).to.be(1);
     });
 
     it('should create SimCapiValues properly when of type array', function(){
-      sandbox.stub(transporter, 'setValue', function(capiValue){
+      sandbox.stub(transporter, 'expose', function(capiValue){
         expect(capiValue.value).to.be('[]');
       });
 

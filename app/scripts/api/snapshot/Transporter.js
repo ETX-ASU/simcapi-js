@@ -509,21 +509,48 @@ var Transporter = function(options) {
     };
 
     this.setValue = function(simCapiValue){
-      check(simCapiValue).isOfType(SimCapiValue);
+        check(simCapiValue).isOfType(SimCapiValue);
 
-      outgoingMap[simCapiValue.key] = simCapiValue;
+        outgoingMap[simCapiValue.key] = simCapiValue;
 
-      //Check if there needs a value to be applied
-      if(toBeApplied[simCapiValue.key]){
-         simCapiValue.setValue(toBeApplied[simCapiValue.key]);
-         delete toBeApplied[simCapiValue.key];
-
-         //Tell the sim the values changed.
-         callChangeListeners([simCapiValue]);
-      }
-
-      this.notifyValueChange();
+        this.notifyValueChange();
     };
+
+    this.expose = function(simCapiValue){
+        check(simCapiValue).isOfType(SimCapiValue);
+
+        var key = simCapiValue.key;
+        var overwriteValue = checkForExistingValues(key);
+
+        if(overwriteValue){
+            simCapiValue.setValue(overwriteValue);
+            callChangeListeners([simCapiValue]);
+        }
+
+        outgoingMap[key] = simCapiValue;
+
+        this.notifyValueChange();
+    };
+
+    var checkForExistingValues = function(key){
+        var noMapValue = toBeApplied[key],
+        existingValue = outgoingMap[key],
+        overwriteValue;
+
+        if(noMapValue){
+            overwriteValue = noMapValue;
+            delete toBeApplied[key];
+        }
+        else if(existingValue){
+            overwriteValue = existingValue.value;
+        }
+        else{
+            overwriteValue = null;
+        }
+
+        return overwriteValue;
+    };
+
 
     /*
      * key - the key of the SimCapiValue to be removed
