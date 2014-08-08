@@ -34,6 +34,7 @@ var SimCapiHandler = function(options) {
 
     /*
      * Transporter versions:
+     * 0.63 - When exposing a property after the first time the default value will overwritten
      * 0.62 - Add ability to save lesson attempt
      * 0.61 - Bug fix with Check start Event
      * 0.6  - Added Check Start Event

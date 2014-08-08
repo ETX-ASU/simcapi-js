@@ -34,7 +34,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://d1rpkia8qpfj4t.cloudfront.net/js/pipit-0.62.min.js"></script>
+<script src= "https://d1rpkia8qpfj4t.cloudfront.net/js/pipit-0.63.min.js"></script>
 ```
 
 
