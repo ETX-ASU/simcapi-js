@@ -825,6 +825,30 @@ define(function(require){
 
                 expect(exposedProperty.value).to.equal(10);
             });
+            it('should have consistent behaviour even if that value is false', function(){
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+
+                var exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.BOOLEAN,
+                    value : false
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(false);
+
+                //exposing the value again should keep the value at the existing one
+                exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.BOOLEAN,
+                    value : true
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(false);
+            });
         });
     });
 });

@@ -522,7 +522,7 @@ var Transporter = function(options) {
         var key = simCapiValue.key;
         var overwriteValue = checkForExistingValues(key);
 
-        if(overwriteValue){
+        if(overwriteValue !== undefined){
             simCapiValue.setValue(overwriteValue);
             callChangeListeners([simCapiValue]);
         }
@@ -543,9 +543,6 @@ var Transporter = function(options) {
         }
         else if(existingValue){
             overwriteValue = existingValue.value;
-        }
-        else{
-            overwriteValue = null;
         }
 
         return overwriteValue;
