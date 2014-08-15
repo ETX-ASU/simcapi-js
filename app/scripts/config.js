@@ -1,28 +1,28 @@
 /*global requirejs */
 requirejs.config({
-  shim: {
-    jquery: {
-      exports: '$'
+    shim: {
+        jquery: {
+            exports: '$'
+        },
+        underscore: {
+            exports: '_'
+        },
+        backbone: {
+            deps: ['jquery', 'underscore'],
+            exports: 'Backbone'
+        }
     },
-    underscore: {
-      exports: '_'
-    },
-    backbone: {
-      deps   : ['jquery', 'underscore'],
-      exports: 'Backbone'
-    }
-  },
-  paths: {
-    jquery    : '../../../bower_components/jquery/dist/jquery',
-    underscore: '../../../bower_components/underscore/underscore',
-    backbone  : '../../../bower_components/backbone/backbone',
-    almond    : '../../../bower_components/almond/almond',
-    check: '../../../bower_components/check-js/check.min',
-    
-    // libs
-    sinon: '../../../libs/sinon-1.5.2',
+    paths: {
+        jquery: '../../../bower_components/jquery/dist/jquery',
+        underscore: '../../../bower_components/underscore/underscore',
+        backbone: '../../../bower_components/backbone/backbone',
+        almond: '../../../bower_components/almond/almond',
+        check: '../../../bower_components/check-js/check.min',
 
-    // Shortcut for common
-    eventBus: 'util/eventBus'
-  }
+        // libs
+        sinon: '../../../libs/sinon-1.5.2',
+
+        // Shortcut for common
+        eventBus: 'util/eventBus'
+    }
 });
