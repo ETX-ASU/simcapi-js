@@ -497,6 +497,24 @@ define(function(require) {
                 transporter.capiMessageHandler(checkResponseMessage);
                 expect(onComplete.called).to.be(true);
             });
+
+            it('should not throw when it’s called with a different context', function() {
+                doHandShake();
+                var onComplete = sandbox.stub();
+                var otherObject = {
+                    triggerCheck: transporter.triggerCheck
+                };
+                var hasThrown = false;
+                try {
+                    otherObject.triggerCheck({
+                        complete: onComplete
+                    });
+                } catch (err) {
+                    hasThrown = true;
+                }
+
+                expect(hasThrown).to.equal(false);
+            });
         });
 
         describe('GET_DATA_REQUEST', function() {
@@ -589,7 +607,6 @@ define(function(require) {
                 expect(error.called).to.equal(true);
             });
         });
-
 
         describe('SET_DATA_REQUEST', function() {
 
