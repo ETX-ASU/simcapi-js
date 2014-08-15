@@ -71,7 +71,7 @@ var CapiAdapter = function(options){
       };
 
 
-      _transporter.setValue(capiValue);
+      _transporter.expose(capiValue);
 
     }
   };

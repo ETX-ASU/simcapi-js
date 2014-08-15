@@ -716,7 +716,7 @@ define(function(require){
                     value : 10
                 });
 
-                transporter.setValue(exposedProperty);
+                transporter.expose(exposedProperty);
 
                 expect(exposedProperty.value).to.equal(0.5);
 
@@ -797,6 +797,57 @@ define(function(require){
                         transporter.addInitialSetupCompleteListener(sinon.stub());
                     }).to.throwException();
                 });
+            });
+        });
+
+        describe('EXPOSING_VALUE_AGAIN', function(){
+            it('should apply the existing value if a property has been exposed before', function(){
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+
+                var exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 10
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(10);
+
+                //exposing the value again should keep the value at the existing one
+                exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.NUMBER,
+                    value : 15
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(10);
+            });
+            it('should have consistent behaviour even if that value is false', function(){
+                sandbox.stub(transporter, 'notifyValueChange', function () {});
+
+                var exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.BOOLEAN,
+                    value : false
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(false);
+
+                //exposing the value again should keep the value at the existing one
+                exposedProperty = new SimCapiValue({
+                    key: 'attr1',
+                    type : SimCapiValue.TYPES.BOOLEAN,
+                    value : true
+                });
+
+                transporter.expose(exposedProperty);
+
+                expect(exposedProperty.value).to.equal(false);
             });
         });
     });
