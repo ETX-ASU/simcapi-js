@@ -1,5 +1,5 @@
 /*global window, sinon, setTimeout, clearTimeout*/
-define(function(require){
+define(function(require) {
 
     var Transporter = require('api/snapshot/Transporter').Transporter;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
@@ -25,15 +25,15 @@ define(function(require){
             });
 
             transporter = new Transporter({
-                requestToken : requestToken
+                requestToken: requestToken
             });
 
             clock = sinon.useFakeTimers();
         });
 
         afterEach(function() {
-          sandbox.restore();
-          clock.restore();
+            sandbox.restore();
+            clock.restore();
         });
 
         /*
@@ -54,11 +54,11 @@ define(function(require){
 
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
-                handshake : {
+                type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                handshake: {
                     requestToken: requestToken,
                     authToken: authToken,
-                    config :  config
+                    config: config
                 }
             });
 
@@ -67,26 +67,26 @@ define(function(require){
         };
 
         /*
-        *   Helper to test timeouts
-        */
-        var throttle = function(callback, timeAmount){
+         *   Helper to test timeouts
+         */
+        var throttle = function(callback, timeAmount) {
             var timer;
 
-            return function(){
+            return function() {
                 clearTimeout(timer);
                 var args = [].slice.call(arguments);
-                timer = setTimeout(function(){
-                    callback.apply(this,args);
+                timer = setTimeout(function() {
+                    callback.apply(this, args);
                 }, timeAmount);
             };
         };
 
-        describe('HANDSHAKE_REQUEST', function(){
+        describe('HANDSHAKE_REQUEST', function() {
 
             it('should send a requestHandshake when trying to send ON_READY notification', function() {
 
                 // mock out handshake request upon initialization
-                mockPostMessage(function(message){
+                mockPostMessage(function(message) {
                     // verify that the handshake request has a request token
                     expect(message.type).to.be(SimCapiMessage.TYPES.HANDSHAKE_REQUEST);
                     expect(message.handshake.requestToken).to.be(requestToken);
@@ -138,10 +138,10 @@ define(function(require){
 
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.CONFIG_CHANGE,
-                    handshake : {
-                        authToken : token,
-                        config : newConfig
+                    type: SimCapiMessage.TYPES.CONFIG_CHANGE,
+                    handshake: {
+                        authToken: token,
+                        config: newConfig
                     }
                 });
                 transporter.capiMessageHandler(configChangeMessage);
@@ -171,19 +171,19 @@ define(function(require){
 
         describe('HANDSHAKE_RESPONSE', function() {
 
-            it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function(){
+            it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function() {
 
                 // create a handshakeResponse message with a different request token
                 var handshakeResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
-                    handshake : {
-                        requestToken : 'bad request token',
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                    handshake: {
+                        requestToken: 'bad request token',
+                        authToken: authToken
                     }
                 });
 
                 // mock out postMessage for ON_READY. This shouldn't be called
-                mockPostMessage(function(){});
+                mockPostMessage(function() {});
 
                 transporter.capiMessageHandler(handshakeResponse);
 
@@ -195,7 +195,7 @@ define(function(require){
 
         describe('ON_READY', function() {
 
-            it ('should send ON_READY followed by a VALUE_CHANGE message when told', function() {
+            it('should send ON_READY followed by a VALUE_CHANGE message when told', function() {
 
                 doHandShake();
 
@@ -203,18 +203,20 @@ define(function(require){
                 var gotOnReady = -1;
                 var gotValueChange = -1;
 
-                var throttled = throttle(function(){
+                var throttled = throttle(function() {
                     expect(gotOnReady < gotValueChange).to.be(true);
                 }, 25);
 
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
                     // remember the order that we recieved messages
-                    switch(message.type) {
-                    case SimCapiMessage.TYPES.ON_READY:
-                        gotOnReady = ++invoked; break;
-                    case SimCapiMessage.TYPES.VALUE_CHANGE:
-                        gotValueChange = ++invoked; break;
+                    switch (message.type) {
+                        case SimCapiMessage.TYPES.ON_READY:
+                            gotOnReady = ++invoked;
+                            break;
+                        case SimCapiMessage.TYPES.VALUE_CHANGE:
+                            gotValueChange = ++invoked;
+                            break;
                     }
 
                     // verify that the tokens are remembered
@@ -232,7 +234,7 @@ define(function(require){
                 expect(gotValueChange === 2).to.be(true);
             });
 
-            it('should remember pending ON_READY notification and send it after a succesfull HANDSHAKE_RESPONSE', function(){
+            it('should remember pending ON_READY notification and send it after a succesfull HANDSHAKE_RESPONSE', function() {
 
                 var invoked = 0;
                 var gotOnReady = -1;
@@ -240,18 +242,20 @@ define(function(require){
 
                 transporter.getHandshake().authToken = null;
 
-                var throttled = throttle(function(){
+                var throttled = throttle(function() {
                     expect(gotOnReady < gotValueChange).to.be(true);
                 }, 25);
 
                 // mock out postMessage for ON_READY message
                 mockPostMessage(function(message) {
                     // remember the order that we recieved messages
-                    switch(message.type) {
-                    case SimCapiMessage.TYPES.ON_READY:
-                        gotOnReady = ++invoked; break;
-                    case SimCapiMessage.TYPES.VALUE_CHANGE:
-                        gotValueChange = ++invoked; break;
+                    switch (message.type) {
+                        case SimCapiMessage.TYPES.ON_READY:
+                            gotOnReady = ++invoked;
+                            break;
+                        case SimCapiMessage.TYPES.VALUE_CHANGE:
+                            gotValueChange = ++invoked;
+                            break;
                     }
                 });
 
@@ -262,8 +266,8 @@ define(function(require){
 
                 // create a handshakeResponse message
                 var handshakeResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
-                    handshake : {
+                    type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                    handshake: {
                         requestToken: requestToken,
                         authToken: authToken
                     }
@@ -283,11 +287,11 @@ define(function(require){
 
         });
 
-        describe('VALUE_CHANGE', function(){
+        describe('VALUE_CHANGE', function() {
 
             var outgoingMap = null;
 
-            beforeEach(function(){
+            beforeEach(function() {
 
                 outgoingMap = {
                     // create three attributes (float, string and boolean types) with expected
@@ -297,17 +301,17 @@ define(function(require){
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    'these.are.fake.objects.attr1' : createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222),
-                    attr2 : createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
-                    attr3 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
-                    attr4 : createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
+                    'these.are.fake.objects.attr1': createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222),
+                    attr2: createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
+                    attr3: createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
+                    attr4: createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
                 transporter = new Transporter({
-                    requestToken : requestToken,
-                    authToken : authToken,
-                    outgoingMap : outgoingMap
+                    requestToken: requestToken,
+                    authToken: authToken,
+                    outgoingMap: outgoingMap
                 });
 
                 transporter.removeAllChangeListeners();
@@ -318,10 +322,10 @@ define(function(require){
             // expected updates. Eg, the value of expectedKey changes to expectedValue.
             var createAttr = function(type, readonly, expectedKey, expectedValue) {
                 return new SimCapiValue({
-                  type: type,
-                  readonly: readonly,
-                  key: expectedKey,
-                  value: expectedValue
+                    type: type,
+                    readonly: readonly,
+                    key: expectedKey,
+                    value: expectedValue
                 });
             };
 
@@ -333,45 +337,45 @@ define(function(require){
              */
             var createGoodValueChangeMessage = function() {
                 return new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                    handshake : {
-                        requestToken : requestToken,
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
                     },
 
                     // create two attribute changes as mentioned above
-                    values : {
-                        'these.are.fake.objects.attr1' : new SimCapiValue({
+                    values: {
+                        'these.are.fake.objects.attr1': new SimCapiValue({
                             key: 'attr1',
-                            type : SimCapiValue.TYPES.NUMBER,
-                            value : 0.5
+                            type: SimCapiValue.TYPES.NUMBER,
+                            value: 0.5
                         }),
-                        'attr2' : new SimCapiValue({
+                        'attr2': new SimCapiValue({
                             key: 'attr2',
-                            type : SimCapiValue.TYPES.STRING,
-                            value : 'value2'
+                            type: SimCapiValue.TYPES.STRING,
+                            value: 'value2'
                         }),
-                        'attr3' : new SimCapiValue({
+                        'attr3': new SimCapiValue({
                             key: 'attr3',
-                            type : SimCapiValue.TYPES.BOOLEAN,
-                            value : false
+                            type: SimCapiValue.TYPES.BOOLEAN,
+                            value: false
                         }),
-                        'attr4' : new SimCapiValue({
+                        'attr4': new SimCapiValue({
                             key: 'attr4',
-                            type : SimCapiValue.TYPES.BOOLEAN,
-                            value : false
+                            type: SimCapiValue.TYPES.BOOLEAN,
+                            value: false
                         })
                     }
                 });
             };
 
-            it('should attempt to update the model when a VALUE_CHANGE message is recieved', function(){
+            it('should attempt to update the model when a VALUE_CHANGE message is recieved', function() {
 
                 var valueChangeMsg = createGoodValueChangeMessage();
 
                 var failed = true;
-                transporter.addChangeListener(function(){
-                  failed = false;
+                transporter.addChangeListener(function() {
+                    failed = false;
                 });
 
                 transporter.capiMessageHandler(valueChangeMsg);
@@ -379,7 +383,7 @@ define(function(require){
                 expect(failed).to.be(false);
             });
 
-            it('should give false when a Boolean false VALUE_CHANGE is recieved', function (){
+            it('should give false when a Boolean false VALUE_CHANGE is recieved', function() {
 
                 var expectedValueChangeMsg = transporter.createValueChangeMsg();
 
@@ -389,21 +393,21 @@ define(function(require){
                 expect(expectedValueChangeMsg.values.attr4.value).to.be(false);
             });
 
-            it('should ignore VALUE_CHANGE message if values is undefined', function(){
+            it('should ignore VALUE_CHANGE message if values is undefined', function() {
 
                 // create a bad value change message with values = undefined
                 var badValueChangeMsg = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                    handshake : {
-                        requestToken : requestToken,
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
                     },
-                    values : undefined
+                    values: undefined
                 });
 
                 var failed = false;
-                transporter.addChangeListener(function(values){
-                  failed = true;
+                transporter.addChangeListener(function(values) {
+                    failed = true;
                 });
 
 
@@ -413,21 +417,21 @@ define(function(require){
                 expect(failed).to.be(false);
             });
 
-            it('should ignore VALUE_CHANGE when authToken does not match', function(){
+            it('should ignore VALUE_CHANGE when authToken does not match', function() {
 
                 // create a bad value change message with values = undefined
                 var badValueChangeMsg = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                    handshake : {
-                        requestToken : requestToken,
-                        authToken : 'bad auth token'
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: 'bad auth token'
                     },
-                    values : undefined
+                    values: undefined
                 });
 
                 var failed = false;
-                transporter.addChangeListener(function(values){
-                  failed = true;
+                transporter.addChangeListener(function(values) {
+                    failed = true;
                 });
 
                 transporter.capiMessageHandler(badValueChangeMsg);
@@ -436,16 +440,16 @@ define(function(require){
                 expect(failed).to.be(false);
             });
 
-            it('should not update readonly values', function(){
+            it('should not update readonly values', function() {
 
                 var valueChangeMsg = createGoodValueChangeMessage();
 
                 // change attr2 to be readonly
                 outgoingMap.attr2.readonly = true;
 
-                transporter.addChangeListener(function(values){
-                  //verify that two attrs get updated
-                  expect(values.length).to.be(2);
+                transporter.addChangeListener(function(values) {
+                    //verify that two attrs get updated
+                    expect(values.length).to.be(2);
                 });
 
                 transporter.capiMessageHandler(valueChangeMsg);
@@ -454,19 +458,19 @@ define(function(require){
 
         });
 
-        describe('VALUE_CHANGE_REQUEST', function(){
+        describe('VALUE_CHANGE_REQUEST', function() {
 
             // process change event
             var valueChangeRequestMessage = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST,
-                handshake : {
-                    authToken : authToken
+                type: SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST,
+                handshake: {
+                    authToken: authToken
                 }
             });
 
-            it('should send value change notification', function(){
+            it('should send value change notification', function() {
                 doHandShake();
-                sandbox.stub(transporter, 'notifyValueChange', function () {});
+                sandbox.stub(transporter, 'notifyValueChange', function() {});
                 transporter.capiMessageHandler(valueChangeRequestMessage);
                 expect(transporter.notifyValueChange.called).to.be(true);
             });
@@ -475,9 +479,9 @@ define(function(require){
 
         describe('CHECK_*', function() {
             var checkResponseMessage = new SimCapiMessage({
-                type : SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE,
-                handshake : {
-                    authToken : authToken
+                type: SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE,
+                handshake: {
+                    authToken: authToken
                 }
             });
 
@@ -487,7 +491,7 @@ define(function(require){
 
                 // trigger check
                 transporter.triggerCheck({
-                    complete : onComplete
+                    complete: onComplete
                 });
 
                 transporter.capiMessageHandler(checkResponseMessage);
@@ -495,21 +499,21 @@ define(function(require){
             });
         });
 
-        describe('GET_DATA_REQUEST', function(){
+        describe('GET_DATA_REQUEST', function() {
 
             it('should place a get data request in pendingQueue', function() {
 
-                mockPostMessage(function(){});
+                mockPostMessage(function() {});
 
                 transporter.getDataRequest('sim', 'key');
 
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
-            it('should send a get data request', function(){
+            it('should send a get data request', function() {
                 doHandShake();
                 // mock out handshake request upon initialization
-                mockPostMessage(function(message){
+                mockPostMessage(function(message) {
                     // verify that the handshake request has a request token
                     expect(message.type).to.be(SimCapiMessage.TYPES.GET_DATA_REQUEST);
                     expect(message.handshake.authToken).to.be("testToken");
@@ -520,20 +524,18 @@ define(function(require){
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
-            it('should throw an error if simId or key is not given', function(){
+            it('should throw an error if simId or key is not given', function() {
                 var failed = true;
                 var failed2 = true;
-                try{
-                   transporter.getDataRequest(undefined, 'key');
-                }
-                catch(err){
+                try {
+                    transporter.getDataRequest(undefined, 'key');
+                } catch (err) {
                     failed = false;
                 }
 
-                try{
-                   transporter.getDataRequest('simId', undefined);
-                }
-                catch(err){
+                try {
+                    transporter.getDataRequest('simId', undefined);
+                } catch (err) {
                     failed2 = false;
                 }
 
@@ -544,17 +546,17 @@ define(function(require){
 
         });
 
-        describe('GET_DATA_RESPONSE', function(){
-            it('should receive a get data response of success', function(){
-                transporter.getDataRequest('sim', 'key', function(tData){
+        describe('GET_DATA_RESPONSE', function() {
+            it('should receive a get data response of success', function() {
+                transporter.getDataRequest('sim', 'key', function(tData) {
                     expect(tData.key).to.equal('key');
                 });
 
                 doHandShake();
                 var getDataResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.GET_DATA_RESPONSE,
-                    handshake : {
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
                     },
                     values: {
                         responseType: "success",
@@ -566,15 +568,15 @@ define(function(require){
                 transporter.capiMessageHandler(getDataResponse);
             });
 
-            it('should receive a get data response of error', function(){
+            it('should receive a get data response of error', function() {
                 var error = sinon.stub();
-                transporter.getDataRequest('sim', 'key', function(){}, error);
+                transporter.getDataRequest('sim', 'key', function() {}, error);
 
                 doHandShake();
                 var getDataResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.GET_DATA_RESPONSE,
-                    handshake : {
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
                     },
                     values: {
                         responseType: "error",
@@ -589,21 +591,21 @@ define(function(require){
         });
 
 
-        describe('SET_DATA_REQUEST', function(){
+        describe('SET_DATA_REQUEST', function() {
 
             it('should place a set data request in pendingQueue', function() {
 
-                mockPostMessage(function(){});
+                mockPostMessage(function() {});
 
                 transporter.getDataRequest('sim', 'key', 'value');
 
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
-            it('should send a set data request', function(){
+            it('should send a set data request', function() {
                 doHandShake();
                 // mock out handshake request upon initialization
-                mockPostMessage(function(message){
+                mockPostMessage(function(message) {
                     // verify that the handshake request has a request token
                     expect(message.type).to.be(SimCapiMessage.TYPES.SET_DATA_REQUEST);
                     expect(message.handshake.authToken).to.be("testToken");
@@ -614,20 +616,18 @@ define(function(require){
                 expect(transporter.sendMessage.called).to.be(true);
             });
 
-            it('should throw an error if simId or key is not given', function(){
+            it('should throw an error if simId or key is not given', function() {
                 var failed = true;
                 var failed2 = true;
-                try{
-                   transporter.getDataRequest(undefined, 'key');
-                }
-                catch(err){
+                try {
+                    transporter.getDataRequest(undefined, 'key');
+                } catch (err) {
                     failed = false;
                 }
 
-                try{
-                   transporter.getDataRequest('simId', undefined);
-                }
-                catch(err){
+                try {
+                    transporter.getDataRequest('simId', undefined);
+                } catch (err) {
                     failed2 = false;
                 }
 
@@ -638,17 +638,17 @@ define(function(require){
 
         });
 
-        describe('SET_DATA_RESPONSE', function(){
-            it('should receive a set data response of success', function(){
-                transporter.setDataRequest('sim', 'key', 'value', function(tData){
+        describe('SET_DATA_RESPONSE', function() {
+            it('should receive a set data response of success', function() {
+                transporter.setDataRequest('sim', 'key', 'value', function(tData) {
                     expect(tData.key).to.equal('key');
                 });
 
                 doHandShake();
                 var setDataResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.SET_DATA_RESPONSE,
-                    handshake : {
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
                     },
                     values: {
                         responseType: "success",
@@ -661,15 +661,15 @@ define(function(require){
                 transporter.capiMessageHandler(setDataResponse);
             });
 
-            it('should receive a set data response of error', function(){
+            it('should receive a set data response of error', function() {
                 var error = sinon.stub();
-                transporter.setDataRequest('sim', 'key', 'value', function(){}, error);
+                transporter.setDataRequest('sim', 'key', 'value', function() {}, error);
 
                 doHandShake();
                 var setDataResponse = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.SET_DATA_RESPONSE,
-                    handshake : {
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
                     },
                     values: {
                         responseType: "error",
@@ -683,20 +683,20 @@ define(function(require){
             });
         });
 
-        describe('SET_VALUE', function(){
+        describe('SET_VALUE', function() {
             var message;
             beforeEach(function() {
                 message = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                    handshake : {
-                        requestToken : requestToken,
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
                     },
                     values: {
-                        'attr1' : new SimCapiValue({
+                        'attr1': new SimCapiValue({
                             key: 'attr1',
-                            type : SimCapiValue.TYPES.NUMBER,
-                            value : 0.5
+                            type: SimCapiValue.TYPES.NUMBER,
+                            value: 0.5
                         })
                     }
                 });
@@ -704,16 +704,16 @@ define(function(require){
                 doHandShake();
             });
 
-            it('should apply the value from a message sent before the set of the value in the transporter', function(){
+            it('should apply the value from a message sent before the set of the value in the transporter', function() {
 
-                sandbox.stub(transporter, 'notifyValueChange', function () {});
+                sandbox.stub(transporter, 'notifyValueChange', function() {});
 
                 transporter.capiMessageHandler(message);
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.NUMBER,
-                    value : 10
+                    type: SimCapiValue.TYPES.NUMBER,
+                    value: 10
                 });
 
                 transporter.expose(exposedProperty);
@@ -723,8 +723,8 @@ define(function(require){
                 //setting the value again shouldn't set the value to 0.5
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.NUMBER,
-                    value : 15
+                    type: SimCapiValue.TYPES.NUMBER,
+                    value: 15
                 });
 
                 transporter.setValue(exposedProperty);
@@ -738,10 +738,10 @@ define(function(require){
             var message;
             beforeEach(function() {
                 message = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE,
-                    handshake : {
-                        requestToken : requestToken,
-                        authToken : authToken
+                    type: SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
                     }
                 });
 
@@ -749,7 +749,8 @@ define(function(require){
             });
 
             it('should call every registered handler', function() {
-                var first = sinon.stub(), second = sinon.stub();
+                var first = sinon.stub(),
+                    second = sinon.stub();
                 transporter.addInitialSetupCompleteListener(first);
                 transporter.addInitialSetupCompleteListener(second);
 
@@ -800,14 +801,14 @@ define(function(require){
             });
         });
 
-        describe('EXPOSING_VALUE_AGAIN', function(){
-            it('should apply the existing value if a property has been exposed before', function(){
-                sandbox.stub(transporter, 'notifyValueChange', function () {});
+        describe('EXPOSING_VALUE_AGAIN', function() {
+            it('should apply the existing value if a property has been exposed before', function() {
+                sandbox.stub(transporter, 'notifyValueChange', function() {});
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.NUMBER,
-                    value : 10
+                    type: SimCapiValue.TYPES.NUMBER,
+                    value: 10
                 });
 
                 transporter.expose(exposedProperty);
@@ -817,21 +818,21 @@ define(function(require){
                 //exposing the value again should keep the value at the existing one
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.NUMBER,
-                    value : 15
+                    type: SimCapiValue.TYPES.NUMBER,
+                    value: 15
                 });
 
                 transporter.expose(exposedProperty);
 
                 expect(exposedProperty.value).to.equal(10);
             });
-            it('should have consistent behaviour even if that value is false', function(){
-                sandbox.stub(transporter, 'notifyValueChange', function () {});
+            it('should have consistent behaviour even if that value is false', function() {
+                sandbox.stub(transporter, 'notifyValueChange', function() {});
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.BOOLEAN,
-                    value : false
+                    type: SimCapiValue.TYPES.BOOLEAN,
+                    value: false
                 });
 
                 transporter.expose(exposedProperty);
@@ -841,8 +842,8 @@ define(function(require){
                 //exposing the value again should keep the value at the existing one
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type : SimCapiValue.TYPES.BOOLEAN,
-                    value : true
+                    type: SimCapiValue.TYPES.BOOLEAN,
+                    value: true
                 });
 
                 transporter.expose(exposedProperty);
