@@ -456,7 +456,7 @@ define(['jquery',
             handlers = handlers || {};
 
             if (handlers.complete) {
-                this.addCheckCompleteListener(handlers.complete, true);
+                self.addCheckCompleteListener(handlers.complete, true);
             }
 
             var triggerCheckMsg = new SimCapiMessage({
