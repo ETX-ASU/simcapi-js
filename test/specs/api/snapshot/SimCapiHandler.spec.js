@@ -1,17 +1,17 @@
 /*global window, document, sinon, iframe1, iframe2, iframe3*/
-define(function(require){
+define(function(require) {
 
-    var $               = require('jquery');
-    var _               = require('underscore');
-    var SimCapiHandler  = require('api/snapshot/SimCapiHandler');
-    var SimCapiMessage  = require('api/snapshot/SimCapiMessage');
-    var SharedSimData   = require('api/snapshot/SharedSimData');
-    var SimCapiValue    = require('api/snapshot/SimCapiValue');
+    var $ = require('jquery');
+    var _ = require('underscore');
+    var SimCapiHandler = require('api/snapshot/SimCapiHandler');
+    var SimCapiMessage = require('api/snapshot/SimCapiMessage');
+    var SharedSimData = require('api/snapshot/SharedSimData');
+    var SimCapiValue = require('api/snapshot/SimCapiValue');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
     require('sinon');
 
-    $(document).ready(function(){
-        describe('SimCapiHandler', function(){
+    $(document).ready(function() {
+        describe('SimCapiHandler', function() {
 
             var $container = null;
             var handler = null;
@@ -21,32 +21,32 @@ define(function(require){
                 sandbox = sinon.sandbox.create();
 
                 $container = $(
-                        '<div>' +
-                        '<iframe id="iframe1"></iframe>' +
-                        '<iframe id="iframe2"></iframe>' +
-                        '<iframe id="iframe3" style="display:none"></iframe>' + // this should be ignored in the search
-                        '</div>'
+                    '<div>' +
+                    '<iframe id="iframe1"></iframe>' +
+                    '<iframe id="iframe2"></iframe>' +
+                    '<iframe id="iframe3" style="display:none"></iframe>' + // this should be ignored in the search
+                    '</div>'
                 );
 
                 // add iframes to the dom
                 $('body').append($container);
 
                 // stub out event registration
-                sandbox.stub(window, 'addEventListener', function(type, callback){
+                sandbox.stub(window, 'addEventListener', function(type, callback) {
                     expect(type).to.be('message');
                     expect(callback).to.be.ok();
                 });
 
                 handler = new SimCapiHandler({
-                    $container : $container,
-                    ignoreHidden : true,
-                    callback : {
-                        check : function() {}
+                    $container: $container,
+                    ignoreHidden: true,
+                    callback: {
+                        check: function() {}
                     }
                 });
 
                 // make sure it doesn't send any messages to iframe3 because it has display:none
-                mockPostMessage('#iframe3', function(){
+                mockPostMessage('#iframe3', function() {
                     expect(false).to.be(true);
                 });
             });
@@ -71,7 +71,7 @@ define(function(require){
                 sandbox.stub(handler, 'sendMessage', callback);
             };
             var mockSendMessageToFrame = function(assertCallback) {
-                if(handler.sendMessage.hasOwnProperty('restore')) {
+                if (handler.sendMessage.hasOwnProperty('restore')) {
                     handler.sendMessage.restore();
                 }
                 var callback = function(message, id) {
@@ -90,7 +90,7 @@ define(function(require){
                 var message = new SimCapiMessage();
                 message.type = SimCapiMessage.TYPES.HANDSHAKE_REQUEST;
                 message.handshake = {
-                    requestToken : 'token1'
+                    requestToken: 'token1'
                 };
 
                 // remember tokens for each frame so we can check that they are different
@@ -98,7 +98,7 @@ define(function(require){
                 var iframe2Token = null;
 
                 // mock out postMessage for all iframe windows
-                mockPostMessage(function(response, id){
+                mockPostMessage(function(response, id) {
                     expect(response.type).to.be(SimCapiMessage.TYPES.HANDSHAKE_RESPONSE);
                     expect(response.handshake.requestToken).to.be('token1');
 
@@ -122,8 +122,8 @@ define(function(require){
             var setupHandshake = function(iframeid, token) {
                 // setup a handshake
                 var handshakeMsg = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.HANDSHAKE_REQUEST,
-                    handshake : {
+                    type: SimCapiMessage.TYPES.HANDSHAKE_REQUEST,
+                    handshake: {
                         requestToken: token,
                         authToken: null
                     }
@@ -132,7 +132,7 @@ define(function(require){
                 var authToken = null;
 
                 // mock the postMessage so we can remember the authToken
-                mockPostMessage(function(response, id){
+                mockPostMessage(function(response, id) {
                     authToken = id === iframeid ? response.handshake.authToken : authToken;
                 });
 
@@ -147,10 +147,10 @@ define(function(require){
             var setupOnReady = function(iframeId, authToken) {
                 // create an ON_READY messages
                 var onReadyMsg = new SimCapiMessage({
-                    type : SimCapiMessage.TYPES.ON_READY,
-                    handshake : {
+                    type: SimCapiMessage.TYPES.ON_READY,
+                    handshake: {
                         requestToken: null,
-                        authToken : authToken
+                        authToken: authToken
                     }
                 });
 
@@ -165,9 +165,9 @@ define(function(require){
 
                 it('should remember pending check request', function() {
                     var message = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.CHECK_REQUEST,
-                        handshake : {
-                            authToken : 'token1'
+                        type: SimCapiMessage.TYPES.CHECK_REQUEST,
+                        handshake: {
+                            authToken: 'token1'
                         }
                     });
                     handler.capiMessageHandler(message);
@@ -188,14 +188,14 @@ define(function(require){
                 });
             });
 
-            describe('notifyCheckStartResponse', function(){
+            describe('notifyCheckStartResponse', function() {
 
                 beforeEach(function() {
                     setupHandshake('iframe1', 'token1');
                     setupHandshake('iframe2', 'token2');
                 });
 
-                it('should notify all sims that check was clicked', function(){
+                it('should notify all sims that check was clicked', function() {
 
                     mockPostMessage(function(response, id) {
                         expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_START_RESPONSE);
@@ -207,7 +207,7 @@ define(function(require){
                     expect(handler.sendMessage.callCount).to.be(2);
                 });
 
-                it('should remember what sims are waiting for a check response', function(){
+                it('should remember what sims are waiting for a check response', function() {
 
                     mockPostMessage(function(response, id) {
                         expect(response.type === SimCapiMessage.TYPES.CHECK_START_RESPONSE || response.type === SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE).to.be(true);
@@ -251,28 +251,37 @@ define(function(require){
                 });
             });
 
-            describe('getSnapshot', function(){
+            describe('getSnapshot', function() {
 
                 var authToken = null;
 
-                beforeEach(function(){
+                beforeEach(function() {
                     // create handshake
                     authToken = setupHandshake('iframe1', 'token1');
                 });
 
-                it('should return the snapshot remembered from a VALUE_CHANGE event', function(){
+                it('should return the snapshot remembered from a VALUE_CHANGE event', function() {
 
                     // create a VALUE_CHANGE message with three values
                     var valueChangeMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                        handshake : {
-                            requestToken : null,
-                            authToken : authToken
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
                         },
-                        values : {
-                            value1 : new SimCapiValue({key: 'value1', value: 'value1'}),
-                            value2 : new SimCapiValue({key: 'value2', value: 'value2'}),
-                            value3 : new SimCapiValue({key: 'value3', value: 'value3'})
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: new SimCapiValue({
+                                key: 'value2',
+                                value: 'value2'
+                            }),
+                            value3: new SimCapiValue({
+                                key: 'value3',
+                                value: 'value3'
+                            })
                         }
                     });
 
@@ -290,19 +299,28 @@ define(function(require){
 
                 });
 
-                it('should return the descriptors remembered from a VALUE_CHANGE event', function(){
+                it('should return the descriptors remembered from a VALUE_CHANGE event', function() {
 
                     // create a VALUE_CHANGE message with three values
                     var valueChangeMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                        handshake : {
-                            requestToken : null,
-                            authToken : authToken
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
                         },
-                        values : {
-                            value1 : new SimCapiValue({key: 'value1', value: 'value1'}),
-                            value2 : new SimCapiValue({key: 'value2', value: 'value2'}),
-                            value3 : new SimCapiValue({key: 'value3',value: 'value3'})
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: new SimCapiValue({
+                                key: 'value2',
+                                value: 'value2'
+                            }),
+                            value3: new SimCapiValue({
+                                key: 'value3',
+                                value: 'value3'
+                            })
                         }
                     });
 
@@ -320,17 +338,20 @@ define(function(require){
 
                 });
 
-                it('should overwrite snapshot with the latest values retrieve from VALUE_CHANGE', function(){
+                it('should overwrite snapshot with the latest values retrieve from VALUE_CHANGE', function() {
 
                     // create a VALUE_CHANGE message with one value
                     var valueChangeMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.VALUE_CHANGE,
-                        handshake : {
-                            requestToken : null,
-                            authToken : authToken
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
                         },
-                        values : {
-                            value1 : new SimCapiValue({key: 'value1', value: 'value1'})
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            })
                         }
                     });
 
@@ -345,9 +366,18 @@ define(function(require){
                     expect(snapshot['iframe1.value1']).to.be('value1');
 
                     // create another VALUE_CHANGE message with three values, one of which overrides value1
-                    valueChangeMsg.values.value1 = new SimCapiValue({key: 'value1', value: 'changed1'});
-                    valueChangeMsg.values.value2 = new SimCapiValue({key: 'value2', value: 'value2'});
-                    valueChangeMsg.values.value3 = new SimCapiValue({key: 'value3', value: 'value3'});
+                    valueChangeMsg.values.value1 = new SimCapiValue({
+                        key: 'value1',
+                        value: 'changed1'
+                    });
+                    valueChangeMsg.values.value2 = new SimCapiValue({
+                        key: 'value2',
+                        value: 'value2'
+                    });
+                    valueChangeMsg.values.value3 = new SimCapiValue({
+                        key: 'value3',
+                        value: 'value3'
+                    });
 
                     // send the update message
                     handler.capiMessageHandler(valueChangeMsg);
@@ -365,7 +395,7 @@ define(function(require){
 
             });
 
-            describe('removeIFrame', function(){
+            describe('removeIFrame', function() {
 
                 var authToken = null;
 
@@ -399,7 +429,7 @@ define(function(require){
 
             });
 
-            describe('setSnapshot', function(){
+            describe('setSnapshot', function() {
 
                 it('should keep things pending until an ON_READY message has been received', function() {
 
@@ -420,15 +450,15 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
                     var invoked = 0;
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         // verify snapshot that is sent to the iframe
                         expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
                         expect(response.handshake.authToken).to.be(authToken);
@@ -447,13 +477,15 @@ define(function(require){
                     expect(invoked).to.be(1);
                 });
 
-                it('should NOT send snapshot immediately when a handshake has been established', function(){
+                it('should NOT send snapshot immediately when a handshake has been established', function() {
                     // create handshake
                     setupHandshake('iframe2', 'token1');
                     handler.sendMessage.restore();
 
                     var calls = 0;
-                    mockSendMessageToFrame(function() { ++calls; });
+                    mockSendMessageToFrame(function() {
+                        ++calls;
+                    });
 
                     var segment = new SnapshotSegment('stage.iframe2.value2', '1');
                     handler.setSnapshot([segment]);
@@ -462,12 +494,12 @@ define(function(require){
                     expect(calls, 'message sent').to.be(0);
                 });
 
-                it('should send snapshot immediately when ON_READY has been established', function(){
+                it('should send snapshot immediately when ON_READY has been established', function() {
                     // create handshake
                     var authToken = setupHandshake('iframe2', 'token1');
 
                     var invoked = 0;
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         // verify snapshot that is sent to the iframe
                         expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
                         expect(response.handshake.authToken).to.be(authToken);
@@ -482,10 +514,10 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -513,10 +545,10 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -540,15 +572,15 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
                     var invoked = 0;
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         expect(_.size(response.values)).to.be(1);
                         expect(response.values['value'].value).to.be('1');
                         expect(iframeid).to.be('iframe1');
@@ -561,7 +593,7 @@ define(function(require){
                     // a quicker way of checking if the mock is invoked.
                     expect(invoked).to.be(1);
 
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         expect(_.size(response.values)).to.be(1);
                         expect(response.values['value'].value).to.be('2');
                         expect(iframeid).to.be('iframe2');
@@ -578,7 +610,7 @@ define(function(require){
                     var authToken = setupHandshake('iframe1', 'token1');
 
                     var invoked = 0;
-                    mockSendMessageToFrame(function(response, iframeid){
+                    mockSendMessageToFrame(function(response, iframeid) {
                         invoked++;
                     });
 
@@ -588,10 +620,10 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -602,12 +634,12 @@ define(function(require){
                     expect(invoked).to.be(1);
                 });
 
-                it('should handle multiple snapshots in a single call', function(){
+                it('should handle multiple snapshots in a single call', function() {
                     // create handshake
                     var authToken = setupHandshake('iframe2', 'token1');
 
                     var invoked = 0;
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         // verify snapshot that is sent to the iframe
                         expect(response.type).to.be(SimCapiMessage.TYPES.VALUE_CHANGE);
                         expect(response.handshake.authToken).to.be(authToken);
@@ -620,10 +652,10 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -631,25 +663,26 @@ define(function(require){
 
                     handler.setSnapshot([new SnapshotSegment('stage.iframe2.value1', '1'),
                         new SnapshotSegment('stage.iframe2.value2', '2'),
-                        new SnapshotSegment('stage.iframe2.value3', '3')]);
+                        new SnapshotSegment('stage.iframe2.value3', '3')
+                    ]);
 
                     // a quicker way of checking if the mock is invoked.
                     expect(invoked).to.be(1);
                 });
             });
 
-            describe("get data request", function(){
-                it('should response to a get data request', function(){
+            describe("get data request", function() {
+                it('should response to a get data request', function() {
 
                     // create handshake
                     var authToken = setupHandshake('iframe2', 'token1');
 
                     handler = new SimCapiHandler({
-                        $container : $container,
-                        ignoreHidden : true,
-                        callback : {
-                            check : function() {},
-                            onGetDataRequest: function(options){
+                        $container: $container,
+                        ignoreHidden: true,
+                        callback: {
+                            check: function() {},
+                            onGetDataRequest: function(options) {
                                 expect(options.key).to.equal("test");
                                 options.onSuccess(5);
                             }
@@ -658,12 +691,12 @@ define(function(require){
 
                     // create a get data request
                     var getDataRequestMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.GET_DATA_REQUEST,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         },
-                        values:{
+                        values: {
                             key: 'test'
                         }
                     });
@@ -694,20 +727,20 @@ define(function(require){
                     var authToken = setupHandshake('iframe2', 'token1');
 
                     var lastPostedMessage = '';
-                    mockPostMessage(function(response, iframeid){
+                    mockPostMessage(function(response, iframeid) {
                         // verify snapshot that is sent to the iframe
                         lastPostedMessage = response.type;
-                        if(response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
+                        if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
                             expect(response.handshake.authToken).to.be(authToken);
                         }
                     });
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -723,10 +756,10 @@ define(function(require){
 
                     // create an ON_READY messages
                     var onReadyMsg = new SimCapiMessage({
-                        type : SimCapiMessage.TYPES.ON_READY,
-                        handshake : {
+                        type: SimCapiMessage.TYPES.ON_READY,
+                        handshake: {
                             requestToken: null,
-                            authToken : authToken
+                            authToken: authToken
                         }
                     });
 
@@ -734,8 +767,8 @@ define(function(require){
                     handler.notifyInitializationComplete('iframe2');
 
                     var initialSetupCompleteSent = false;
-                    mockPostMessage(function(response, iframeid){
-                        if(response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
+                    mockPostMessage(function(response, iframeid) {
+                        if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
                             initialSetupCompleteSent = true;
                         }
                     });
