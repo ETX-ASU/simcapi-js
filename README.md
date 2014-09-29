@@ -52,7 +52,8 @@ For example:
 ```
 var simModel = new pipit.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: "5"
+    studentResponse: "5",
+    simEnabled: true
 });
 ```
 
@@ -68,12 +69,13 @@ pipit.CapiAdapter.expose(variableName, model, options);
 
 Here is the list of what you must pass to _expose_.
 
-variableName - String    - name of the variable on the model
-model        - CapiModel - the model that the variable belongs to.
-options      - Object
-                         - type     - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
-                         - alias    - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
-                         - readonly - Boolean             - if the variable is readonly
+* variableName - String    - name of the variable on the model
+* model        - CapiModel - the model that the variable belongs to.
+* options      - Object
+  * type       - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
+  * alias      - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
+  * readonly   - Boolean             - if the variable is read-only
+  * writeonly  - Boolean             - if the variable is write-only
 
 
 Inversely, if you want to unexpose your data, you can tell the `CapiAdapter`.
@@ -84,8 +86,8 @@ pipit.CapiAdapter.unexpose(variableName, model);
 
 Here is the list of what you must pass to _unexpose_.
 
-variableName - String    - name of the variable on the model
-model        - CapiModel - the model that the variable belongs to.
+* variableName - String    - name of the variable on the model
+* model        - CapiModel - the model that the variable belongs to.
 
 
 ### Finalise Setup ###
@@ -129,16 +131,19 @@ pipit.Controller.triggerCheck({
 ```
 var simModel = new pipit.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: "5"
+    studentResponse: "5",
+    simEnabled: true
 });
 
 ...
 
 pipit.CapiAdapter.expose("demoMode", simModel,
-                                    {readonly: false});
+                                     {readonly: false});
 pipit.CapiAdapter.expose("studentResponse", simModel,
-                                          {alias: "studentAnswer",
+                                            {alias: "studentAnswer",
                                            readonly: true});
+pipit.CapiAdapter.expose("simEnabled", simModel,
+                                       {writeonly: true});
 
 ...
 
@@ -196,7 +201,8 @@ For Pipit to work, you must use the following functions on the `CapiModel`:
 var SimModel = Backbone.Model.extend({
   defaults:{
     demoMode: true,
-    studentResponse: "5"
+    studentResponse: "5",
+    simEnabled: true
   }
 });
 
@@ -210,6 +216,8 @@ pipit.BackboneAdapter.expose("demoMode", simModel,
 pipit.BackboneAdapter.expose("studentResponse", simModel,
                                                {alias: "studentAnswer",
                                                 readonly: true});
+pipit.CapiAdapter.expose("simEnabled", simModel,
+                                       {writeonly: true});
 
 ...
 

@@ -20,7 +20,8 @@ define(['underscore',
          * @param params : {
          *      alias  : alias of the attributeName
          *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
-         *      readonly : True if and only if, the attribute can be changed.
+         *      readonly : True if and only if, the attribute cannot be changed.
+         *      writeonly : True if and only if, the attribute is write-only.
          * }
          */
         this.expose = function(varName, model, params) {
@@ -38,6 +39,7 @@ define(['underscore',
                     value: model.get(varName),
                     type: params.type,
                     readonly: params.readonly,
+                    writeonly: params.writeonly,
                     allowedValues: params.allowedValues
                 });
 
@@ -52,6 +54,7 @@ define(['underscore',
                         value: value,
                         type: simCapiParams.type,
                         readonly: simCapiParams.readonly,
+                        writeonly: simCapiParams.writeonly,
                         allowedValues: params.allowedValues
                     });
 
