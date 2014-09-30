@@ -116,6 +116,12 @@ define(['check'], function(check) {
         this.readonly = options.readonly || false;
 
         /*
+         * True if and only if, this value can NOT be read from.
+         * This is not actually enforced, but only used for filtering the condition editor in the author.
+         */
+        this.writeonly = options.writeonly || false;
+
+        /*
          * List of possible values for enum
          */
         this.allowedValues = options.allowedValues || null;
