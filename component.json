@@ -8,6 +8,7 @@
     "mocha": "1.8.1",
     "underscore": ">=1.4.3",
     "check-js": ">=0.1.0",
-    "expect": "0.2.0"
+    "expect": "0.2.0",
+    "backbone": "~1.0.0"
   }
 }

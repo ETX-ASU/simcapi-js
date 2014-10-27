@@ -1,6 +1,7 @@
 /*globals sinon*/
 define(function(require) {
 
+    var BackboneModel = require('backbone').Model;
     var BackboneAdapter = require('api/snapshot/adapters/BackboneAdapter').BackboneAdapter;
     var Transporter = require('api/snapshot/Transporter').Transporter;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
@@ -23,22 +24,12 @@ define(function(require) {
 
             sandbox = sinon.sandbox.create();
 
-            modelAttributes = {
-                'attr1': 5,
-                'attr2': []
-            };
-
-            model = {
-                get: function(varName) {
-                    return modelAttributes[varName];
-                },
-                set: function() {},
-                on: function() {},
-                has: function(varName) {
-                    return varName;
-                },
-                off: function() {}
-            };
+            model = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 5,
+                    'attr2': []
+                }
+            }))();
 
             modelsMapping = {};
 
@@ -145,6 +136,26 @@ define(function(require) {
             adapter.unexpose('attr1', model);
 
             expect(transporter.removeValue.callCount).to.equal(1);
+        });
+
+        describe('when the value is changed from a listener', function() {
+            it('should write back the new value to the transporter', function() {
+                var originalValue = 2;
+                var otherValue = 10;
+
+                sandbox.stub(transporter, 'setValue', function(simCapiValue) {
+                    expect(simCapiValue.value).to.equal(otherValue);
+                });
+
+                model.on('change:attr1', function() {
+                    model.set('attr1', otherValue);
+                });
+
+                adapter.expose('attr1', model);
+                model.set('attr1', originalValue);
+
+                expect(transporter.setValue.callCount).to.equal(2);
+            });
         });
     });
 

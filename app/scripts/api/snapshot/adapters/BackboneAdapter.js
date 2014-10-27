@@ -47,7 +47,7 @@ define(['underscore',
                     capiValue.value = '[' + model.get(originalName).toString() + ']';
                 }
 
-                var exposeFunc = _.bind(function(){
+                var exposeFunc = _.bind(function() {
                     var value = model.get(varName);
                     var capiValue = new SimCapiValue({
                         key: alias,
