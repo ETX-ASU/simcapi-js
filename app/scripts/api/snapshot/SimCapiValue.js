@@ -83,6 +83,10 @@ define(['check'], function(check) {
                     if (allowedValues.indexOf(value) === -1) {
                         throw new Error('value is not allowed.');
                     }
+                    break;
+                case SimCapiValue.TYPES.MATH_EXPR:
+                    check(value).isString();
+                    break;
             }
 
             return value;
@@ -157,7 +161,8 @@ define(['check'], function(check) {
         STRING: 2,
         ARRAY: 3,
         BOOLEAN: 4,
-        ENUM: 5
+        ENUM: 5,
+        MATH_EXPR: 6
     };
 
     return SimCapiValue;
