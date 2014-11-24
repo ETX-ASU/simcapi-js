@@ -69,6 +69,32 @@ define(function(require) {
 
         });
 
+        it('should throw if Math Expression is anything but a String', function() {
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: 2,
+                    type: SimCapiValue.TYPES.MATH_EXPR
+                });
+            }).throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: [],
+                    type: SimCapiValue.TYPES.MATH_EXPR
+                });
+            }).throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: "",
+                    type: SimCapiValue.TYPES.MATH_EXPR
+                });
+            }).to.not.throwError();
+        });
+
 
     });
 
