@@ -34,6 +34,9 @@ define([
 
         /*
          * Transporter versions:
+         * 0.64 - Added MathExpression as a type
+         *        Validation checks on the sim side will ensure that it's the same on the platform side
+         *        Capi properties can be write only now
          * 0.63 - When exposing a property after the first time the default value will overwritten
          * 0.62 - Add ability to save lesson attempt
          * 0.61 - Bug fix with Check start Event
