@@ -87,6 +87,10 @@ define(['check'], function(check) {
                 case SimCapiValue.TYPES.MATH_EXPR:
                     check(value).isString();
                     break;
+                case SimCapiValue.TYPES.ARRAY_POINT:
+                    value = parseArray(value);
+                    check(value).isArray();
+                    break;
             }
 
             return value;
@@ -162,7 +166,8 @@ define(['check'], function(check) {
         ARRAY: 3,
         BOOLEAN: 4,
         ENUM: 5,
-        MATH_EXPR: 6
+        MATH_EXPR: 6,
+        ARRAY_POINT: 7
     };
 
     return SimCapiValue;
