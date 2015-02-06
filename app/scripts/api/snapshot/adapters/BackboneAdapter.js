@@ -43,7 +43,7 @@ define(['underscore',
                     allowedValues: params.allowedValues
                 });
 
-                if (capiValue.type === SimCapiValue.TYPES.ARRAY) {
+                if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
                     capiValue.value = '[' + model.get(originalName).toString() + ']';
                 }
 
@@ -58,7 +58,7 @@ define(['underscore',
                         allowedValues: params.allowedValues
                     });
 
-                    if (capiValue.type === SimCapiValue.TYPES.ARRAY) {
+                    if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
                         capiValue.value = '[' + model.get(originalName).toString() + ']';
                     }
 
