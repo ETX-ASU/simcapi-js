@@ -34,6 +34,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.65 - Added Array Point type
          * 0.64 - Added MathExpression as a type
          *        Validation checks on the sim side will ensure that it's the same on the platform side
          *        Capi properties can be write only now
