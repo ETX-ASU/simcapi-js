@@ -167,7 +167,7 @@ define(['check'], function(check) {
         BOOLEAN: 4,
         ENUM: 5,
         MATH_EXPR: 6,
-        ARRAY_POINT: 7
+        ARRAY_POINT: 7 // ARRAY_POINT format: ["(x1;y1)","(x2;y2)", ...]
     };
 
     return SimCapiValue;
