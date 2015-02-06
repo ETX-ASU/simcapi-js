@@ -95,6 +95,31 @@ define(function(require) {
             }).to.not.throwError();
         });
 
+        it('should throw if Array Point is anything but an Array', function() {
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: 2,
+                    type: SimCapiValue.TYPES.ARRAY_POINT
+                });
+            }).throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: "",
+                    type: SimCapiValue.TYPES.ARRAY_POINT
+                });
+            }).throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: [],
+                    type: SimCapiValue.TYPES.ARRAY_POINT
+                });
+            }).to.not.throwError();
+        });
 
     });
 
