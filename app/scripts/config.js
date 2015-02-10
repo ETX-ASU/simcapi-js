@@ -4,9 +4,6 @@ requirejs.config({
         jquery: {
             exports: '$'
         },
-        underscore: {
-            exports: '_'
-        },
         backbone: {
             deps: ['jquery', 'underscore'],
             exports: 'Backbone'
@@ -14,7 +11,7 @@ requirejs.config({
     },
     paths: {
         jquery: '../../../bower_components/jquery/dist/jquery',
-        underscore: '../../../bower_components/underscore/underscore',
+        underscore: '../../../bower_components/lodash/lodash',
         backbone: '../../../bower_components/backbone/backbone',
         almond: '../../../bower_components/almond/almond',
         check: '../../../bower_components/check-js/check.min',
