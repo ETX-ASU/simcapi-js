@@ -34,6 +34,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.66 - Switch underscore to lodash
          * 0.65 - Added Array Point type
          * 0.64 - Added MathExpression as a type
          *        Validation checks on the sim side will ensure that it's the same on the platform side
@@ -418,7 +419,7 @@ define([
                     });
                 }
 
-                var variable = _.rest(segment.path, 2).join('.');
+                var variable = _.drop(segment.path, 2).join('.');
                 messages[iframeId].values[variable] = new SimCapiValue({
                     key: variable,
                     type: SimCapiValue.TYPES.STRING,
@@ -482,7 +483,7 @@ define([
             var result = {};
 
             // target path looks something like this : iframeid[.var]*
-            var targetPath = _.rest(snapshotSegment.path, 1);
+            var targetPath = _.rest(snapshotSegment.path);
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
@@ -505,7 +506,7 @@ define([
             var result = {};
 
             // target path looks something like this : iframeid
-            var targetPath = _.rest(snapshotSegment.path, 1);
+            var targetPath = _.rest(snapshotSegment.path);
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
