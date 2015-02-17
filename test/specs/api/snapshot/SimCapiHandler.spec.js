@@ -429,6 +429,51 @@ define(function(require) {
 
             });
 
+            describe('resetSnapshotForIframe', function() {
+
+                var authToken = null;
+
+                beforeEach(function() {
+                    authToken = setupHandshake('iframe1', 'token1');
+                    setupOnReady('iframe1', authToken);
+                });
+
+                it('should remove knowledge of the given sim', function() {
+                    // set the iframe snapshot
+                    var segment = new SnapshotSegment('stage.iframe1', '');
+                    var message = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        }
+                    });
+
+                    message.values['variable1'] = new SimCapiValue({
+                        key: 'variable1',
+                        type: SimCapiValue.TYPES.STRING,
+                        value: '1'
+                    });
+
+                    message.values['variable2'] = new SimCapiValue({
+                        key: 'variable2',
+                        type: SimCapiValue.TYPES.STRING,
+                        value: '2'
+                    });
+
+                    handler.capiMessageHandler(message);
+                    // remove knowledge of the sim and send another snapshot
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(2);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(2);
+                    handler.resetSnapshotForIframe('iframe1');
+
+                    // should not no longer have any snapshot segments associated with that iframe
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
+                });
+
+            });
+
             describe('setSnapshot', function() {
 
                 it('should keep things pending until an ON_READY message has been received', function() {

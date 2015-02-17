@@ -380,11 +380,14 @@ define([
             delete idToToken[iframeid]; // iframeid -> token
             delete isReady[token]; // token -> true/false
             delete idToSimVersion[iframeid]; // iframeid -> simVersion
+            self.resetSnapshotForIframe(iframeid);
+        };
 
+        this.resetSnapshotForIframe = function(iframeid) {
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf(iframeid + '.') !== -1) {
-                    delete snapshot[iframeid];
-                    delete descriptors[iframeid];
+                    delete snapshot[fullpath];
+                    delete descriptors[fullpath];
                 }
             });
         };
