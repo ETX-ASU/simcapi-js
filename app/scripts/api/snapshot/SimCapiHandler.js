@@ -380,11 +380,14 @@ define([
             delete idToToken[iframeid]; // iframeid -> token
             delete isReady[token]; // token -> true/false
             delete idToSimVersion[iframeid]; // iframeid -> simVersion
+            self.resetSnapshotForIframe(iframeid);
+        };
 
+        this.resetSnapshotForIframe = function(iframeid) {
             _.each(snapshot, function(value, fullpath) {
                 if (fullpath.indexOf(iframeid + '.') !== -1) {
-                    delete snapshot[iframeid];
-                    delete descriptors[iframeid];
+                    delete snapshot[fullpath];
+                    delete descriptors[fullpath];
                 }
             });
         };
@@ -448,12 +451,7 @@ define([
                 message.handshake.authToken = idToToken[iframeid];
             }
             if (!this.sendMessageToFrame(message, iframeid)) {
-                _.each(snapshot, function(value, fullpath) {
-                    if (fullpath.indexOf('stage.' + iframeid) !== -1) {
-                        delete snapshot[iframeid];
-                        delete descriptors[iframeid];
-                    }
-                });
+                self.resetSnapshotForIframe(iframeid);
             }
         };
         // NOTE: Do not try to stub window.postMessage due to IE9 not allowing it
