@@ -34,6 +34,8 @@ define([
 
         /*
          * Transporter versions:
+         * 0.67 - Added public method to clear the snapshot and descriptors for an iframe
+         *      - Fixed bug where the snapshot wouldn't get deleted when the iframe was removed
          * 0.66 - Switch underscore to lodash
          * 0.65 - Added Array Point type
          * 0.64 - Added MathExpression as a type
