@@ -23,9 +23,29 @@ define([
             onGetDataRequest: options.callback.onGetDataRequest,
             onSetDataRequest: options.callback.onSetDataRequest
         };
-        var tokenToId = {}; // token -> iframeid
-        var idToToken = {}; // iframeid -> token
+
+        var tokenToId = {}; // token -> compositeId
+        var idToToken = {}; // compositeId -> token
         var isReady = {}; // token -> true/false
+
+        var getCompositeId = function(iframeId, questionId) {
+            if (questionId) {
+                return questionId + '|' + iframeId;
+            }
+            return iframeId;
+        };
+        var getIFrameIdFromComposite = function(compositeId) {
+            if (compositeId.indexOf('|') === -1) {
+                return compositeId;
+            }
+            return compositeId.split('|')[1];
+        };
+        var getQuestionIdFromComposite = function(compositeId) {
+            if (compositeId.indexOf('|') === -1) {
+                return null;
+            }
+            return compositeId.split('|')[0];
+        };
 
         // Most up to date state of iframe capi values;
         var snapshot = {};
@@ -34,6 +54,9 @@ define([
 
         /*
          * Transporter versions:
+         * 0.68 - Added ability for users of SimCapiHandler to target a particular instance
+         *        of an iframe (among several with the same iframe ID) by using questionId data
+         *        in the DOM elements.
          * 0.67 - Added public method to clear the snapshot and descriptors for an iframe
          *      - Fixed bug where the snapshot wouldn't get deleted when the iframe was removed
          * 0.66 - Switch underscore to lodash
@@ -58,7 +81,7 @@ define([
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var idToSimVersion = {}; // iframeid -> version of Sim Capi used by iframe
+        var idToSimVersion = {}; // compositeId -> version of Sim Capi used by iframe
 
         /*
          * A queue of messages to be sent to sims.
@@ -252,12 +275,12 @@ define([
             };
 
             // broadcast check start response to each sim
-            _.each(idToToken, function(authToken, iframeId) {
+            _.each(idToToken, function(authToken, compositeId) {
                 message.handshake.authToken = authToken;
 
                 pendingCheckResponses[message.handshake.authToken] = true;
 
-                self.sendMessage(message, iframeId);
+                self.sendMessage(message, compositeId);
             });
         };
 
@@ -267,7 +290,7 @@ define([
         var updateSnapshot = function(authToken, values) {
             if (authToken && tokenToId[authToken]) {
 
-                var iframeId = tokenToId[authToken];
+                var iframeId = getIFrameIdFromComposite(tokenToId[authToken]);
 
                 // enumerate through all value changes and update accordingly
                 _.each(values, function(simCapiValue, key) {
@@ -318,7 +341,13 @@ define([
                 // go through all iframes and send a reply if needed
                 _.each(frames, function(iframe, index) {
                     var $iframe = $(iframe);
-                    var id = $iframe.attr('id');
+
+                    var id;
+                    if ($iframe.data('qid')) { // platform HTML viewer adds this, platform author doesn't
+                        id = getCompositeId($iframe.attr('id'), $iframe.data('qid'));
+                    } else {
+                        id = getCompositeId($iframe.attr('id'));
+                    }
 
                     if (!idToToken[id]) {
                         // generate a token for the iframe if we haven't already
@@ -376,18 +405,22 @@ define([
         };
 
         // Delete the given iframe from the list of known sims.
-        this.removeIFrame = function(iframeid) {
-            var token = idToToken[iframeid];
-            delete tokenToId[token]; // token -> iframeid
-            delete idToToken[iframeid]; // iframeid -> token
-            delete isReady[token]; // token -> true/false
-            delete idToSimVersion[iframeid]; // iframeid -> simVersion
-            self.resetSnapshotForIframe(iframeid);
+        this.removeIFrame = function(iframeId, questionId) {
+            var compositeId = getCompositeId(iframeId, questionId);
+            var token = idToToken[compositeId];
+
+            delete tokenToId[token];
+            delete idToToken[compositeId];
+            delete isReady[token];
+            delete idToSimVersion[compositeId];
+            self.resetSnapshotForIframe(compositeId);
         };
 
-        this.resetSnapshotForIframe = function(iframeid) {
+        this.resetSnapshotForIframe = function(compositeId) {
+            var iframeId = getIFrameIdFromComposite(compositeId);
+
             _.each(snapshot, function(value, fullpath) {
-                if (fullpath.indexOf(iframeid + '.') !== -1) {
+                if (fullpath.indexOf(iframeId + '.') !== -1) {
                     delete snapshot[fullpath];
                     delete descriptors[fullpath];
                 }
@@ -398,7 +431,7 @@ define([
          * Send the snapshot.
          * @param snapshotSegments is an array of SnapshotSegments
          */
-        this.setSnapshot = function(snapshotSegments) {
+        this.setSnapshot = function(snapshotSegments, questionId) {
 
             check(snapshotSegments).isArray();
 
@@ -419,7 +452,7 @@ define([
                         type: SimCapiMessage.TYPES.VALUE_CHANGE,
                         handshake: {
                             requestToken: null,
-                            authToken: idToToken[iframeId]
+                            authToken: idToToken[getCompositeId(iframeId, questionId)]
                         }
                     });
                 }
@@ -433,39 +466,52 @@ define([
             });
 
             // send message to each respective iframes
-            $.each(messages, function(iframeid, message) {
-                self.sendMessage(message, iframeid);
+            $.each(messages, function(iframeId, message) {
+                self.sendMessage(message, getCompositeId(iframeId, questionId));
             });
         };
 
         // can't mock postMessage in ie9 so we wrap it and mock the wrap :D
-        this.sendMessage = function(message, iframeid) {
-            var token = idToToken[iframeid];
+        this.sendMessage = function(message, compositeId) {
+            var token = idToToken[compositeId];
             if (message.type !== SimCapiMessage.TYPES.HANDSHAKE_RESPONSE && !isReady[token]) {
-                if (!pendingMessages[iframeid]) {
-                    pendingMessages[iframeid] = [];
+                if (!pendingMessages[compositeId]) {
+                    pendingMessages[compositeId] = [];
                 }
-                pendingMessages[iframeid].push(message);
+                pendingMessages[compositeId].push(message);
                 return;
             }
 
             if (!message.handshake.authToken) {
-                message.handshake.authToken = idToToken[iframeid];
+                message.handshake.authToken = idToToken[compositeId];
             }
-            if (!this.sendMessageToFrame(message, iframeid)) {
-                self.resetSnapshotForIframe(iframeid);
+            if (!this.sendMessageToFrame(message, compositeId)) {
+                self.resetSnapshotForIframe(compositeId);
             }
         };
+
         // NOTE: Do not try to stub window.postMessage due to IE9 not allowing it
         // Tests should run in all supported browsers
         // This method should almost never be used directly, use send message instead.
-        this.sendMessageToFrame = function(message, iframeid) {
-            var frame = $container.find('#' + iframeid)[0];
-            // ignore hidden is needed for the flash side of things when the iframe begins as hidden
-            // but still need to perform a handshake.
+        this.sendMessageToFrame = function(message, compositeId) {
+            var questionId = getQuestionIdFromComposite(compositeId);
+            var iframeId = getIFrameIdFromComposite(compositeId);
+
+            var frame = $container.find('#' + iframeId)[0];
+            // ignore hidden is set by the platform HTML viewer, and should be set by anything else
+            // that wants to target a specific iframe with QID data
             if (ignoreHidden) {
-                frame = $container.find('#' + iframeid + ':visible')[0];
+                var $frames = $container.find('iframe#' + iframeId).filter(':visible');
+
+                if (questionId !== null) {
+                    frame = $frames.filter(function() {
+                        return $(this).data('qid') === questionId;
+                    })[0];
+                } else {
+                    frame = $frames[0];
+                }
             }
+
             if (!frame) {
                 return false;
             }
@@ -523,8 +569,8 @@ define([
          * Requests value change message
          * @since 0.1
          */
-        this.requestValueChange = function(iframeId) {
-            if (!(idToSimVersion[iframeId] && idToSimVersion[iframeId] >= 0.1)) {
+        this.requestValueChange = function(compositeId) {
+            if (!(idToSimVersion[compositeId] && idToSimVersion[compositeId] >= 0.1)) {
                 throw new Error("Method requestValueChange is not supported by sim");
             }
 
@@ -532,13 +578,13 @@ define([
             var message = new SimCapiMessage();
             message.type = SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST;
             message.handshake = {
-                authToken: idToToken[iframeId],
+                authToken: idToToken[compositeId],
                 // Config object is used to pass relevant information to the sim
                 // like the 'real' authToken (from AELP_WS cookie), the lesson id, etc.
                 config: SharedSimData.getInstance().getData()
             };
 
-            this.sendMessage(message, iframeId);
+            this.sendMessage(message, compositeId);
         };
 
         /*
@@ -566,28 +612,29 @@ define([
          * @since 0.55
          * Notify clients that initial setup has been completely sent to them
          */
-        this.notifyInitializationComplete = function(iframeID) {
+        this.notifyInitializationComplete = function(iframeId, questionId) {
+            var compositeId = getCompositeId(iframeId, questionId);
             var message = new SimCapiMessage();
             message.type = SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE;
             message.handshake = {
-                authToken: idToToken[iframeID]
+                authToken: idToToken[compositeId]
             };
 
-            this.sendMessage(message, iframeID);
+            this.sendMessage(message, compositeId);
         };
 
         /*
-         * Returns version of Transporter, used by the iframe
+         * Get the version of Transporter for a given iframe.
          */
-        this.getTransporterVersion = function(iframeId) {
-            return idToSimVersion[iframeId];
+        this.getTransporterVersion = function(compositeId) {
+            return idToSimVersion[compositeId];
         };
 
         /*
-         * Get the token for a given iframe.
+         * Get the token for a given iframe. Used in unit tests.
          */
-        this.getToken = function(iframeid) {
-            return idToToken[iframeid];
+        this.getToken = function(compositeId) {
+            return idToToken[compositeId];
         };
     };
 
