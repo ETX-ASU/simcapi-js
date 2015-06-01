@@ -54,6 +54,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.69 - Fixed: unexpose not removing capi properties from snapshot
          * 0.68 - Added ability for users of SimCapiHandler to target a particular instance
          *        of an iframe (among several with the same iframe ID) by using questionId data
          *        in the DOM elements.
@@ -294,8 +295,13 @@ define([
 
                 // enumerate through all value changes and update accordingly
                 _.each(values, function(simCapiValue, key) {
-                    snapshot[iframeId + '.' + key] = simCapiValue.value;
-                    descriptors[iframeId + '.' + key] = simCapiValue;
+                    if (simCapiValue === null) {
+                        delete snapshot[iframeId + '.' + key];
+                        delete descriptors[iframeId + '.' + key];
+                    } else {
+                        snapshot[iframeId + '.' + key] = simCapiValue.value;
+                        descriptors[iframeId + '.' + key] = simCapiValue;
+                    }
                 });
 
                 // this is used in the platform to do work when things change
