@@ -12,7 +12,7 @@ define(['jquery',
 
     var Transporter = function(options) {
         // current version of Transporter
-        var version = 0.68;
+        var version = 0.69;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
