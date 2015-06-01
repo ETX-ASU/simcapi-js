@@ -34,6 +34,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.68 - Fixed: unexpose not removing capi properties from snapshot
          * 0.67 - Added public method to clear the snapshot and descriptors for an iframe
          *      - Fixed bug where the snapshot wouldn't get deleted when the iframe was removed
          * 0.66 - Switch underscore to lodash
@@ -271,8 +272,13 @@ define([
 
                 // enumerate through all value changes and update accordingly
                 _.each(values, function(simCapiValue, key) {
-                    snapshot[iframeId + '.' + key] = simCapiValue.value;
-                    descriptors[iframeId + '.' + key] = simCapiValue;
+                    if (simCapiValue === null) {
+                        delete snapshot[iframeId + '.' + key];
+                        delete descriptors[iframeId + '.' + key];
+                    } else {
+                        snapshot[iframeId + '.' + key] = simCapiValue.value;
+                        descriptors[iframeId + '.' + key] = simCapiValue;
+                    }
                 });
 
                 // this is used in the platform to do work when things change

@@ -393,6 +393,67 @@ define(function(require) {
 
                 });
 
+                it('should remove snapshot null values from a VALUE_CHANGE event', function() {
+                    // create a VALUE_CHANGE message with three values
+                    var valueChangeMsg = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        },
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: null,
+                            value3: null
+                        }
+                    });
+
+                    // send the message to the handler
+                    handler.capiMessageHandler(valueChangeMsg);
+
+                    // retrieve the snapshot from the handler
+                    var snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
+
+                    expect(_.size(snapshot)).to.be(1);
+                    expect(snapshot['iframe1.value1']).to.be('value1');
+                    expect(snapshot['iframe1.value2']).to.be(undefined);
+                    expect(snapshot['iframe1.value3']).to.be(undefined);
+                });
+
+                it('should remove descriptor null values from a VALUE_CHANGE event', function() {
+                    // create a VALUE_CHANGE message with three values
+                    var valueChangeMsg = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        },
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: null,
+                            value3: null
+                        }
+                    });
+
+                    // send the message to the handler
+                    handler.capiMessageHandler(valueChangeMsg);
+
+                    // retrieve the snapshot from the handler
+                    var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1.'));
+
+                    // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
+                    expect(_.size(descriptors)).to.be(1);
+                    expect(descriptors['iframe1.value1']).to.be(valueChangeMsg.values.value1);
+                    expect(descriptors['iframe1.value2']).to.be(undefined);
+                    expect(descriptors['iframe1.value3']).to.be(undefined);
+                });
+
             });
 
             describe('removeIFrame', function() {
