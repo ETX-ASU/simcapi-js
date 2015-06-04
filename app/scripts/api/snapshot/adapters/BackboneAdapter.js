@@ -96,7 +96,8 @@ define(['underscore',
             } else {
                 //could be under an alias
                 modelMap = _.findWhere(modelsMapping, {
-                    originalName: varName
+                    originalName: varName,
+                    model: model
                 });
             }
 
