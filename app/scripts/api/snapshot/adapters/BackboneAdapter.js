@@ -102,7 +102,7 @@ define(['underscore',
             }
 
             if (modelMap) {
-                model.off('change:' + varName, modelMap.exposeFunc);
+                model.off('change:' + modelMap.originalName, modelMap.exposeFunc);
 
                 _transporter.removeValue(modelMap.alias);
 
