@@ -54,6 +54,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.70 - Fixed: adapter unexpose removing incorrect capi property
          * 0.69 - Fixed: unexpose not removing capi properties from snapshot
          * 0.68 - Added ability for users of SimCapiHandler to target a particular instance
          *        of an iframe (among several with the same iframe ID) by using questionId data

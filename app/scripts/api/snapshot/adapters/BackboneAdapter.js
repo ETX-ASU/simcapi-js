@@ -96,12 +96,13 @@ define(['underscore',
             } else {
                 //could be under an alias
                 modelMap = _.findWhere(modelsMapping, {
-                    originalName: varName
+                    originalName: varName,
+                    model: model
                 });
             }
 
             if (modelMap) {
-                model.off('change:' + varName, modelMap.exposeFunc);
+                model.off('change:' + modelMap.originalName, modelMap.exposeFunc);
 
                 _transporter.removeValue(modelMap.alias);
 

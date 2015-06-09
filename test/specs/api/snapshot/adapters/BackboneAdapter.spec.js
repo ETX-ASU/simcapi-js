@@ -104,6 +104,49 @@ define(function(require) {
             expect(modelsMapping['attr2']).to.equal(undefined);
         });
 
+        it('should delete corresponding model attributes from its alias mapping when unexposed', function() {
+            var model1 = model;
+
+            var model2 = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 2,
+                    'attr2': []
+                }
+            }))();
+
+            var model3 = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 2,
+                    'attr2': []
+                }
+            }))();
+
+            adapter.expose('attr2', model1, {
+                alias: "model1.attr2",
+                readonly: false
+            });
+
+            adapter.expose('attr2', model2, {
+                alias: "model2.attr2",
+                readonly: false
+            });
+
+            adapter.expose('attr2', model3, {
+                alias: "model3.attr2",
+                readonly: false
+            });
+
+            expect(modelsMapping['model1.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model2.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model3.attr2']).to.not.equal(undefined);
+
+            adapter.unexpose('attr2', model2);
+
+            expect(modelsMapping['model1.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model2.attr2']).to.equal(undefined);
+            expect(modelsMapping['model3.attr2']).to.not.equal(undefined);
+        });
+
         it('should set new values when recieved', function() {
             adapter.expose('attr1', model);
 
