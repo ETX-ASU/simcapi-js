@@ -83,6 +83,14 @@ define(['check'], function(check) {
                     if (allowedValues.indexOf(value) === -1) {
                         throw new Error('value is not allowed.');
                     }
+                    break;
+                case SimCapiValue.TYPES.MATH_EXPR:
+                    check(value).isString();
+                    break;
+                case SimCapiValue.TYPES.ARRAY_POINT:
+                    value = parseArray(value);
+                    check(value).isArray();
+                    break;
             }
 
             return value;
@@ -114,6 +122,12 @@ define(['check'], function(check) {
          * the value of this key, will be ignored.
          */
         this.readonly = options.readonly || false;
+
+        /*
+         * True if and only if, this value can NOT be read from.
+         * This is not actually enforced, but only used for filtering the condition editor in the author.
+         */
+        this.writeonly = options.writeonly || false;
 
         /*
          * List of possible values for enum
@@ -151,7 +165,9 @@ define(['check'], function(check) {
         STRING: 2,
         ARRAY: 3,
         BOOLEAN: 4,
-        ENUM: 5
+        ENUM: 5,
+        MATH_EXPR: 6,
+        ARRAY_POINT: 7 // ARRAY_POINT format: ["(x1;y1)","(x2;y2)", ...]
     };
 
     return SimCapiValue;

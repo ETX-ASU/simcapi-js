@@ -1,6 +1,7 @@
 /*globals sinon*/
 define(function(require) {
 
+    var BackboneModel = require('backbone').Model;
     var BackboneAdapter = require('api/snapshot/adapters/BackboneAdapter').BackboneAdapter;
     var Transporter = require('api/snapshot/Transporter').Transporter;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
@@ -23,22 +24,12 @@ define(function(require) {
 
             sandbox = sinon.sandbox.create();
 
-            modelAttributes = {
-                'attr1': 5,
-                'attr2': []
-            };
-
-            model = {
-                get: function(varName) {
-                    return modelAttributes[varName];
-                },
-                set: function() {},
-                on: function() {},
-                has: function(varName) {
-                    return varName;
-                },
-                off: function() {}
-            };
+            model = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 5,
+                    'attr2': []
+                }
+            }))();
 
             modelsMapping = {};
 
@@ -78,6 +69,29 @@ define(function(require) {
             });
         });
 
+        it('should create SimCapiValues properly when of type array_point', function() {
+            sandbox.stub(transporter, 'expose', function(capiValue) {
+                expect(capiValue.value).to.be('[]');
+            });
+
+            adapter.expose('attr2', model, {
+                readonly: false,
+                type: SimCapiValue.TYPES.ARRAY_POINT
+            });
+        });
+
+        it('should pass the writeonly param into the SimCapiValue', function() {
+            sandbox.stub(transporter, 'expose', function(capiValue) {
+                expect(capiValue.writeonly).to.be(true);
+            });
+
+            adapter.expose('attr1', model, {
+                writeonly: true
+            });
+
+            expect(transporter.expose.callCount).to.be(1);
+        });
+
         it('should delete attributes from its mapping when unexposed', function() {
             adapter.expose('attr2', model, {
                 readonly: false
@@ -88,6 +102,49 @@ define(function(require) {
             adapter.unexpose('attr2', model);
 
             expect(modelsMapping['attr2']).to.equal(undefined);
+        });
+
+        it('should delete corresponding model attributes from its alias mapping when unexposed', function() {
+            var model1 = model;
+
+            var model2 = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 2,
+                    'attr2': []
+                }
+            }))();
+
+            var model3 = new(BackboneModel.extend({
+                'defaults': {
+                    'attr1': 2,
+                    'attr2': []
+                }
+            }))();
+
+            adapter.expose('attr2', model1, {
+                alias: "model1.attr2",
+                readonly: false
+            });
+
+            adapter.expose('attr2', model2, {
+                alias: "model2.attr2",
+                readonly: false
+            });
+
+            adapter.expose('attr2', model3, {
+                alias: "model3.attr2",
+                readonly: false
+            });
+
+            expect(modelsMapping['model1.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model2.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model3.attr2']).to.not.equal(undefined);
+
+            adapter.unexpose('attr2', model2);
+
+            expect(modelsMapping['model1.attr2']).to.not.equal(undefined);
+            expect(modelsMapping['model2.attr2']).to.equal(undefined);
+            expect(modelsMapping['model3.attr2']).to.not.equal(undefined);
         });
 
         it('should set new values when recieved', function() {
@@ -133,6 +190,26 @@ define(function(require) {
             adapter.unexpose('attr1', model);
 
             expect(transporter.removeValue.callCount).to.equal(1);
+        });
+
+        describe('when the value is changed from a listener', function() {
+            it('should write back the new value to the transporter', function() {
+                var originalValue = 2;
+                var otherValue = 10;
+
+                sandbox.stub(transporter, 'setValue', function(simCapiValue) {
+                    expect(simCapiValue.value).to.equal(otherValue);
+                });
+
+                model.on('change:attr1', function() {
+                    model.set('attr1', otherValue);
+                });
+
+                adapter.expose('attr1', model);
+                model.set('attr1', originalValue);
+
+                expect(transporter.setValue.callCount).to.equal(2);
+            });
         });
     });
 

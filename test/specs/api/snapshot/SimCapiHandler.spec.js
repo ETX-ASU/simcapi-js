@@ -25,6 +25,8 @@ define(function(require) {
                     '<iframe id="iframe1"></iframe>' +
                     '<iframe id="iframe2"></iframe>' +
                     '<iframe id="iframe3" style="display:none"></iframe>' + // this should be ignored in the search
+                    '<iframe id="iframe4" data-qid="q:1"></iframe>' +
+                    '<iframe id="iframe4" data-qid="q:2"></iframe>' +
                     '</div>'
                 );
 
@@ -96,6 +98,8 @@ define(function(require) {
                 // remember tokens for each frame so we can check that they are different
                 var iframe1Token = null;
                 var iframe2Token = null;
+                var iframe4q1Token = null;
+                var iframe4q2Token = null;
 
                 // mock out postMessage for all iframe windows
                 mockPostMessage(function(response, id) {
@@ -104,7 +108,9 @@ define(function(require) {
 
                     // remember which token is assigned to which frame
                     iframe1Token = id === 'iframe1' ? response.handshake.authToken : iframe1Token;
-                    iframe2Token = id === 'iframe2' ? response.handshake.authToken : iframe1Token;
+                    iframe2Token = id === 'iframe2' ? response.handshake.authToken : iframe2Token;
+                    iframe4q1Token = id === 'q:1|iframe4' ? response.handshake.authToken : iframe4q1Token;
+                    iframe4q2Token = id === 'q:2|iframe4' ? response.handshake.authToken : iframe4q2Token;
                 });
 
                 handler.capiMessageHandler(message);
@@ -112,8 +118,11 @@ define(function(require) {
                 // verify that all iframe tokens are different
                 expect(iframe1Token).to.be.ok();
                 expect(iframe2Token).to.be.ok();
-                expect(iframe1Token !== iframe2Token).to.be(true);
-                expect(handler.sendMessage.callCount).to.be(2);
+                expect(iframe4q1Token).to.be.ok();
+                expect(iframe4q2Token).to.be.ok();
+                var tokens = [iframe1Token, iframe2Token, iframe4q1Token, iframe4q2Token];
+                expect(_.uniq(tokens).length).to.be(4);
+                expect(handler.sendMessage.callCount).to.be(4);
             });
 
             /*
@@ -144,7 +153,7 @@ define(function(require) {
             /*
              * Helper to fake that the sim is ready
              */
-            var setupOnReady = function(iframeId, authToken) {
+            var setupOnReady = function(authToken) {
                 // create an ON_READY messages
                 var onReadyMsg = new SimCapiMessage({
                     type: SimCapiMessage.TYPES.ON_READY,
@@ -193,34 +202,42 @@ define(function(require) {
                 beforeEach(function() {
                     setupHandshake('iframe1', 'token1');
                     setupHandshake('iframe2', 'token2');
+                    setupHandshake('q:1|iframe4', 'token4q1');
+                    setupHandshake('q:2|iframe4', 'token4q2');
                 });
 
                 it('should notify all sims that check was clicked', function() {
 
                     mockPostMessage(function(response, id) {
                         expect(response.type).to.be(SimCapiMessage.TYPES.CHECK_START_RESPONSE);
-                        expect(response.handshake.authToken === handler.getToken('iframe1') || response.handshake.authToken === handler.getToken('iframe2')).to.be(true);
+                        expect(response.handshake.authToken === handler.getToken('iframe1') ||
+                            response.handshake.authToken === handler.getToken('iframe2') ||
+                            response.handshake.authToken === handler.getToken('q:1|iframe4') ||
+                            response.handshake.authToken === handler.getToken('q:2|iframe4')).to.be(true);
                     });
 
                     handler.notifyCheckStartResponse();
 
-                    expect(handler.sendMessage.callCount).to.be(2);
+                    expect(handler.sendMessage.callCount).to.be(4);
                 });
 
                 it('should remember what sims are waiting for a check response', function() {
 
                     mockPostMessage(function(response, id) {
                         expect(response.type === SimCapiMessage.TYPES.CHECK_START_RESPONSE || response.type === SimCapiMessage.TYPES.CHECK_COMPLETE_RESPONSE).to.be(true);
-                        expect(response.handshake.authToken === handler.getToken('iframe1') || response.handshake.authToken === handler.getToken('iframe2')).to.be(true);
+                        expect(response.handshake.authToken === handler.getToken('iframe1') ||
+                            response.handshake.authToken === handler.getToken('iframe2') ||
+                            response.handshake.authToken === handler.getToken('q:1|iframe4') ||
+                            response.handshake.authToken === handler.getToken('q:2|iframe4')).to.be(true);
                     });
 
                     handler.notifyCheckStartResponse();
 
-                    expect(handler.sendMessage.callCount).to.be(2);
+                    expect(handler.sendMessage.callCount).to.be(4);
 
                     handler.notifyCheckCompleteResponse();
 
-                    expect(handler.sendMessage.callCount).to.be(4);
+                    expect(handler.sendMessage.callCount).to.be(8);
                 });
             });
 
@@ -230,7 +247,7 @@ define(function(require) {
 
                 beforeEach(function() {
                     authToken = setupHandshake('iframe1', 'token1');
-                    setupOnReady('iframe1', authToken);
+                    setupOnReady(authToken);
                 });
 
                 it('should broadcast a CONFIG_CHANGE message', function() {
@@ -393,15 +410,76 @@ define(function(require) {
 
                 });
 
+                it('should remove snapshot null values from a VALUE_CHANGE event', function() {
+                    // create a VALUE_CHANGE message with three values
+                    var valueChangeMsg = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        },
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: null,
+                            value3: null
+                        }
+                    });
+
+                    // send the message to the handler
+                    handler.capiMessageHandler(valueChangeMsg);
+
+                    // retrieve the snapshot from the handler
+                    var snapshot = handler.getSnapshot(new SnapshotSegment('stage.iframe1'));
+
+                    expect(_.size(snapshot)).to.be(1);
+                    expect(snapshot['iframe1.value1']).to.be('value1');
+                    expect(snapshot['iframe1.value2']).to.be(undefined);
+                    expect(snapshot['iframe1.value3']).to.be(undefined);
+                });
+
+                it('should remove descriptor null values from a VALUE_CHANGE event', function() {
+                    // create a VALUE_CHANGE message with three values
+                    var valueChangeMsg = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        },
+                        values: {
+                            value1: new SimCapiValue({
+                                key: 'value1',
+                                value: 'value1'
+                            }),
+                            value2: null,
+                            value3: null
+                        }
+                    });
+
+                    // send the message to the handler
+                    handler.capiMessageHandler(valueChangeMsg);
+
+                    // retrieve the snapshot from the handler
+                    var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1.'));
+
+                    // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
+                    expect(_.size(descriptors)).to.be(1);
+                    expect(descriptors['iframe1.value1']).to.be(valueChangeMsg.values.value1);
+                    expect(descriptors['iframe1.value2']).to.be(undefined);
+                    expect(descriptors['iframe1.value3']).to.be(undefined);
+                });
+
             });
 
             describe('removeIFrame', function() {
 
-                var authToken = null;
-
                 beforeEach(function() {
-                    authToken = setupHandshake('iframe1', 'token1');
-                    setupOnReady('ifram1', authToken);
+                    var authToken = setupHandshake('iframe1', 'token1');
+                    setupOnReady(authToken);
+                    authToken = setupHandshake('q:1|iframe4', 'token4');
+                    setupOnReady(authToken);
                 });
 
                 it('should remove knowledge of the given sim', function() {
@@ -419,13 +497,105 @@ define(function(require) {
                     handler.removeIFrame('iframe1');
                     handler.setSnapshot([segment]);
 
-                    // should not send a message to the sim because its no longer known
+                    // should not send a message to the sim because it's no longer known
                     expect(calls).to.be(1);
 
                     // verify that the snapshots and descriptors for that sim are deleted
                     expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
                     expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
                 });
+
+                it('should remove knowledge of a sim with QID data', function() {
+                    var calls = 0;
+                    mockSendMessageToFrame(function() {
+                        ++calls;
+                    });
+
+                    // send a snapshot to check if the iframe is known
+                    var segment = new SnapshotSegment('stage.iframe4.value', '1');
+                    handler.setSnapshot([segment], 'q:1');
+                    expect(calls).to.be(1);
+
+                    // remove knowledge of the sim and send another snapshot
+                    handler.removeIFrame('iframe4', 'q:1');
+                    handler.setSnapshot([segment]);
+
+                    // should not send a message to the sim because it's no longer known
+                    expect(calls).to.be(1);
+
+                    // verify that the snapshots and descriptors for that sim are deleted
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
+                });
+
+            });
+
+            describe('resetSnapshotForIframe', function() {
+
+                var buildSnapshotSimCapiMessage = function(authToken) {
+                    var message = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        }
+                    });
+
+                    message.values['variable1'] = new SimCapiValue({
+                        key: 'variable1',
+                        type: SimCapiValue.TYPES.STRING,
+                        value: '1'
+                    });
+
+                    message.values['variable2'] = new SimCapiValue({
+                        key: 'variable2',
+                        type: SimCapiValue.TYPES.STRING,
+                        value: '2'
+                    });
+
+                    return message;
+                };
+
+                it('should remove knowledge of the given sim', function() {
+                    // set the iframe snapshot
+                    var segment = new SnapshotSegment('stage.iframe1', '');
+
+                    var authToken = setupHandshake('iframe1', 'token1');
+                    setupOnReady(authToken);
+
+                    var message = buildSnapshotSimCapiMessage(authToken);
+                    handler.capiMessageHandler(message);
+
+                    // remove knowledge of the sim and send another snapshot
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(2);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(2);
+                    handler.resetSnapshotForIframe('iframe1');
+
+                    // should not no longer have any snapshot segments associated with that iframe
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
+                });
+
+                it('should remove knowledge of a sim with QID data', function() {
+                    // set the iframe snapshot
+                    var segment = new SnapshotSegment('stage.iframe4', '');
+
+                    var authToken = setupHandshake('q:2|iframe4', 'token4');
+                    setupOnReady(authToken);
+
+                    var message = buildSnapshotSimCapiMessage(authToken);
+                    handler.capiMessageHandler(message);
+
+                    // remove knowledge of the sim and send another snapshot
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(2);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(2);
+                    handler.resetSnapshotForIframe('q:2|iframe4');
+
+                    // should not no longer have any snapshot segments associated with that iframe
+                    expect(Object.keys(handler.getSnapshot(segment)).length).to.be(0);
+                    expect(Object.keys(handler.getDescriptors(segment)).length).to.be(0);
+                });
+
 
             });
 
@@ -721,61 +891,74 @@ define(function(require) {
                 });
             });
 
-            describe('initialization complete', function() {
-                it('should send a message for initialization complete', function() {
-                    // create handshake
-                    var authToken = setupHandshake('iframe2', 'token1');
-
-                    var lastPostedMessage = '';
-                    mockPostMessage(function(response, iframeid) {
-                        // verify snapshot that is sent to the iframe
-                        lastPostedMessage = response.type;
-                        if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
-                            expect(response.handshake.authToken).to.be(authToken);
+            describe('notifyInitializationComplete', function() {
+                var itShouldSendAMessageForInitComplete = function(simName, iframeId, questionId) {
+                    it('should send a message for initialization complete for ' + simName, function() {
+                        // create handshake
+                        var authToken;
+                        if (questionId) {
+                            authToken = setupHandshake(questionId + '|' + iframeId, 'token1');
+                        } else {
+                            authToken = setupHandshake(iframeId, 'token1');
                         }
-                    });
 
-                    // create an ON_READY messages
-                    var onReadyMsg = new SimCapiMessage({
-                        type: SimCapiMessage.TYPES.ON_READY,
-                        handshake: {
-                            requestToken: null,
-                            authToken: authToken
+                        var lastPostedMessage = '';
+                        mockPostMessage(function(response) {
+                            // verify snapshot that is sent to the iframe
+                            lastPostedMessage = response.type;
+                            if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
+                                expect(response.handshake.authToken).to.be(authToken);
+                            }
+                        });
+
+                        setupOnReady(authToken);
+
+                        if (questionId) {
+                            handler.notifyInitializationComplete(iframeId, questionId);
+                        } else {
+                            handler.notifyInitializationComplete(iframeId);
                         }
+
+                        expect(lastPostedMessage).to.be(SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE);
                     });
+                };
 
-                    handler.capiMessageHandler(onReadyMsg);
-                    handler.notifyInitializationComplete('iframe2');
+                itShouldSendAMessageForInitComplete('a sim', 'iframe1');
+                itShouldSendAMessageForInitComplete('a sim with QID data', 'iframe4', 'q:1');
 
-                    expect(lastPostedMessage).to.be(SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE);
-                });
-
-                it('should queue the initialization complete to be sent after ready', function() {
-                    // create handshake
-                    var authToken = setupHandshake('iframe2', 'token1');
-
-                    // create an ON_READY messages
-                    var onReadyMsg = new SimCapiMessage({
-                        type: SimCapiMessage.TYPES.ON_READY,
-                        handshake: {
-                            requestToken: null,
-                            authToken: authToken
+                var itShouldQueueTheInitCompleteToBeSentAfterReady = function(simName, iframeId, questionId) {
+                    it('should queue the initialization complete to be sent after ready for ' + simName, function() {
+                        // create handshake
+                        var authToken;
+                        if (questionId) {
+                            authToken = setupHandshake(questionId + '|' + iframeId, 'token1');
+                        } else {
+                            authToken = setupHandshake(iframeId, 'token1');
                         }
-                    });
 
-                    handler.sendMessage.restore();
-                    handler.notifyInitializationComplete('iframe2');
+                        handler.sendMessage.restore();
 
-                    var initialSetupCompleteSent = false;
-                    mockPostMessage(function(response, iframeid) {
-                        if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
-                            initialSetupCompleteSent = true;
+                        if (questionId) {
+                            handler.notifyInitializationComplete(iframeId, questionId);
+                        } else {
+                            handler.notifyInitializationComplete(iframeId);
                         }
-                    });
-                    handler.capiMessageHandler(onReadyMsg);
 
-                    expect(initialSetupCompleteSent, 'setup complete sent').to.equal(true);
-                });
+                        var initialSetupCompleteSent = false;
+                        mockPostMessage(function(response, iframeid) {
+                            if (response.type === SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE) {
+                                initialSetupCompleteSent = true;
+                            }
+                        });
+
+                        setupOnReady(authToken);
+
+                        expect(initialSetupCompleteSent, 'setup complete sent').to.equal(true);
+                    });
+                };
+
+                itShouldQueueTheInitCompleteToBeSentAfterReady('a sim', 'iframe2');
+                itShouldQueueTheInitCompleteToBeSentAfterReady('a sim with QID data', 'iframe4', 'q:2');
             });
         });
     });

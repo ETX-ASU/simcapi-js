@@ -20,7 +20,8 @@ define(['underscore',
          * @param params : {
          *      alias  : alias of the attributeName
          *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
-         *      readonly : True if and only if, the attribute can be changed.
+         *      readonly : True if and only if, the attribute cannot be changed.
+         *      writeonly : True if and only if, the attribute is write-only.
          * }
          */
         this.expose = function(varName, model, params) {
@@ -38,24 +39,26 @@ define(['underscore',
                     value: model.get(varName),
                     type: params.type,
                     readonly: params.readonly,
+                    writeonly: params.writeonly,
                     allowedValues: params.allowedValues
                 });
 
-                if (capiValue.type === SimCapiValue.TYPES.ARRAY) {
+                if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
                     capiValue.value = '[' + model.get(originalName).toString() + ']';
                 }
 
-
-                var exposeFunc = _.bind(function(m, value) {
+                var exposeFunc = _.bind(function() {
+                    var value = model.get(varName);
                     var capiValue = new SimCapiValue({
                         key: alias,
                         value: value,
                         type: simCapiParams.type,
                         readonly: simCapiParams.readonly,
+                        writeonly: simCapiParams.writeonly,
                         allowedValues: params.allowedValues
                     });
 
-                    if (capiValue.type === SimCapiValue.TYPES.ARRAY) {
+                    if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
                         capiValue.value = '[' + model.get(originalName).toString() + ']';
                     }
 
@@ -93,12 +96,13 @@ define(['underscore',
             } else {
                 //could be under an alias
                 modelMap = _.findWhere(modelsMapping, {
-                    originalName: varName
+                    originalName: varName,
+                    model: model
                 });
             }
 
             if (modelMap) {
-                model.off('change:' + varName, modelMap.exposeFunc);
+                model.off('change:' + modelMap.originalName, modelMap.exposeFunc);
 
                 _transporter.removeValue(modelMap.alias);
 

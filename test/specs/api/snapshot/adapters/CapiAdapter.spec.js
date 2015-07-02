@@ -79,6 +79,29 @@ define(function(require) {
             });
         });
 
+        it('should create SimCapiValues properly when of type array_point', function() {
+            sandbox.stub(transporter, 'expose', function(capiValue) {
+                expect(capiValue.value).to.be('[]');
+            });
+
+            adapter.expose('attr2', model, {
+                readonly: false,
+                type: SimCapiValue.TYPES.ARRAY_POINT
+            });
+        });
+
+        it('should pass the writeonly param into the SimCapiValue', function() {
+            sandbox.stub(transporter, 'expose', function(capiValue) {
+                expect(capiValue.writeonly).to.be(true);
+            });
+
+            adapter.expose('attr1', model, {
+                writeonly: true
+            });
+
+            expect(transporter.expose.callCount).to.be(1);
+        });
+
         it('should delete attributes from its mapping when unexposed', function() {
             adapter.expose('attr2', model, {
                 readonly: false
