@@ -102,9 +102,8 @@ module.exports = function(grunt) {
     // Watch
     watch: {
       jsscripts: {
-        files: '<config:lint.files>',
-        // Removing the lint task temporarily
-        tasks: 'lint copy:local copy:test test'
+        files: '<%= jshint.all %>',
+        tasks: ['jshint', 'copy:local', 'copy:test', 'test']
       }
     },
 
