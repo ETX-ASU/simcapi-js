@@ -650,6 +650,13 @@ define([
         this.getToken = function(compositeId) {
             return idToToken[compositeId];
         };
+
+        /*
+         * Get the token for a given iframe. Used in unit tests.
+         */
+        this.getCompositeId = function(token) {
+            return tokenToId[token];
+        };
     };
 
     return SimCapiHandler;

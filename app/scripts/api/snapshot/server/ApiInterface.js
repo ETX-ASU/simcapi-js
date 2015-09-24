@@ -1,5 +1,7 @@
-/*globals console*/
 define(function(require){
+    var SimCapiMessage = require('../SimCapiMessage');
+    var SharedSimData = require('../SharedSimData');
+
     function ApiInterface(){}
 
     ApiInterface.create = function(simCapiHandler, callback) {
@@ -14,59 +16,40 @@ define(function(require){
     };
 
     ApiInterface.prototype.processRequest = function(request){
-        // create a message
-        //var reponseMessage = new SimCapiMessage();
-        //reponseMessage.type = SimCapiMessage.TYPES.GET_DATA_RESPONSE;
-        //reponseMessage.handshake = {
-        //    authToken: message.handshake.authToken,
-        //    config: SharedSimData.getInstance().getData()
-        //};
+        var response = new SimCapiMessage({
+            type: SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+            handshake: {
+                authToken: request.handshake.authToken,
+                config: SharedSimData.getInstance().getData(),
+                values: {
+                    uid: request.values.uid
+                }
+            }
+        });
 
         this.callback({
             api: request.values.api,
             method: request.values.method,
-            args: request.values.args,
-            onSuccess: onSuccess.bind(this, request.values.uid),
-            onError: onError.bind(this, request.values.uid)
+            params: request.values.params,
+            onSuccess: onSuccess.bind(this, response),
+            onError: onError.bind(this, response)
         });
-        //
-        //if (callback.onGetDataRequest) {
-        //    callback.onGetDataRequest({
-        //        key: message.values.key,
-        //        simId: message.values.simId,
-        //        onSuccess: function(key, value, exists) {
-        //            //broadcast response
-        //            reponseMessage.values = {
-        //                simId: message.values.simId,
-        //                key: message.values.key,
-        //                value: value,
-        //                exists: exists,
-        //                responseType: "success"
-        //            };
-        //
-        //            self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
-        //        },
-        //        onError: function(error) {
-        //            //broadcast response
-        //            reponseMessage.values = {
-        //                simId: message.values.simId,
-        //                key: message.values.key,
-        //                error: error,
-        //                responseType: "error"
-        //            };
-        //
-        //            self.sendMessage(reponseMessage, tokenToId[message.handshake.authToken]);
-        //        }
-        //    });
-        //}
     };
 
-    var onSuccess = function(uid){
-        console.log('success', arguments);
+    var onSuccess = function(response){
+        var slicedArgs = Array.prototype.slice.call(arguments, 1);
+        var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
+        response.values.type = 'success';
+        response.values.args = slicedArgs;
+        this.simCapiHandler.sendMessage(response, compositeId)
     };
 
-    var onError = function(uid, error){
-        console.log('error', arguments);
+    var onError = function(response){
+        var slicedArgs = Array.prototype.slice.call(arguments, 1);
+        var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
+        response.values.type = 'error';
+        response.values.args = slicedArgs;
+        this.simCapiHandler.sendMessage(response, compositeId)
     };
 
     return ApiInterface;

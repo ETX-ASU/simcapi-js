@@ -17,7 +17,7 @@ define(function(require){
         return apiInterface;
     };
 
-    ApiInterface.prototype.apiCall = function(api, method, args, callback){
+    ApiInterface.prototype.apiCall = function(api, method, params, callback){
         if(!apiList[api]){ throw new Error('Invalid api name provided'); }
         if(apiList[api].indexOf(method) === -1){ throw new Error('Method does not exist on the api'); }
 
@@ -31,7 +31,7 @@ define(function(require){
                 api: api,
                 method: method,
                 uid: uid,
-                args: args
+                params: params
             }
         });
 

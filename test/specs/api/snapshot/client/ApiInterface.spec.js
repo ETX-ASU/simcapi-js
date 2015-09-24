@@ -58,8 +58,8 @@ define(function(require){
                 expect(function(){ underTest.apiCall('testApi', 'method3'); }).to.throwError();
             });
             it('should send a message to the server with the received args and an unique id', function(){
-                var values = { param1: 'testValue' };
-                underTest.apiCall('testApi', 'method1', values);
+                var params = ['testValue'];
+                underTest.apiCall('testApi', 'method1', params);
                 expect(transporter.sendMessage.callCount).to.equal(1);
                 var message = transporter.sendMessage.getCall(0).args[0];
                 expect(message).to.be.an(SimCapiMessage);
@@ -68,22 +68,22 @@ define(function(require){
                 expect(message.values.uid).to.be(1);
                 expect(message.values.api).to.be('testApi');
                 expect(message.values.method).to.be('method1');
-                expect(message.values.args.param1).to.be(values.param1);
+                expect(message.values.params).to.be(params);
 
-                underTest.apiCall('testApi', 'method1', values);
+                underTest.apiCall('testApi', 'method1', params);
                 expect(transporter.sendMessage.callCount).to.equal(2);
                 var message2 = transporter.sendMessage.getCall(1).args[0];
                 expect(message2.values.uid).to.be(2);
             });
             it('should save the callbacks under the unique id', function(){
-                var values = { param1: 'testValue' };
+                var params = ['testValue'];
                 var cb = function(){};
-                underTest.apiCall('testApi', 'method1', values, cb);
+                underTest.apiCall('testApi', 'method1', params, cb);
                 expect(underTest.responseQueue[1]).to.equal(cb);
             });
             it('should add nothing the the callback list if no callback is not a function', function(){
-                var values = { param1: 'testValue' };
-                underTest.apiCall('testApi', 'method1', values);
+                var params = ['testValue'];
+                underTest.apiCall('testApi', 'method1', params);
                 expect(Object.keys(underTest.responseQueue).length).to.equal(0);
             });
         });

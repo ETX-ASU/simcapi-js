@@ -37,7 +37,7 @@ define(function(require){
 
         describe('method: processRequest', function(){
             it('should call the viewer callback', function(){
-                var args = {};
+                var params = [];
                 var api = 'testApi';
                 var method = 'testMethod';
                 var uid = 9;
@@ -46,7 +46,7 @@ define(function(require){
                     api: api,
                     method: method,
                     uid: uid,
-                    args: args
+                    params: params
                 };
 
                 var message = {
@@ -59,7 +59,7 @@ define(function(require){
                 var callArgs = cb.getCall(0).args[0];
                 expect(callArgs.api).to.equal(api);
                 expect(callArgs.method).to.equal(method);
-                expect(callArgs.args).to.equal(args);
+                expect(callArgs.params).to.equal(params);
             });
         });
     });
