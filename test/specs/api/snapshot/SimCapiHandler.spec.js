@@ -876,7 +876,7 @@ define(function(require) {
             });
 
             describe('API_CALL_REQUEST', function() {
-                it('should notify the API Service instance', function(){
+                it('should notify the API Service instance', function() {
                     var authToken = setupHandshake('iframe2', 'token1');
                     handler = new SimCapiHandler({
                         $container: $container,

@@ -1,12 +1,14 @@
-define(function(require){
+define(function(require) {
     var SimCapiMessage = require('../SimCapiMessage');
     var SharedSimData = require('../SharedSimData');
 
-    function ApiInterface(){}
+    function ApiInterface() {}
 
     ApiInterface.create = function(simCapiHandler, callback) {
         var SimCapiHandler = require('api/snapshot/SimCapiHandler');
-        if(!(simCapiHandler instanceof SimCapiHandler)) { throw new Error('SimCapiHandler not received'); }
+        if (!(simCapiHandler instanceof SimCapiHandler)) {
+            throw new Error('SimCapiHandler not received');
+        }
 
         var apiInterface = new ApiInterface();
         apiInterface.simCapiHandler = simCapiHandler;
@@ -15,7 +17,7 @@ define(function(require){
         return apiInterface;
     };
 
-    ApiInterface.prototype.processRequest = function(request){
+    ApiInterface.prototype.processRequest = function(request) {
         var response = new SimCapiMessage({
             type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
             handshake: {
@@ -36,7 +38,7 @@ define(function(require){
         });
     };
 
-    var callback = function(response, responseType){
+    var callback = function(response, responseType) {
         var slicedArgs = Array.prototype.slice.call(arguments, 2);
         var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
         response.values.type = responseType;

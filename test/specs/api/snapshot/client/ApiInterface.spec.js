@@ -1,18 +1,18 @@
 /*globals sinon*/
-define(function(require){
+define(function(require) {
     var ApiInterface = require('api/snapshot/client/ApiInterface');
     var Transporter = require('api/snapshot/Transporter');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var apiList = require('api/snapshot/config/apiList');
     require('sinon');
 
-    describe('ApiInterface', function(){
+    describe('ApiInterface', function() {
         var underTest, transporter, originalApiList;
         var sandbox = sinon.sandbox.create();
 
-        beforeEach(function(){
+        beforeEach(function() {
             originalApiList = {};
-            for(var i in apiList){
+            for (var i in apiList) {
                 originalApiList[i] = apiList[i];
                 delete apiList[i];
             }
@@ -25,39 +25,53 @@ define(function(require){
             sandbox.stub(transporter, 'sendMessage');
         });
 
-        afterEach(function(){
-            for(var i in apiList){ delete apiList[i]; }
-            for(var j in originalApiList){
+        afterEach(function() {
+            for (var i in apiList) {
+                delete apiList[i];
+            }
+            for (var j in originalApiList) {
                 apiList[j] = originalApiList[j];
             }
             sandbox.restore();
         });
 
-        describe('static method: create', function(){
-            it('should throw if the transporter is not sent', function(){
-                expect(function(){ ApiInterface.create(); }).to.throwError();
-                expect(function(){ ApiInterface.create({}); }).to.throwError();
+        describe('static method: create', function() {
+            it('should throw if the transporter is not sent', function() {
+                expect(function() {
+                    ApiInterface.create();
+                }).to.throwError();
+                expect(function() {
+                    ApiInterface.create({});
+                }).to.throwError();
             });
-            it('should return an instance of the ApiInterface class', function(){
+            it('should return an instance of the ApiInterface class', function() {
                 var apiService = ApiInterface.create(Transporter.getInstance());
                 expect(apiService).to.be.an(ApiInterface);
             });
-            it('should set the transporter reference on the created instance', function(){
+            it('should set the transporter reference on the created instance', function() {
                 var apiService = ApiInterface.create(Transporter.getInstance());
                 expect(apiService.transporter).to.be(Transporter.getInstance());
             });
         });
 
-        describe('method: callApi', function(){
-            it('should throw the service name not allowed', function(){
-                expect(function(){ underTest.apiCall(); }).to.throwError();
-                expect(function(){ underTest.apiCall('otherService'); }).to.throwError();
+        describe('method: callApi', function() {
+            it('should throw the service name not allowed', function() {
+                expect(function() {
+                    underTest.apiCall();
+                }).to.throwError();
+                expect(function() {
+                    underTest.apiCall('otherService');
+                }).to.throwError();
             });
-            it('should throw if api method is not allowed', function(){
-                expect(function(){ underTest.apiCall('testApi'); }).to.throwError();
-                expect(function(){ underTest.apiCall('testApi', 'method3'); }).to.throwError();
+            it('should throw if api method is not allowed', function() {
+                expect(function() {
+                    underTest.apiCall('testApi');
+                }).to.throwError();
+                expect(function() {
+                    underTest.apiCall('testApi', 'method3');
+                }).to.throwError();
             });
-            it('should send a message to the server with the received args and an unique id', function(){
+            it('should send a message to the server with the received args and an unique id', function() {
                 var params = ['testValue'];
                 underTest.apiCall('testApi', 'method1', params);
                 expect(transporter.sendMessage.callCount).to.equal(1);
@@ -75,23 +89,23 @@ define(function(require){
                 var message2 = transporter.sendMessage.getCall(1).args[0];
                 expect(message2.values.uid).to.be(2);
             });
-            it('should save the callbacks under the unique id', function(){
+            it('should save the callbacks under the unique id', function() {
                 var params = ['testValue'];
-                var cb = function(){};
+                var cb = function() {};
                 underTest.apiCall('testApi', 'method1', params, cb);
                 expect(underTest.responseQueue[1]).to.equal(cb);
             });
-            it('should add nothing the the callback list if no callback is not a function', function(){
+            it('should add nothing the the callback list if no callback is not a function', function() {
                 var params = ['testValue'];
                 underTest.apiCall('testApi', 'method1', params);
                 expect(Object.keys(underTest.responseQueue).length).to.equal(0);
             });
         });
 
-        describe('method: processResponse', function(){
-            it('should call the callback with the message values and remove the callback from the list', function(){
+        describe('method: processResponse', function() {
+            it('should call the callback with the message values and remove the callback from the list', function() {
                 var params = ['testValue'];
-                var args = [1,2,3];
+                var args = [1, 2, 3];
                 var cb = sandbox.stub();
                 underTest.apiCall('testApi', 'method1', params, cb);
                 var response = new SimCapiMessage({
@@ -111,8 +125,8 @@ define(function(require){
                 expect(Object.keys(underTest.responseQueue).length).to.equal(0);
             });
 
-            it('should not throw if there is no callback for the received uid', function(){
-                var args = [1,2,3];
+            it('should not throw if there is no callback for the received uid', function() {
+                var args = [1, 2, 3];
                 var response = new SimCapiMessage({
                     type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
                     handshake: transporter.getHandshake(),
@@ -123,7 +137,9 @@ define(function(require){
                     }
                 });
 
-                expect(function(){ underTest.processResponse(response); }).to.not.throwError();
+                expect(function() {
+                    underTest.processResponse(response);
+                }).to.not.throwError();
             });
         });
     });

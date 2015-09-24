@@ -148,7 +148,7 @@ define([
          * @since 0.5
          * Handles the get data
          */
-        var  handleGetData = function(message) {
+        var handleGetData = function(message) {
             // create a message
             var reponseMessage = new SimCapiMessage();
             reponseMessage.type = SimCapiMessage.TYPES.GET_DATA_RESPONSE;

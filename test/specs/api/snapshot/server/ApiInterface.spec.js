@@ -1,15 +1,15 @@
 /*globals sinon*/
-define(function(require){
+define(function(require) {
     var ApiInterface = require('api/snapshot/server/ApiInterface');
     var SimCapiHandler = require('api/snapshot/SimCapiHandler');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     require('sinon');
 
-    describe('ApiInterface', function(){
+    describe('ApiInterface', function() {
         var underTest, simCapiHandler, cb, $container;
         var sandbox = sinon.sandbox.create();
 
-        beforeEach(function(){
+        beforeEach(function() {
             cb = sandbox.stub();
             $container = {};
             simCapiHandler = new SimCapiHandler($container);
@@ -17,28 +17,32 @@ define(function(require){
             sandbox.stub(simCapiHandler, 'sendMessage');
         });
 
-        afterEach(function(){
+        afterEach(function() {
             sandbox.restore();
         });
 
-        describe('static method: create', function(){
-            it('should throw if the simCapiHandler is not sent', function(){
-                expect(function(){ ApiInterface.create(); }).to.throwError();
-                expect(function(){ ApiInterface.create({}); }).to.throwError();
+        describe('static method: create', function() {
+            it('should throw if the simCapiHandler is not sent', function() {
+                expect(function() {
+                    ApiInterface.create();
+                }).to.throwError();
+                expect(function() {
+                    ApiInterface.create({});
+                }).to.throwError();
             });
-            it('should return an instance of the ApiInterface class', function(){
+            it('should return an instance of the ApiInterface class', function() {
                 var apiService = ApiInterface.create(simCapiHandler);
                 expect(apiService).to.be.an(ApiInterface);
             });
-            it('should set the transporter and callback references on the created instance', function(){
+            it('should set the transporter and callback references on the created instance', function() {
                 var apiService = ApiInterface.create(simCapiHandler, cb);
                 expect(apiService.simCapiHandler).to.be(simCapiHandler);
                 expect(apiService.callback).to.be(cb);
             });
         });
 
-        describe('method: processRequest', function(){
-            it('should call the viewer callback', function(){
+        describe('method: processRequest', function() {
+            it('should call the viewer callback', function() {
                 var params = [];
                 var api = 'testApi';
                 var method = 'testMethod';
@@ -52,7 +56,9 @@ define(function(require){
                 };
 
                 var message = {
-                    handshake: { authToken: 'testAuthToken' },
+                    handshake: {
+                        authToken: 'testAuthToken'
+                    },
                     values: values
                 };
 
@@ -66,9 +72,9 @@ define(function(require){
             });
         });
 
-        describe('when the thrift call succeeds', function(){
+        describe('when the thrift call succeeds', function() {
             var thriftCallback, uid;
-            beforeEach(function(){
+            beforeEach(function() {
                 var params = [];
                 var api = 'testApi';
                 var method = 'testMethod';
@@ -82,7 +88,9 @@ define(function(require){
                 };
 
                 var message = {
-                    handshake: { authToken: 'testAuthToken' },
+                    handshake: {
+                        authToken: 'testAuthToken'
+                    },
                     values: values
                 };
 
@@ -90,7 +98,7 @@ define(function(require){
                 thriftCallback = cb.getCall(0).args[0].onSuccess;
             });
 
-            it('should send a response message back to the client', function(){
+            it('should send a response message back to the client', function() {
                 thriftCallback('a', 'b', 'c');
                 expect(simCapiHandler.sendMessage.callCount).to.equal(1);
                 var message = simCapiHandler.sendMessage.getCall(0).args[0];
@@ -103,9 +111,9 @@ define(function(require){
             });
         });
 
-        describe('when the thrift call fails', function(){
+        describe('when the thrift call fails', function() {
             var thriftCallback, uid;
-            beforeEach(function(){
+            beforeEach(function() {
                 var params = [];
                 var api = 'testApi';
                 var method = 'testMethod';
@@ -119,7 +127,9 @@ define(function(require){
                 };
 
                 var message = {
-                    handshake: { authToken: 'testAuthToken' },
+                    handshake: {
+                        authToken: 'testAuthToken'
+                    },
                     values: values
                 };
 
@@ -127,7 +137,7 @@ define(function(require){
                 thriftCallback = cb.getCall(0).args[0].onError;
             });
 
-            it('should send a response message back to the client', function(){
+            it('should send a response message back to the client', function() {
                 thriftCallback('a', 'b', 'c');
                 expect(simCapiHandler.sendMessage.callCount).to.equal(1);
                 var message = simCapiHandler.sendMessage.getCall(0).args[0];

@@ -819,7 +819,7 @@ define(function(require) {
         });
 
         describe('API_CALL_RESPONSE', function() {
-            it('should notify the API Service instance', function(){
+            it('should notify the API Service instance', function() {
                 sandbox.stub(transporter.apiInterface, 'processResponse');
                 var response = new SimCapiMessage({
                     type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
