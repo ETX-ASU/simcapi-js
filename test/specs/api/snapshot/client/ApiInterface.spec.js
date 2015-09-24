@@ -87,5 +87,44 @@ define(function(require){
                 expect(Object.keys(underTest.responseQueue).length).to.equal(0);
             });
         });
+
+        describe('method: processResponse', function(){
+            it('should call the callback with the message values and remove the callback from the list', function(){
+                var params = ['testValue'];
+                var args = [1,2,3];
+                var cb = sandbox.stub();
+                underTest.apiCall('testApi', 'method1', params, cb);
+                var response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
+                    handshake: transporter.getHandshake(),
+                    values: {
+                        uid: 1,
+                        type: 'success',
+                        args: args
+                    }
+                });
+
+                underTest.processResponse(response);
+                expect(cb.callCount).to.equal(1);
+                expect(cb.getCall(0).args[0]).to.equal('success');
+                expect(cb.getCall(0).args[1]).to.equal(args);
+                expect(Object.keys(underTest.responseQueue).length).to.equal(0);
+            });
+
+            it('should not throw if there is no callback for the received uid', function(){
+                var args = [1,2,3];
+                var response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
+                    handshake: transporter.getHandshake(),
+                    values: {
+                        uid: 1,
+                        type: 'success',
+                        args: args
+                    }
+                });
+
+                expect(function(){ underTest.processResponse(response); }).to.not.throwError();
+            });
+        });
     });
 });

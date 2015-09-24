@@ -42,8 +42,12 @@ define(function(require){
         this.transporter.sendMessage(message);
     };
 
-    ApiInterface.prototype.processResponse = function(){
+    ApiInterface.prototype.processResponse = function(response){
+        var callback = this.responseQueue[response.values.uid];
+        if(!callback){ return; }
 
+        callback(response.values.type, response.values.args);
+        delete this.responseQueue[response.values.uid];
     };
 
     return ApiInterface;

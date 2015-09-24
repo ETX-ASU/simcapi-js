@@ -17,13 +17,13 @@ define(function(require){
 
     ApiInterface.prototype.processRequest = function(request){
         var response = new SimCapiMessage({
-            type: SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+            type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
             handshake: {
                 authToken: request.handshake.authToken,
-                config: SharedSimData.getInstance().getData(),
-                values: {
-                    uid: request.values.uid
-                }
+                config: SharedSimData.getInstance().getData()
+            },
+            values: {
+                uid: request.values.uid
             }
         });
 
@@ -31,25 +31,17 @@ define(function(require){
             api: request.values.api,
             method: request.values.method,
             params: request.values.params,
-            onSuccess: onSuccess.bind(this, response),
-            onError: onError.bind(this, response)
+            onSuccess: callback.bind(this, response, 'success'),
+            onError: callback.bind(this, response, 'error')
         });
     };
 
-    var onSuccess = function(response){
-        var slicedArgs = Array.prototype.slice.call(arguments, 1);
+    var callback = function(response, responseType){
+        var slicedArgs = Array.prototype.slice.call(arguments, 2);
         var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
-        response.values.type = 'success';
+        response.values.type = responseType;
         response.values.args = slicedArgs;
-        this.simCapiHandler.sendMessage(response, compositeId)
-    };
-
-    var onError = function(response){
-        var slicedArgs = Array.prototype.slice.call(arguments, 1);
-        var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
-        response.values.type = 'error';
-        response.values.args = slicedArgs;
-        this.simCapiHandler.sendMessage(response, compositeId)
+        this.simCapiHandler.sendMessage(response, compositeId);
     };
 
     return ApiInterface;
