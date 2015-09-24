@@ -841,7 +841,7 @@ define(function(require) {
                 });
             });
 
-            describe("get data request", function() {
+            describe('get data request', function() {
                 it('should response to a get data request', function() {
 
                     // create handshake
@@ -872,6 +872,33 @@ define(function(require) {
                     });
 
                     handler.capiMessageHandler(getDataRequestMsg);
+                });
+            });
+
+            describe('API_CALL_REQUEST', function() {
+                it('should notify the API Service instance', function(){
+                    var authToken = setupHandshake('iframe2', 'token1');
+                    handler = new SimCapiHandler({
+                        $container: $container,
+                        ignoreHidden: true
+                    });
+
+                    // create a get data request
+                    var apiCallRequest = new SimCapiMessage({
+                        type: SimCapiMessage.TYPES.API_CALL_REQUEST,
+                        handshake: {
+                            requestToken: null,
+                            authToken: authToken
+                        },
+                        values: {
+                            key: 'test'
+                        }
+                    });
+                    sandbox.stub(handler.apiInterface, 'processRequest');
+
+                    handler.capiMessageHandler(apiCallRequest);
+
+                    expect(handler.apiInterface.processRequest.callCount).to.equal(1);
                 });
             });
 

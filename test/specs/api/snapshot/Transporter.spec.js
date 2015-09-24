@@ -234,7 +234,7 @@ define(function(require) {
                 expect(gotValueChange === 2).to.be(true);
             });
 
-            it('should remember pending ON_READY notification and send it after a succesfull HANDSHAKE_RESPONSE', function() {
+            it('should remember pending ON_READY notification and send it after a successful HANDSHAKE_RESPONSE', function() {
 
                 var invoked = 0;
                 var gotOnReady = -1;
@@ -815,6 +815,20 @@ define(function(require) {
                         transporter.addInitialSetupCompleteListener(sinon.stub());
                     }).to.throwException();
                 });
+            });
+        });
+
+        describe('API_CALL_RESPONSE', function() {
+            it('should notify the API Service instance', function(){
+                sandbox.stub(transporter.apiInterface, 'processResponse');
+                var response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
+                    handshake: {
+                        authToken: authToken
+                    }
+                });
+                transporter.capiMessageHandler(response);
+                expect(transporter.apiInterface.processResponse.callCount).to.equal(1);
             });
         });
 

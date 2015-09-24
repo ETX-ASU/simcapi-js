@@ -4,8 +4,9 @@ define(['jquery',
     'api/snapshot/util/uuid',
     'api/snapshot/SimCapiMessage',
     'check',
-    'api/snapshot/SimCapiValue'
-], function($, _, uuid, SimCapiMessage, check, SimCapiValue) {
+    'api/snapshot/SimCapiValue',
+    './client/ApiInterface'
+], function($, _, uuid, SimCapiMessage, check, SimCapiValue, ApiInterface) {
 
     $.noConflict();
     _.noConflict();
@@ -71,6 +72,7 @@ define(['jquery',
         var currentTimeout = null;
         var timeoutAmount = 25;
 
+        this.apiInterface = ApiInterface.create(this);
 
         this.getHandshake = function() {
             return handshake;
@@ -104,6 +106,9 @@ define(['jquery',
                     break;
                 case SimCapiMessage.TYPES.SET_DATA_RESPONSE:
                     handleSetDataResponse(message);
+                    break;
+                case SimCapiMessage.TYPES.API_CALL_RESPONSE:
+                    this.apiInterface.processResponse(message);
                     break;
                 case SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE:
                     handleInitialSetupComplete(message);

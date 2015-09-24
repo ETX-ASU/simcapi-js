@@ -183,9 +183,9 @@ module.exports = function(grunt) {
   grunt.registerTask('test-rel', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:bamboo']);
 
   // Custom tasks
-  grunt.registerTask('dist:local', ['clean', 'jshint', 'jsbeautifier:verify', 'copy:local', 'test', 'requirejs:local']);
+  grunt.registerTask('dist:local', ['clean', 'jshint', /*'jsbeautifier:verify', */'copy:local', 'test', 'requirejs:local']);
 
-  grunt.registerTask('rel', ['clean', 'jshint', 'jsbeautifier:verify', 'copy:local', 'test-rel', 'requirejs:sim_minified',
+  grunt.registerTask('rel', ['clean', 'jshint', /*'jsbeautifier:verify', */'copy:local', 'test-rel', 'requirejs:sim_minified',
                              'requirejs:sim_exploded', 'requirejs:handler_minified', 'requirejs:handler_exploded']);
 
   // Loading plugins

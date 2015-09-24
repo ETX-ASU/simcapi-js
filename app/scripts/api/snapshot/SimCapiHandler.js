@@ -7,8 +7,9 @@ define([
     'api/snapshot/SimCapiValue',
     'api/snapshot/SnapshotSegment',
     'api/snapshot/SharedSimData',
-    'api/snapshot/util/uuid'
-], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid) {
+    'api/snapshot/util/uuid',
+    './server/ApiInterface'
+], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface) {
 
     var SimCapiHandler = function(options) {
 
@@ -21,7 +22,8 @@ define([
             check: options.callback.check,
             onSnapshotChange: options.callback.onSnapshotChange,
             onGetDataRequest: options.callback.onGetDataRequest,
-            onSetDataRequest: options.callback.onSetDataRequest
+            onSetDataRequest: options.callback.onSetDataRequest,
+            onApiCallRequest: options.callback.onApiCallRequest
         };
 
         var tokenToId = {}; // token -> compositeId
@@ -97,6 +99,8 @@ define([
          */
         var pendingCheckResponses = {};
 
+        this.apiInterface = new ApiInterface.create(this, callback.onApiCallRequest);
+
         var windowEventHandler = function(event) {
             var message;
             try {
@@ -133,14 +137,17 @@ define([
                 case SimCapiMessage.TYPES.SET_DATA_REQUEST:
                     handleSetData(message);
                     break;
+                case SimCapiMessage.TYPES.API_CALL_REQUEST:
+                    this.apiInterface.processRequest(message);
+                    break;
             }
         };
 
         /*
          * @since 0.5
-         * Handles the set data
+         * Handles the get data
          */
-        var handleGetData = function(message) {
+        var  handleGetData = function(message) {
             // create a message
             var reponseMessage = new SimCapiMessage();
             reponseMessage.type = SimCapiMessage.TYPES.GET_DATA_RESPONSE;
