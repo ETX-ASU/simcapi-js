@@ -652,10 +652,10 @@ define([
             return idToToken[compositeId];
         };
 
-        /*
-         * Get the token for a given iframe. Used in unit tests.
+        /**
+         * Get the id of an iFrame based on the token
          */
-        this.getCompositeId = function(token) {
+        this.getCompositeIdFromToken = function(token) {
             return tokenToId[token];
         };
     };

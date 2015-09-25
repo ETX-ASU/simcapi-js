@@ -40,7 +40,7 @@ define(function(require) {
 
     var callback = function(response, responseType) {
         var slicedArgs = Array.prototype.slice.call(arguments, 2);
-        var compositeId = this.simCapiHandler.getCompositeId(response.handshake.authToken);
+        var compositeId = this.simCapiHandler.getCompositeIdFromToken(response.handshake.authToken);
         response.values.type = responseType;
         response.values.args = slicedArgs;
         this.simCapiHandler.sendMessage(response, compositeId);
