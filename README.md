@@ -34,7 +34,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://smartsparrow.global.ssl.fastly.net/js/pipit-0.70.min.js"></script>
+<script src= "https://smartsparrow.global.ssl.fastly.net/js/pipit-0.71.min.js"></script>
 ```
 
 

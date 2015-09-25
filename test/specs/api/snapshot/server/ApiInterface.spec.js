@@ -35,33 +35,33 @@ define(function(require) {
                 expect(apiService).to.be.an(ApiInterface);
             });
             it('should set the transporter and callback references on the created instance', function() {
-                var apiService = ApiInterface.create(simCapiHandler, cb);
-                expect(apiService.simCapiHandler).to.be(simCapiHandler);
-                expect(apiService.callback).to.be(cb);
+                var apiInterface = ApiInterface.create(simCapiHandler, cb);
+                expect(apiInterface.simCapiHandler).to.be(simCapiHandler);
+                expect(apiInterface.callback).to.be(cb);
             });
         });
 
         describe('method: processRequest', function() {
-            it('should call the viewer callback', function() {
-                var params = [];
-                var api = 'testApi';
-                var method = 'testMethod';
-                var uid = 9;
-
-                var values = {
+            var message, params, method, api, uid, values;
+            beforeEach(function() {
+                params = [];
+                api = 'testApi';
+                method = 'testMethod';
+                uid = 9;
+                values = {
                     api: api,
                     method: method,
                     uid: uid,
                     params: params
                 };
-
-                var message = {
+                message = {
                     handshake: {
                         authToken: 'testAuthToken'
                     },
                     values: values
                 };
-
+            });
+            it('should call the viewer callback', function() {
                 underTest.processRequest(message);
 
                 expect(cb.callCount).to.equal(1);
@@ -69,6 +69,13 @@ define(function(require) {
                 expect(callArgs.api).to.equal(api);
                 expect(callArgs.method).to.equal(method);
                 expect(callArgs.params).to.equal(params);
+            });
+
+            it('should not throw if the callback is not set', function() {
+                delete underTest.callback;
+                expect(function() {
+                    underTest.processRequest(message);
+                }).to.not.throwError();
             });
         });
 

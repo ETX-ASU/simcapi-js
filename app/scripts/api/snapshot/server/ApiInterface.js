@@ -18,6 +18,9 @@ define(function(require) {
     };
 
     ApiInterface.prototype.processRequest = function(request) {
+        if (!this.callback) {
+            return;
+        }
         var response = new SimCapiMessage({
             type: SimCapiMessage.TYPES.API_CALL_RESPONSE,
             handshake: {
