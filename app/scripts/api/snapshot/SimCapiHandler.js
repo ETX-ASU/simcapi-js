@@ -7,8 +7,9 @@ define([
     'api/snapshot/SimCapiValue',
     'api/snapshot/SnapshotSegment',
     'api/snapshot/SharedSimData',
-    'api/snapshot/util/uuid'
-], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid) {
+    'api/snapshot/util/uuid',
+    './server/ApiInterface'
+], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface) {
 
     var SimCapiHandler = function(options) {
 
@@ -21,7 +22,8 @@ define([
             check: options.callback.check,
             onSnapshotChange: options.callback.onSnapshotChange,
             onGetDataRequest: options.callback.onGetDataRequest,
-            onSetDataRequest: options.callback.onSetDataRequest
+            onSetDataRequest: options.callback.onSetDataRequest,
+            onApiCallRequest: options.callback.onApiCallRequest
         };
 
         var tokenToId = {}; // token -> compositeId
@@ -54,6 +56,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.71 - Improvement: allow sims to make thrift calls
          * 0.70 - Fixed: adapter unexpose removing incorrect capi property
          * 0.69 - Fixed: unexpose not removing capi properties from snapshot
          * 0.68 - Added ability for users of SimCapiHandler to target a particular instance
@@ -97,6 +100,8 @@ define([
          */
         var pendingCheckResponses = {};
 
+        this.apiInterface = new ApiInterface.create(this, callback.onApiCallRequest);
+
         var windowEventHandler = function(event) {
             var message;
             try {
@@ -133,12 +138,15 @@ define([
                 case SimCapiMessage.TYPES.SET_DATA_REQUEST:
                     handleSetData(message);
                     break;
+                case SimCapiMessage.TYPES.API_CALL_REQUEST:
+                    this.apiInterface.processRequest(message);
+                    break;
             }
         };
 
         /*
          * @since 0.5
-         * Handles the set data
+         * Handles the get data
          */
         var handleGetData = function(message) {
             // create a message
@@ -642,6 +650,13 @@ define([
          */
         this.getToken = function(compositeId) {
             return idToToken[compositeId];
+        };
+
+        /**
+         * Get the id of an iFrame based on the token
+         */
+        this.getCompositeIdFromToken = function(token) {
+            return tokenToId[token];
         };
     };
 

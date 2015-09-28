@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
-    version: '0.70',
+    version: '0.71',
 
     // Clean
     clean: {
@@ -102,9 +102,8 @@ module.exports = function(grunt) {
     // Watch
     watch: {
       jsscripts: {
-        files: '<config:lint.files>',
-        // Removing the lint task temporarily
-        tasks: 'lint copy:local copy:test test'
+        files: '<%= jshint.all %>',
+        tasks: ['jshint', 'copy:local', 'copy:test', 'test']
       }
     },
 
