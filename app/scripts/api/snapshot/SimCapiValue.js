@@ -140,7 +140,7 @@ define(['check'], function(check) {
          */
         this.bindTo = options.bindTo || null;
         if(!!this.bindTo) {
-          check(this.bindTo).isString();
+            check(this.bindTo).isString();
         }
 
         if (this.type) {

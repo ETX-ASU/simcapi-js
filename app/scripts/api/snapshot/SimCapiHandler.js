@@ -315,7 +315,7 @@ define([
                         snapshot[iframeId + '.' + key] = simCapiValue.value;
                         descriptors[iframeId + '.' + key] = simCapiValue;
                         if (!!simCapiValue.bindTo) {
-                          bindings['stage.' + iframeId + '.' + key] = simCapiValue.bindTo;
+                            bindings['stage.' + iframeId + '.' + key] = simCapiValue.bindTo;
                         }
                     }
                 });
@@ -545,14 +545,19 @@ define([
         var pathFilterHelper = function(snapshotSegment, obj) {
             check(snapshotSegment).isOfType(SnapshotSegment);
 
-            // target path looks something like this : iframeid
+            // target path looks something like this : iframeid[.var]*
             var targetPath = _.rest(snapshotSegment.path);
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
             return _.keys(obj)
-            .filter(function(v) { return matchesPath(targetPath, v.split('.')); })
-            .reduce(function(p, v) { p[v] = obj[v]; return p;}, {});
+            .filter(function(v) {
+                return matchesPath(targetPath, v.split('.'));
+             })
+            .reduce(function(p, v) {
+                p[v] = obj[v];
+                return p;
+            }, {});
         };
 
         /*
