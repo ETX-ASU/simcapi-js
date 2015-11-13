@@ -134,7 +134,14 @@ define(['check'], function(check) {
          */
         this.allowedValues = options.allowedValues || null;
 
-
+        /*
+         * Optional. If provided a the name of a global capi property, this capi property's value will
+         * bind to that property's value.
+         */
+        this.bindTo = options.bindTo || null;
+        if(!!this.bindTo) {
+          check(this.bindTo).isString();
+        }
 
         if (this.type) {
             //we have a type so we only need to parse the value

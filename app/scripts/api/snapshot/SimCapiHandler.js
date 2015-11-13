@@ -53,9 +53,12 @@ define([
         var snapshot = {};
         // Most up to date descriptors of iframe properties.
         var descriptors = {};
+        // capi properties bound to other properties
+        var bindings = {};
 
         /*
          * Transporter versions:
+         * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
          * 0.71 - Improvement: allow sims to make thrift calls
          * 0.70 - Fixed: adapter unexpose removing incorrect capi property
          * 0.69 - Fixed: unexpose not removing capi properties from snapshot
@@ -307,9 +310,13 @@ define([
                     if (simCapiValue === null) {
                         delete snapshot[iframeId + '.' + key];
                         delete descriptors[iframeId + '.' + key];
+                        delete bindings['stage.' + iframeId + '.' + key];
                     } else {
                         snapshot[iframeId + '.' + key] = simCapiValue.value;
                         descriptors[iframeId + '.' + key] = simCapiValue;
+                        if (!!simCapiValue.bindTo) {
+                          bindings['stage.' + iframeId + '.' + key] = simCapiValue.bindTo;
+                        }
                     }
                 });
 
@@ -535,26 +542,24 @@ define([
             return true;
         };
 
-        /*
-         * Returns the snapshot for the given path.
-         */
-        this.getSnapshot = function(snapshotSegment) {
+        var pathFilterHelper = function(snapshotSegment, obj) {
             check(snapshotSegment).isOfType(SnapshotSegment);
 
-            var result = {};
-
-            // target path looks something like this : iframeid[.var]*
+            // target path looks something like this : iframeid
             var targetPath = _.rest(snapshotSegment.path);
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
-            _.each(snapshot, function(value, path) {
-                if (matchesPath(targetPath, path.split('.'))) {
-                    result[path] = value;
-                }
-            });
+            return _.keys(obj)
+            .filter(function(v) { return matchesPath(targetPath, v.split('.')); })
+            .reduce(function(p, v) { p[v] = obj[v]; return p;}, {});
+        };
 
-            return result;
+        /*
+         * Returns the snapshot for the given path.
+         */
+        this.getSnapshot = function(snapshotSegment) {
+            return pathFilterHelper(snapshotSegment, snapshot);
         };
 
         /*
@@ -562,22 +567,14 @@ define([
          * A descriptor is a SimCapiValue.
          */
         this.getDescriptors = function(snapshotSegment) {
-            check(snapshotSegment).isOfType(SnapshotSegment);
+            return pathFilterHelper(snapshotSegment, descriptors);
+        };
 
-            var result = {};
-
-            // target path looks something like this : iframeid
-            var targetPath = _.rest(snapshotSegment.path);
-
-            // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
-            // contained in iframe1
-            _.each(descriptors, function(value, path) {
-                if (matchesPath(targetPath, path.split('.'))) {
-                    result[path] = value;
-                }
-            });
-
-            return result;
+        // since the bindings are unlikely to change very often, the map invert
+        // step is behind a cache
+        var cachedInverter = _.memoize(_.partial(_.invert, _, true), JSON.stringify);
+        this.getBindings = function(snapshotSegment) {
+            return cachedInverter(bindings);
         };
 
         /*

@@ -328,15 +328,18 @@ define(function(require) {
                         values: {
                             value1: new SimCapiValue({
                                 key: 'value1',
-                                value: 'value1'
+                                value: 'value1',
+                                bindTo: 'bound1'
                             }),
                             value2: new SimCapiValue({
                                 key: 'value2',
-                                value: 'value2'
+                                value: 'value2',
+                                bindTo: 'bound2'
                             }),
                             value3: new SimCapiValue({
                                 key: 'value3',
-                                value: 'value3'
+                                value: 'value3',
+                                bindTo: 'bound1'
                             })
                         }
                     });
@@ -345,7 +348,9 @@ define(function(require) {
                     handler.capiMessageHandler(valueChangeMsg);
 
                     // retrieve the snapshot from the handler
-                    var descriptors = handler.getDescriptors(new SnapshotSegment('stage.iframe1.'));
+                    var segment = new SnapshotSegment('stage.iframe1.');
+                    var descriptors = handler.getDescriptors(segment);
+                    var bindings = handler.getBindings(segment);
 
                     // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
                     expect(_.size(descriptors)).to.be(3);
@@ -353,7 +358,14 @@ define(function(require) {
                     expect(descriptors['iframe1.value2']).to.be(valueChangeMsg.values.value2);
                     expect(descriptors['iframe1.value3']).to.be(valueChangeMsg.values.value3);
 
-                });
+                    expect(_.size(bindings)).to.be(2);
+                    expect(bindings['bound1'].length).to.be(2);
+                    expect(bindings['bound1'][0]).to.be('stage.iframe1.value1');
+                    expect(bindings['bound1'][1]).to.be('stage.iframe1.value3');
+
+                    expect(bindings['bound2'].length).to.be(1);
+                    expect(bindings['bound2'][0]).to.be('stage.iframe1.value2');
+                 });
 
                 it('should overwrite snapshot with the latest values retrieve from VALUE_CHANGE', function() {
 
