@@ -8,8 +8,9 @@ define([
     'api/snapshot/SnapshotSegment',
     'api/snapshot/SharedSimData',
     'api/snapshot/util/uuid',
-    './server/ApiInterface'
-], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface) {
+    './server/ApiInterface',
+    'api/snapshot/SimCapiBindingManager'
+], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface, SimCapiBindingManager) {
 
     var SimCapiHandler = function(options) {
 
@@ -53,8 +54,6 @@ define([
         var snapshot = {};
         // Most up to date descriptors of iframe properties.
         var descriptors = {};
-        // capi properties bound to other properties
-        var bindings = {};
 
         /*
          * Transporter versions:
@@ -310,12 +309,13 @@ define([
                     if (simCapiValue === null) {
                         delete snapshot[iframeId + '.' + key];
                         delete descriptors[iframeId + '.' + key];
-                        delete bindings['stage.' + iframeId + '.' + key];
+
+                        SimCapiBindingManager.removeBinding('stage.' + iframeId + '.' + key);
                     } else {
                         snapshot[iframeId + '.' + key] = simCapiValue.value;
                         descriptors[iframeId + '.' + key] = simCapiValue;
                         if (!!simCapiValue.bindTo) {
-                            bindings['stage.' + iframeId + '.' + key] = simCapiValue.bindTo;
+                            SimCapiBindingManager.addBinding(iframeId, 'stage.' + iframeId + '.' + key, simCapiValue.bindTo);
                         }
                     }
                 });
@@ -435,6 +435,9 @@ define([
             delete idToToken[compositeId];
             delete isReady[token];
             delete idToSimVersion[compositeId];
+
+            SimCapiBindingManager.removeIframeBindings(iframeId);
+
             self.resetSnapshotForIframe(compositeId);
         };
 
@@ -573,13 +576,6 @@ define([
          */
         this.getDescriptors = function(snapshotSegment) {
             return pathFilterHelper(snapshotSegment, descriptors);
-        };
-
-        // since the bindings are unlikely to change very often, the map invert
-        // step is behind a cache
-        var cachedInverter = _.memoize(_.partial(_.invert, _, true), JSON.stringify);
-        this.getBindings = function(snapshotSegment) {
-            return cachedInverter(bindings);
         };
 
         /*
