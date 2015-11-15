@@ -7,6 +7,7 @@ define(function(require) {
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SharedSimData = require('api/snapshot/SharedSimData');
     var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var SimCapiBindingManager = require('api/snapshot/SimCapiBindingManager');
     var SnapshotSegment = require('api/snapshot/SnapshotSegment');
     require('sinon');
 
@@ -350,7 +351,7 @@ define(function(require) {
                     // retrieve the snapshot from the handler
                     var segment = new SnapshotSegment('stage.iframe1.');
                     var descriptors = handler.getDescriptors(segment);
-                    var bindings = handler.getBindings(segment);
+                    var bindings = SimCapiBindingManager.getBindingMap(segment);
 
                     // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
                     expect(_.size(descriptors)).to.be(3);
