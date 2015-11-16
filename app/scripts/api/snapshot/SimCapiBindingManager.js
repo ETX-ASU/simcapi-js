@@ -49,8 +49,12 @@ define(['underscore'], function(_) {
          *    'stage.prop2' : ['stage.sim1.value2']
          *  }
          */
-        this.getBindingMap = function() {
+        this.getInvertedBindingMap = function() {
           return cachedInverter(bindings);
+        };
+
+        this.getBindingMap = function() {
+          return bindings;
         };
 
         this.reset = function() {

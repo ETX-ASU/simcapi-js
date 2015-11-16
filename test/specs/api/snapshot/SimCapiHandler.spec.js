@@ -276,6 +276,8 @@ define(function(require) {
                 beforeEach(function() {
                     // create handshake
                     authToken = setupHandshake('iframe1', 'token1');
+
+                    sandbox.stub(SimCapiBindingManager, 'addBinding');
                 });
 
                 it('should return the snapshot remembered from a VALUE_CHANGE event', function() {
@@ -351,7 +353,6 @@ define(function(require) {
                     // retrieve the snapshot from the handler
                     var segment = new SnapshotSegment('stage.iframe1.');
                     var descriptors = handler.getDescriptors(segment);
-                    var bindings = SimCapiBindingManager.getBindingMap(segment);
 
                     // verify the snapshot contains three values that were sent in the VALUE_CHANGE message
                     expect(_.size(descriptors)).to.be(3);
@@ -359,13 +360,22 @@ define(function(require) {
                     expect(descriptors['iframe1.value2']).to.be(valueChangeMsg.values.value2);
                     expect(descriptors['iframe1.value3']).to.be(valueChangeMsg.values.value3);
 
-                    expect(_.size(bindings)).to.be(2);
-                    expect(bindings['bound1'].length).to.be(2);
-                    expect(bindings['bound1'][0]).to.be('stage.iframe1.value1');
-                    expect(bindings['bound1'][1]).to.be('stage.iframe1.value3');
+                    expect(SimCapiBindingManager.addBinding.callCount).to.be(3);
 
-                    expect(bindings['bound2'].length).to.be(1);
-                    expect(bindings['bound2'][0]).to.be('stage.iframe1.value2');
+                    expect(SimCapiBindingManager.addBinding.firstCall.args.length).to.be(3);
+                    expect(SimCapiBindingManager.addBinding.firstCall.args[0]).to.be('iframe1');
+                    expect(SimCapiBindingManager.addBinding.firstCall.args[1]).to.be('stage.iframe1.value1');
+                    expect(SimCapiBindingManager.addBinding.firstCall.args[2]).to.be('bound1');
+
+                    expect(SimCapiBindingManager.addBinding.secondCall.args.length).to.be(3);
+                    expect(SimCapiBindingManager.addBinding.secondCall.args[0]).to.be('iframe1');
+                    expect(SimCapiBindingManager.addBinding.secondCall.args[1]).to.be('stage.iframe1.value2');
+                    expect(SimCapiBindingManager.addBinding.secondCall.args[2]).to.be('bound2');
+
+                    expect(SimCapiBindingManager.addBinding.thirdCall.args.length).to.be(3);
+                    expect(SimCapiBindingManager.addBinding.thirdCall.args[0]).to.be('iframe1');
+                    expect(SimCapiBindingManager.addBinding.thirdCall.args[1]).to.be('stage.iframe1.value3');
+                    expect(SimCapiBindingManager.addBinding.thirdCall.args[2]).to.be('bound1');
                  });
 
                 it('should overwrite snapshot with the latest values retrieve from VALUE_CHANGE', function() {
