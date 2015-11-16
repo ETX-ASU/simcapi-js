@@ -553,14 +553,9 @@ define([
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
-            return _.keys(obj)
-            .filter(function(v) {
-                return matchesPath(targetPath, v.split('.'));
-             })
-            .reduce(function(p, v) {
-                p[v] = obj[v];
-                return p;
-            }, {});
+            return _.pick(obj, _.filter(_.keys(obj), function(key) {
+                return matchesPath(targetPath, key.split('.'));
+            }));
         };
 
         /*
