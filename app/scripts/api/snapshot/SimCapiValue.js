@@ -139,7 +139,7 @@ define(['check'], function(check) {
          * bind to that property's value.
          */
         this.bindTo = options.bindTo || null;
-        if(!!this.bindTo) {
+        if(this.bindTo) {
             check(this.bindTo).isString();
         }
 

@@ -314,7 +314,7 @@ define([
                     } else {
                         snapshot[iframeId + '.' + key] = simCapiValue.value;
                         descriptors[iframeId + '.' + key] = simCapiValue;
-                        if (!!simCapiValue.bindTo) {
+                        if (simCapiValue.bindTo) {
                             SimCapiBindingManager.addBinding(iframeId, 'stage.' + iframeId + '.' + key, simCapiValue.bindTo);
                         }
                     }
