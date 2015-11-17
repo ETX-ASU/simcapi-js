@@ -3,13 +3,13 @@ define([
     'underscore',
     'jquery',
     'check',
-    'api/snapshot/SimCapiMessage',
-    'api/snapshot/SimCapiValue',
-    'api/snapshot/SnapshotSegment',
-    'api/snapshot/SharedSimData',
-    'api/snapshot/util/uuid',
+    './SimCapiMessage',
+    './SimCapiValue',
+    './SnapshotSegment',
+    './SharedSimData',
+    './util/uuid',
     './server/ApiInterface',
-    'api/snapshot/SimCapiBindingManager'
+    './SimCapiBindingManager'
 ], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface, SimCapiBindingManager) {
 
     var SimCapiHandler = function(options) {

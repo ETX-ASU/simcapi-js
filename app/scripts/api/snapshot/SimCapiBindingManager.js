@@ -4,7 +4,7 @@ define(['underscore'], function(_) {
 
         /*
          * Holds a mapping of capi properties bound to another
-         * capi property, must be 1 to 1.
+         * capi property, many to 1.
          * e.g.,
          * {
          *    'stage.sim1.value1' : 'stage.prop1',
@@ -42,7 +42,7 @@ define(['underscore'], function(_) {
         var cachedInverter = _.memoize(_.partial(_.invert, _, true), JSON.stringify);
 
         /*
-         * Returns the inverted mapping of bindings
+         * Returns the inverted mapping of bindings, 1 to many
          * e.g.,
          *  {
          *    'stage.prop1' : ['stage.sim1.value1', 'stage.sim1.value3'],
