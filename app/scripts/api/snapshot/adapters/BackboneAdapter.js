@@ -22,6 +22,7 @@ define(['underscore',
          *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
          *      readonly : True if and only if, the attribute cannot be changed.
          *      writeonly : True if and only if, the attribute is write-only.
+                bindTo: optional - capi property (string) this property will bind to
          * }
          */
         this.expose = function(varName, model, params) {
@@ -40,7 +41,8 @@ define(['underscore',
                     type: params.type,
                     readonly: params.readonly,
                     writeonly: params.writeonly,
-                    allowedValues: params.allowedValues
+                    allowedValues: params.allowedValues,
+                    bindTo: params.bindTo
                 });
 
                 if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {

@@ -8,6 +8,7 @@ define([
     'specs/api/snapshot/SnapshotSegment.spec.js',
     'specs/api/snapshot/client/ApiInterface.spec.js',
     'specs/api/snapshot/server/ApiInterface.spec.js',
+    'specs/api/snapshot/SimCapiBindingManager.spec.js',
 
     //Adapters
     'specs/api/snapshot/adapters/BackboneAdapter.spec.js',

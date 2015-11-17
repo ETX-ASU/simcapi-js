@@ -3,13 +3,14 @@ define([
     'underscore',
     'jquery',
     'check',
-    'api/snapshot/SimCapiMessage',
-    'api/snapshot/SimCapiValue',
-    'api/snapshot/SnapshotSegment',
-    'api/snapshot/SharedSimData',
-    'api/snapshot/util/uuid',
-    './server/ApiInterface'
-], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface) {
+    './SimCapiMessage',
+    './SimCapiValue',
+    './SnapshotSegment',
+    './SharedSimData',
+    './util/uuid',
+    './server/ApiInterface',
+    './SimCapiBindingManager'
+], function(_, $, check, SimCapiMessage, SimCapiValue, SnapshotSegment, SharedSimData, uuid, ApiInterface, SimCapiBindingManager) {
 
     var SimCapiHandler = function(options) {
 
@@ -56,6 +57,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
          * 0.71 - Improvement: allow sims to make thrift calls
          * 0.70 - Fixed: adapter unexpose removing incorrect capi property
          * 0.69 - Fixed: unexpose not removing capi properties from snapshot
@@ -307,9 +309,14 @@ define([
                     if (simCapiValue === null) {
                         delete snapshot[iframeId + '.' + key];
                         delete descriptors[iframeId + '.' + key];
+
+                        SimCapiBindingManager.removeBinding('stage.' + iframeId + '.' + key);
                     } else {
                         snapshot[iframeId + '.' + key] = simCapiValue.value;
                         descriptors[iframeId + '.' + key] = simCapiValue;
+                        if (simCapiValue.bindTo) {
+                            SimCapiBindingManager.addBinding(iframeId, 'stage.' + iframeId + '.' + key, simCapiValue.bindTo);
+                        }
                     }
                 });
 
@@ -428,6 +435,9 @@ define([
             delete idToToken[compositeId];
             delete isReady[token];
             delete idToSimVersion[compositeId];
+
+            SimCapiBindingManager.removeIframeBindings(iframeId);
+
             self.resetSnapshotForIframe(compositeId);
         };
 
@@ -535,26 +545,24 @@ define([
             return true;
         };
 
-        /*
-         * Returns the snapshot for the given path.
-         */
-        this.getSnapshot = function(snapshotSegment) {
+        var pathFilterHelper = function(snapshotSegment, obj) {
             check(snapshotSegment).isOfType(SnapshotSegment);
-
-            var result = {};
 
             // target path looks something like this : iframeid[.var]*
             var targetPath = _.rest(snapshotSegment.path);
 
             // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
             // contained in iframe1
-            _.each(snapshot, function(value, path) {
-                if (matchesPath(targetPath, path.split('.'))) {
-                    result[path] = value;
-                }
-            });
+            return _.pick(obj, _.filter(_.keys(obj), function(key) {
+                return matchesPath(targetPath, key.split('.'));
+            }));
+        };
 
-            return result;
+        /*
+         * Returns the snapshot for the given path.
+         */
+        this.getSnapshot = function(snapshotSegment) {
+            return pathFilterHelper(snapshotSegment, snapshot);
         };
 
         /*
@@ -562,22 +570,7 @@ define([
          * A descriptor is a SimCapiValue.
          */
         this.getDescriptors = function(snapshotSegment) {
-            check(snapshotSegment).isOfType(SnapshotSegment);
-
-            var result = {};
-
-            // target path looks something like this : iframeid
-            var targetPath = _.rest(snapshotSegment.path);
-
-            // filter paths which are contained or equal to the targetPath. eg, iframe1.stuff is
-            // contained in iframe1
-            _.each(descriptors, function(value, path) {
-                if (matchesPath(targetPath, path.split('.'))) {
-                    result[path] = value;
-                }
-            });
-
-            return result;
+            return pathFilterHelper(snapshotSegment, descriptors);
         };
 
         /*
