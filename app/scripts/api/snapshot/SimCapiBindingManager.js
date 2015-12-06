@@ -16,25 +16,24 @@ define(['underscore'], function(_) {
 
         /*
          * Keeps track of which bound capi properties relate to
-         * which sim. Used for clean up.
+         * which app. Used for clean up.
          */
-        var iframeMap = {};
+        var appMap = {};
 
-        this.addBinding = function(iframeId, key, boundTo) {
+        this.addBinding = function(appUUID, key, boundTo) {
             bindings[key] = boundTo;
 
-            iframeMap[iframeId] = iframeMap[iframeId] || [];
-            iframeMap[iframeId].push(key);
+            appMap[appUUID] = appMap[appUUID] || [];
+            appMap[appUUID].push(key);
         };
 
         this.removeBinding = function(key) {
             delete bindings[key];
         };
 
-        this.removeIframeBindings = function(iframeId) {
-            _.each(iframeMap[iframeId], this.removeBinding);
-
-            delete iframeMap[iframeId];
+        this.removeAppBindings = function(appUUID) {
+            _.each(appMap[appUUID], this.removeBinding);
+            delete appMap[appUUID];
         };
 
         // since the bindings are unlikely to change very often, the map invert
@@ -59,7 +58,7 @@ define(['underscore'], function(_) {
 
         this.reset = function() {
           bindings = {};
-          iframeMap = {};
+          appMap = {};
         };
     };
 
