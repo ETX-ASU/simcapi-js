@@ -2,8 +2,9 @@ define(['underscore',
     'api/snapshot/Transporter',
     'api/snapshot/SimCapiMessage',
     'api/snapshot/SimCapiValue',
+    'api/snapshot/SimCapiTypes',
     'check'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, check) {
+], function(_, Transporter, SimCapiMessage, SimCapiValue, check, SimCapiTypes) {
 
     var BackboneAdapter = function(options) {
         options = options || {};
@@ -19,7 +20,7 @@ define(['underscore',
          * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
          * @param params : {
          *      alias  : alias of the attributeName
-         *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
+         *      type : Type of the 'attribute'. @see SimCapiTypes.
          *      readonly : True if and only if, the attribute cannot be changed.
          *      writeonly : True if and only if, the attribute is write-only.
                 bindTo: optional - capi property (string) this property will bind to
@@ -45,7 +46,7 @@ define(['underscore',
                     bindTo: params.bindTo
                 });
 
-                if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
+                if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
                     capiValue.value = '[' + model.get(originalName).toString() + ']';
                 }
 
@@ -60,7 +61,7 @@ define(['underscore',
                         allowedValues: params.allowedValues
                     });
 
-                    if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
+                    if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
                         capiValue.value = '[' + model.get(originalName).toString() + ']';
                     }
 

@@ -3,8 +3,9 @@ define(['underscore',
     'api/snapshot/SimCapiMessage',
     'api/snapshot/SimCapiValue',
     'check',
-    'api/snapshot/CapiModel'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, check, CapiModel) {
+    'api/snapshot/CapiModel',
+    'api/snapshot/SimCapiTypes'
+], function(_, Transporter, SimCapiMessage, SimCapiValue, check, CapiModel, SimCapiTypes) {
 
     var CapiAdapter = function(options) {
         options = options || {};
@@ -19,7 +20,7 @@ define(['underscore',
          * @param parent - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
          * @param params : {
          *      alias  : alias of the attributeName
-         *      type : Type of the 'attribute'. @see SimCapiValue.TYPES.
+         *      type : Type of the 'attribute'. @see SimCapiTypes.
          *      readonly : True if and only if, the attribute cannot be changed.
          *      writeonly : True if and only if, the attribute is write-only.
          * }
@@ -41,7 +42,7 @@ define(['underscore',
                     allowedValues: params.allowedValues
                 });
 
-                if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
+                if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
                     capiValue.value = '[' + parent.get(originalName).toString() + ']';
                 }
 
@@ -55,7 +56,7 @@ define(['underscore',
                         allowedValues: params.allowedValues
                     });
 
-                    if (capiValue.type === SimCapiValue.TYPES.ARRAY || capiValue.type === SimCapiValue.TYPES.ARRAY_POINT) {
+                    if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
                         capiValue.value = '[' + parent.get(originalName).toString() + ']';
                     }
 
