@@ -41,17 +41,17 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
 
             if (allowedValues) {
                 check(allowedValues).each().isString();
-                type = SimCapiTypes.ENUM;
+                type = SimCapiTypes.TYPES.ENUM;
             }
             //Booleans must be checked before strings.
             else if (passiveValue.isBoolean()) {
-                type = SimCapiTypes.BOOLEAN;
+                type = SimCapiTypes.TYPES.BOOLEAN;
             } else if (passiveValue.isNumber()) {
-                type = SimCapiTypes.NUMBER;
+                type = SimCapiTypes.TYPES.NUMBER;
             } else if (passiveValue.isArray() || isArray(value)) {
-                type = SimCapiTypes.ARRAY;
+                type = SimCapiTypes.TYPES.ARRAY;
             } else if (passiveValue.isString()) {
-                type = SimCapiTypes.STRING;
+                type = SimCapiTypes.TYPES.STRING;
             } else {
                 throw new Error('can not determined type');
             }
@@ -61,22 +61,22 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
 
         var parseValue = function(value, type, allowedValues) {
             switch (type) {
-                case SimCapiTypes.NUMBER:
+                case SimCapiTypes.TYPES.NUMBER:
                     check(parseFloat(value)).isNumber();
                     value = parseFloat(value);
                     break;
-                case SimCapiTypes.STRING:
+                case SimCapiTypes.TYPES.STRING:
                     check(value).isString();
                     break;
-                case SimCapiTypes.BOOLEAN:
+                case SimCapiTypes.TYPES.BOOLEAN:
                     value = parseBoolean(value);
                     check(value).isBoolean();
                     break;
-                case SimCapiTypes.ARRAY:
+                case SimCapiTypes.TYPES.ARRAY:
                     value = parseArray(value);
                     check(value).isArray();
                     break;
-                case SimCapiTypes.ENUM:
+                case SimCapiTypes.TYPES.ENUM:
                     check(value).isString();
                     check(allowedValues).each().isString();
 
@@ -84,10 +84,10 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
                         throw new Error('value is not allowed.');
                     }
                     break;
-                case SimCapiTypes.MATH_EXPR:
+                case SimCapiTypes.TYPES.MATH_EXPR:
                     check(value).isString();
                     break;
-                case SimCapiTypes.ARRAY_POINT:
+                case SimCapiTypes.TYPES.ARRAY_POINT:
                     value = parseArray(value);
                     check(value).isArray();
                     break;
@@ -151,7 +151,7 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
             this.type = getType(this.value, this.allowedValues);
 
             //If determined to be of type array but value is a string, convert it.
-            if (this.type === SimCapiTypes.ARRAY && check(this.value).passive().isString()) {
+            if (this.type === SimCapiTypes.TYPES.ARRAY && check(this.value).passive().isString()) {
                 this.value = parseArray(this.value);
             }
         } else {

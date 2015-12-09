@@ -20,7 +20,7 @@ define(['underscore',
          * @param model - What the 'attribute' belongs to. Must also have a 'get' and 'set function.
          * @param params : {
          *      alias  : alias of the attributeName
-         *      type : Type of the 'attribute'. @see SimCapiTypes.
+         *      type : Type of the 'attribute'. @see SimCapiTypes.TYPES.
          *      readonly : True if and only if, the attribute cannot be changed.
          *      writeonly : True if and only if, the attribute is write-only.
                 bindTo: optional - capi property (string) this property will bind to
@@ -46,7 +46,7 @@ define(['underscore',
                     bindTo: params.bindTo
                 });
 
-                if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
+                if (capiValue.type === SimCapiTypes.TYPES.ARRAY || capiValue.type === SimCapiTypes.TYPES.ARRAY_POINT) {
                     capiValue.value = '[' + model.get(originalName).toString() + ']';
                 }
 
@@ -61,7 +61,7 @@ define(['underscore',
                         allowedValues: params.allowedValues
                     });
 
-                    if (capiValue.type === SimCapiTypes.ARRAY || capiValue.type === SimCapiTypes.ARRAY_POINT) {
+                    if (capiValue.type === SimCapiTypes.TYPES.ARRAY || capiValue.type === SimCapiTypes.TYPES.ARRAY_POINT) {
                         capiValue.value = '[' + model.get(originalName).toString() + ']';
                     }
 
