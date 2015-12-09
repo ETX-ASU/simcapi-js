@@ -1,12 +1,12 @@
 /*globals sinon*/
 define(function(require) {
 
-    var CapiAdapter = require('api/snapshot/adapters/CapiAdapter').CapiAdapter;
-    var Transporter = require('api/snapshot/Transporter').Transporter;
+    var CapiAdapter  = require('api/snapshot/adapters/CapiAdapter').CapiAdapter;
+    var Transporter  = require('api/snapshot/Transporter').Transporter;
     var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var SimCapiTypes = require('api/snapshot/SimCapiTypes');
 
     require('sinon');
-
 
     describe('CapiAdapter', function() {
 
@@ -86,7 +86,7 @@ define(function(require) {
 
             adapter.expose('attr2', model, {
                 readonly: false,
-                type: SimCapiValue.TYPES.ARRAY_POINT
+                type: SimCapiTypes.TYPES.ARRAY_POINT
             });
         });
 

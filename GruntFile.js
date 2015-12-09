@@ -129,7 +129,7 @@ module.exports = function(grunt) {
   grunt.registerTask('test', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:dot']);
   grunt.registerTask('test-rel', ['cover:compile', 'copy:cover', 'copy:test', 'mocha:bamboo']);
 
-  grunt.registerTask('local', ['clean', 'jshint', 'requirejs:sim_minified',
+  grunt.registerTask('local', ['clean', 'jshint', 'test', 'requirejs:sim_minified',
         'requirejs:sim_exploded']);
   grunt.registerTask('rel', ['clean', 'jshint', 'test-rel', 'requirejs:sim_minified',
         'requirejs:sim_exploded']);

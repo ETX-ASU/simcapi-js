@@ -1,6 +1,7 @@
 define(function(require) {
 
     var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var SimCapiTypes = require('api/snapshot/SimCapiTypes');
 
     describe('SimCapiValue', function() {
 
@@ -18,12 +19,12 @@ define(function(require) {
             var value3 = new SimCapiValue({
                 key: 'test',
                 value: 50,
-                type: SimCapiValue.TYPES.NUMBER
+                type: SimCapiTypes.TYPES.NUMBER
             });
 
-            expect(value.type).to.equal(SimCapiValue.TYPES.NUMBER);
-            expect(value2.type).to.equal(SimCapiValue.TYPES.STRING);
-            expect(value3.type).to.equal(SimCapiValue.TYPES.NUMBER);
+            expect(value.type).to.equal(SimCapiTypes.TYPES.NUMBER);
+            expect(value2.type).to.equal(SimCapiTypes.TYPES.STRING);
+            expect(value3.type).to.equal(SimCapiTypes.TYPES.NUMBER);
         });
 
         it('should determine the type to be ENUM and throw error if value is not allowed', function() {
@@ -34,7 +35,7 @@ define(function(require) {
                 allowedValues: allowedValues
             });
 
-            expect(value.type).to.equal(SimCapiValue.TYPES.ENUM);
+            expect(value.type).to.equal(SimCapiTypes.TYPES.ENUM);
             expect(value.allowedValues).to.equal(allowedValues);
 
             expect(function() {
@@ -74,7 +75,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: 2,
-                    type: SimCapiValue.TYPES.MATH_EXPR
+                    type: SimCapiTypes.TYPES.MATH_EXPR
                 });
             }).throwError();
 
@@ -82,7 +83,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: [],
-                    type: SimCapiValue.TYPES.MATH_EXPR
+                    type: SimCapiTypes.TYPES.MATH_EXPR
                 });
             }).throwError();
 
@@ -90,7 +91,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: "",
-                    type: SimCapiValue.TYPES.MATH_EXPR
+                    type: SimCapiTypes.TYPES.MATH_EXPR
                 });
             }).to.not.throwError();
         });
@@ -100,7 +101,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: 2,
-                    type: SimCapiValue.TYPES.ARRAY_POINT
+                    type: SimCapiTypes.TYPES.ARRAY_POINT
                 });
             }).throwError();
 
@@ -108,7 +109,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: "",
-                    type: SimCapiValue.TYPES.ARRAY_POINT
+                    type: SimCapiTypes.TYPES.ARRAY_POINT
                 });
             }).throwError();
 
@@ -116,7 +117,7 @@ define(function(require) {
                 new SimCapiValue({
                     key: 'test',
                     value: [],
-                    type: SimCapiValue.TYPES.ARRAY_POINT
+                    type: SimCapiTypes.TYPES.ARRAY_POINT
                 });
             }).to.not.throwError();
         });

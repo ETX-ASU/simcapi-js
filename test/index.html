@@ -17,7 +17,7 @@
     <script src="../app/scripts/config.js" type="text/javascript" charset="utf-8"></script>
     <script type="text/javascript" charset="utf-8">
                     require.config({
-                        baseUrl : '../temp/local/scripts/'
+                        baseUrl : '../app/scripts/'
                     })
                     mocha.setup({
                         ui : 'bdd',
@@ -59,7 +59,7 @@
                     var runMocha = function() {
                         mocha.run();
                     };
-                    require([ '../specs/test' ],
+                    require([ '../../test/specs/test' ],
                             runMocha);
                 </script>
     <div id="title">

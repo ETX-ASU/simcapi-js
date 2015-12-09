@@ -1,10 +1,10 @@
 /*global window, sinon, setTimeout, clearTimeout*/
 define(function(require) {
 
-    var Transporter = require('api/snapshot/Transporter').Transporter;
-    var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var Transporter    = require('api/snapshot/Transporter').Transporter;
+    var SimCapiValue   = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
-    var SharedSimData = require('api/snapshot/SharedSimData');
+    var SimCapiTypes   = require('api/snapshot/SimCapiTypes');
     require('sinon');
 
     describe('Transporter', function() {
@@ -14,6 +14,8 @@ define(function(require) {
         var transporter = null;
         var sandbox = null;
         var clock = null;
+        var originalConfig = { state: 'old' };
+        var updatedConfig = { state: 'new' };
 
         beforeEach(function() {
             sandbox = sinon.sandbox.create();
@@ -47,18 +49,13 @@ define(function(require) {
          * Helper to perform fake handshake between sim/viewer
          */
         var doHandShake = function() {
-            var config = SharedSimData.getInstance();
-            config.setLessonId('1');
-            config.setQuestionId('qid');
-            config.setServicesBaseUrl('someurl');
-
             // create a handshakeResponse message
             var handshakeResponse = new SimCapiMessage({
                 type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
                 handshake: {
                     requestToken: requestToken,
                     authToken: authToken,
-                    config: config
+                    config: originalConfig
                 }
             });
 
@@ -121,27 +118,16 @@ define(function(require) {
 
             beforeEach(function() {
                 doHandShake();
-
-                // verify old config
-                var config = transporter.getConfig();
-                expect(config.getData().lessonId).to.be('1');
-                expect(config.getData().questionId).to.be('qid');
-                expect(config.getData().servicesBaseUrl).to.be('someurl');
+                expect(transporter.getConfig()).to.be(originalConfig);
             });
 
             var updateConfig = function(token) {
-                // update config
-                var newConfig = SharedSimData.getInstance();
-                newConfig.setLessonId('2');
-                newConfig.setQuestionId('newqid');
-                newConfig.setServicesBaseUrl('newurl');
-
                 // process change event
                 var configChangeMessage = new SimCapiMessage({
                     type: SimCapiMessage.TYPES.CONFIG_CHANGE,
                     handshake: {
                         authToken: token,
-                        config: newConfig
+                        config: updatedConfig
                     }
                 });
                 transporter.capiMessageHandler(configChangeMessage);
@@ -150,21 +136,15 @@ define(function(require) {
             it('should ignore CONFIG_CHANGE when authToken does not match', function() {
                 updateConfig('bad token');
 
-                // verify that the config has changed
-                var config = transporter.getConfig();
-                expect(config.getData().lessonId).to.be('2');
-                expect(config.getData().questionId).to.be('newqid');
-                expect(config.getData().servicesBaseUrl).to.be('newurl');
+                // verify that the config has not changed
+                expect(transporter.getConfig()).to.be(originalConfig);
             });
 
             it('should update CONFIG_CHANGE when authToken matches', function() {
                 updateConfig(authToken);
 
                 // verify that the config has changed
-                var config = transporter.getConfig();
-                expect(config.getData().lessonId).to.be('2');
-                expect(config.getData().questionId).to.be('newqid');
-                expect(config.getData().servicesBaseUrl).to.be('newurl');
+                expect(transporter.getConfig()).to.be(updatedConfig);
             });
 
         });
@@ -301,10 +281,10 @@ define(function(require) {
                     // attr3 -> value3
                     // values 1-3 are NOT the current values.
                     // @see createAttr for more details
-                    'these.are.fake.objects.attr1': createAttr(SimCapiValue.TYPES.NUMBER, false, 'attr1', 0.222),
-                    attr2: createAttr(SimCapiValue.TYPES.STRING, false, 'attr2', 'value2'),
-                    attr3: createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr3', true),
-                    attr4: createAttr(SimCapiValue.TYPES.BOOLEAN, false, 'attr4', false)
+                    'these.are.fake.objects.attr1': createAttr(SimCapiTypes.TYPES.NUMBER, false, 'attr1', 0.222),
+                    attr2: createAttr(SimCapiTypes.TYPES.STRING, false, 'attr2', 'value2'),
+                    attr3: createAttr(SimCapiTypes.TYPES.BOOLEAN, false, 'attr3', true),
+                    attr4: createAttr(SimCapiTypes.TYPES.BOOLEAN, false, 'attr4', false)
                 };
 
                 // create a new instance with outgoingMap parameters
@@ -347,22 +327,22 @@ define(function(require) {
                     values: {
                         'these.are.fake.objects.attr1': new SimCapiValue({
                             key: 'attr1',
-                            type: SimCapiValue.TYPES.NUMBER,
+                            type: SimCapiTypes.TYPES.NUMBER,
                             value: 0.5
                         }),
                         'attr2': new SimCapiValue({
                             key: 'attr2',
-                            type: SimCapiValue.TYPES.STRING,
+                            type: SimCapiTypes.TYPES.STRING,
                             value: 'value2'
                         }),
                         'attr3': new SimCapiValue({
                             key: 'attr3',
-                            type: SimCapiValue.TYPES.BOOLEAN,
+                            type: SimCapiTypes.TYPES.BOOLEAN,
                             value: false
                         }),
                         'attr4': new SimCapiValue({
                             key: 'attr4',
-                            type: SimCapiValue.TYPES.BOOLEAN,
+                            type: SimCapiTypes.TYPES.BOOLEAN,
                             value: false
                         })
                     }
@@ -712,7 +692,7 @@ define(function(require) {
                     values: {
                         'attr1': new SimCapiValue({
                             key: 'attr1',
-                            type: SimCapiValue.TYPES.NUMBER,
+                            type: SimCapiTypes.TYPES.NUMBER,
                             value: 0.5
                         })
                     }
@@ -729,7 +709,7 @@ define(function(require) {
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.NUMBER,
+                    type: SimCapiTypes.TYPES.NUMBER,
                     value: 10
                 });
 
@@ -740,7 +720,7 @@ define(function(require) {
                 //setting the value again shouldn't set the value to 0.5
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.NUMBER,
+                    type: SimCapiTypes.TYPES.NUMBER,
                     value: 15
                 });
 
@@ -838,7 +818,7 @@ define(function(require) {
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.NUMBER,
+                    type: SimCapiTypes.TYPES.NUMBER,
                     value: 10
                 });
 
@@ -849,7 +829,7 @@ define(function(require) {
                 //exposing the value again should keep the value at the existing one
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.NUMBER,
+                    type: SimCapiTypes.TYPES.NUMBER,
                     value: 15
                 });
 
@@ -862,7 +842,7 @@ define(function(require) {
 
                 var exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.BOOLEAN,
+                    type: SimCapiTypes.TYPES.BOOLEAN,
                     value: false
                 });
 
@@ -873,7 +853,7 @@ define(function(require) {
                 //exposing the value again should keep the value at the existing one
                 exposedProperty = new SimCapiValue({
                     key: 'attr1',
-                    type: SimCapiValue.TYPES.BOOLEAN,
+                    type: SimCapiTypes.TYPES.BOOLEAN,
                     value: true
                 });
 

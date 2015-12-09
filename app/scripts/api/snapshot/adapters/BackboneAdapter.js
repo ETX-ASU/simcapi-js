@@ -4,7 +4,7 @@ define(['underscore',
     'api/snapshot/SimCapiValue',
     'api/snapshot/SimCapiTypes',
     'check'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, check, SimCapiTypes) {
+], function(_, Transporter, SimCapiMessage, SimCapiValue, SimCapiTypes, check) {
 
     var BackboneAdapter = function(options) {
         options = options || {};
