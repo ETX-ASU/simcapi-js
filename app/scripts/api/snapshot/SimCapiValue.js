@@ -161,6 +161,18 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
         this.setValue = function(value) {
             this.value = parseValue(value, this.type, this.allowedValues);
         };
+
+        this.toString = function() {
+            if (this.value === null || this.value === void 0) {
+              return 'null';
+            }
+
+            if (check(this.value).passive().isArray()) {
+              return '[' + this.value.toString() + ']';
+            }
+
+            return this.value.toString();
+        };
     };
 
     return SimCapiValue;
