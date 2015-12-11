@@ -57,6 +57,7 @@ define([
 
         /*
          * Transporter versions:
+         * 0.81 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
          * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
          * 0.71 - Improvement: allow sims to make thrift calls
          * 0.70 - Fixed: adapter unexpose removing incorrect capi property
