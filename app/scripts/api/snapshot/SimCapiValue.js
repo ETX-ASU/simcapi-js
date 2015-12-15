@@ -163,7 +163,7 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
         };
 
         this.toString = function() {
-            if (this.value === null || this.value === void 0) {
+            if (this.value === null || this.value === undefined) {
               return 'null';
             }
 
