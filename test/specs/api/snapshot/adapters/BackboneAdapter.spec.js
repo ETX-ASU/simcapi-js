@@ -1,10 +1,10 @@
 /*globals sinon*/
 define(function(require) {
-
-    var BackboneModel = require('backbone').Model;
+    var BackboneModel   = require('backbone').Model;
     var BackboneAdapter = require('api/snapshot/adapters/BackboneAdapter').BackboneAdapter;
-    var Transporter = require('api/snapshot/Transporter').Transporter;
-    var SimCapiValue = require('api/snapshot/SimCapiValue');
+    var Transporter     = require('api/snapshot/Transporter').Transporter;
+    var SimCapiValue    = require('api/snapshot/SimCapiValue');
+    var SimCapiTypes    = require('api/snapshot/SimCapiTypes');
 
     require('sinon');
 
@@ -76,7 +76,7 @@ define(function(require) {
 
             adapter.expose('attr2', model, {
                 readonly: false,
-                type: SimCapiValue.TYPES.ARRAY_POINT
+                type: SimCapiTypes.TYPES.ARRAY_POINT
             });
         });
 
