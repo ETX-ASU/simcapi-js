@@ -1,7 +1,7 @@
 define(function() {
     return {
         ChemicalAPI: ['getStructure'],
-        DeviceAPI: ['createDevice', 'deleteDevice', 'listDevicesInGroup', 'authenticateDevice'],
+        DeviceAPI: ['listDevicesInGroup'],
         DataSyncAPI: ['createSession', 'joinSession', 'endSession', 'setSessionData', 'getSessionData']
     };
 });
