@@ -1,6 +1,6 @@
 /*globals sinon*/
 define(function(require) {
-    var ApiInterface = require('api/snapshot/client/ApiInterface');
+    var ApiInterface = require('api/snapshot/ApiInterface');
     var Transporter = require('api/snapshot/Transporter');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var apiList = require('api/snapshot/config/apiList');

@@ -1,6 +1,6 @@
 define(function(require) {
-    var apiList = require('../config/apiList');
-    var SimCapiMessage = require('../SimCapiMessage');
+    var apiList = require('./config/apiList');
+    var SimCapiMessage = require('./SimCapiMessage');
 
     function ApiInterface() {
         this.apiCallUid = 0;
