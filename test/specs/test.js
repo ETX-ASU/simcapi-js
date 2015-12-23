@@ -1,13 +1,9 @@
 define([
     'specs/api/snapshot/CapiModel.spec.js',
     // Snapshot
-    'specs/api/snapshot/SharedSimData.spec.js',
     'specs/api/snapshot/Transporter.spec.js',
     'specs/api/snapshot/SimCapiValue.spec.js',
-    'specs/api/snapshot/SimCapiHandler.spec.js',
-    'specs/api/snapshot/SnapshotSegment.spec.js',
-    'specs/api/snapshot/client/ApiInterface.spec.js',
-    'specs/api/snapshot/server/ApiInterface.spec.js',
+    'specs/api/snapshot/ApiInterface.spec.js',
 
     //Adapters
     'specs/api/snapshot/adapters/BackboneAdapter.spec.js',

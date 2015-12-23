@@ -34,7 +34,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://smartsparrow.global.ssl.fastly.net/js/pipit-0.71.min.js"></script>
+<script src= "https://smartsparrow.global.ssl.fastly.net/js/pipit-0.90.min.js"></script>
 ```
 
 
@@ -72,7 +72,7 @@ Here is the list of what you must pass to _expose_.
 * variableName - String    - name of the variable on the model
 * model        - CapiModel - the model that the variable belongs to.
 * options      - Object
-  * type       - SimCapiValue.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
+  * type       - SimCapiTypes.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
   * alias      - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
   * readonly   - Boolean             - if the variable is read-only
   * writeonly  - Boolean             - if the variable is write-only

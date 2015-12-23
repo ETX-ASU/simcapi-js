@@ -1,4 +1,4 @@
-define(['check'], function(check) {
+define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
 
 
     function parseBoolean(value) {
@@ -41,17 +41,17 @@ define(['check'], function(check) {
 
             if (allowedValues) {
                 check(allowedValues).each().isString();
-                type = SimCapiValue.TYPES.ENUM;
+                type = SimCapiTypes.TYPES.ENUM;
             }
             //Booleans must be checked before strings.
             else if (passiveValue.isBoolean()) {
-                type = SimCapiValue.TYPES.BOOLEAN;
+                type = SimCapiTypes.TYPES.BOOLEAN;
             } else if (passiveValue.isNumber()) {
-                type = SimCapiValue.TYPES.NUMBER;
+                type = SimCapiTypes.TYPES.NUMBER;
             } else if (passiveValue.isArray() || isArray(value)) {
-                type = SimCapiValue.TYPES.ARRAY;
+                type = SimCapiTypes.TYPES.ARRAY;
             } else if (passiveValue.isString()) {
-                type = SimCapiValue.TYPES.STRING;
+                type = SimCapiTypes.TYPES.STRING;
             } else {
                 throw new Error('can not determined type');
             }
@@ -61,22 +61,22 @@ define(['check'], function(check) {
 
         var parseValue = function(value, type, allowedValues) {
             switch (type) {
-                case SimCapiValue.TYPES.NUMBER:
+                case SimCapiTypes.TYPES.NUMBER:
                     check(parseFloat(value)).isNumber();
                     value = parseFloat(value);
                     break;
-                case SimCapiValue.TYPES.STRING:
+                case SimCapiTypes.TYPES.STRING:
                     check(value).isString();
                     break;
-                case SimCapiValue.TYPES.BOOLEAN:
+                case SimCapiTypes.TYPES.BOOLEAN:
                     value = parseBoolean(value);
                     check(value).isBoolean();
                     break;
-                case SimCapiValue.TYPES.ARRAY:
+                case SimCapiTypes.TYPES.ARRAY:
                     value = parseArray(value);
                     check(value).isArray();
                     break;
-                case SimCapiValue.TYPES.ENUM:
+                case SimCapiTypes.TYPES.ENUM:
                     check(value).isString();
                     check(allowedValues).each().isString();
 
@@ -84,10 +84,10 @@ define(['check'], function(check) {
                         throw new Error('value is not allowed.');
                     }
                     break;
-                case SimCapiValue.TYPES.MATH_EXPR:
+                case SimCapiTypes.TYPES.MATH_EXPR:
                     check(value).isString();
                     break;
-                case SimCapiValue.TYPES.ARRAY_POINT:
+                case SimCapiTypes.TYPES.ARRAY_POINT:
                     value = parseArray(value);
                     check(value).isArray();
                     break;
@@ -134,7 +134,14 @@ define(['check'], function(check) {
          */
         this.allowedValues = options.allowedValues || null;
 
-
+        /*
+         * Optional. If provided a the name of a global capi property, this capi property's value will
+         * bind to that property's value.
+         */
+        this.bindTo = options.bindTo || null;
+        if(this.bindTo) {
+            check(this.bindTo).isString();
+        }
 
         if (this.type) {
             //we have a type so we only need to parse the value
@@ -144,7 +151,7 @@ define(['check'], function(check) {
             this.type = getType(this.value, this.allowedValues);
 
             //If determined to be of type array but value is a string, convert it.
-            if (this.type === SimCapiValue.TYPES.ARRAY && check(this.value).passive().isString()) {
+            if (this.type === SimCapiTypes.TYPES.ARRAY && check(this.value).passive().isString()) {
                 this.value = parseArray(this.value);
             }
         } else {
@@ -154,20 +161,18 @@ define(['check'], function(check) {
         this.setValue = function(value) {
             this.value = parseValue(value, this.type, this.allowedValues);
         };
-    };
 
+        this.toString = function() {
+            if (this.value === null || this.value === undefined) {
+              return 'null';
+            }
 
-    /*
-     * Attribute types.
-     */
-    SimCapiValue.TYPES = {
-        NUMBER: 1,
-        STRING: 2,
-        ARRAY: 3,
-        BOOLEAN: 4,
-        ENUM: 5,
-        MATH_EXPR: 6,
-        ARRAY_POINT: 7 // ARRAY_POINT format: ["(x1;y1)","(x2;y2)", ...]
+            if (check(this.value).passive().isArray()) {
+              return '[' + this.value.toString() + ']';
+            }
+
+            return this.value.toString();
+        };
     };
 
     return SimCapiValue;
