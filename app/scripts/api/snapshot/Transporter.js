@@ -14,7 +14,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
-         * 0.92 - Added a way to add callbacks to when the handshake is completed
+         * 0.92 - Added a way to define callbacks to be invoked when the handshake is completed
          * 0.91 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
          * 0.90 - SimcapiHandler was moved into core, separating the sim and viewer logic.
          * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
