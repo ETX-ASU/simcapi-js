@@ -196,6 +196,24 @@ define(function(require) {
                 expect(callback.called).to.be(true);
             });
 
+            it('should throw if listen added after handshake completed', function() {
+                // create a handshakeResponse message with correct request token
+                var handshakeResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
+                    }
+                });
+
+                // mock out postMessage for ON_READY. This shouldn't be called
+                mockPostMessage(function() {});
+                transporter.capiMessageHandler(handshakeResponse);
+
+                expect(function() {
+                  transporter.addHandshakeCompleteListener(function(){});
+                }).to.throwException();
+            });
         });
 
         describe('ON_READY', function() {

@@ -203,7 +203,11 @@ define(['jquery',
             });
         };
 
+        var handshakeComplete = false;
         this.addHandshakeCompleteListener = function(listener) {
+            if (handshakeComplete) {
+                throw new Error('Handshake already complete. This listener will never be called');
+            }
             handshakeListeners.push(listener);
         };
 
@@ -480,6 +484,7 @@ define(['jquery',
                 handshakeListeners.forEach(function(listener) {
                   listener(handshake);
                 });
+                handshakeComplete = true;
                 handshakeListeners = [];
 
                 // send initial value snapshot
