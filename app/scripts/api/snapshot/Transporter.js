@@ -14,6 +14,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.91 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
          * 0.90 - SimcapiHandler was moved into core, separating the sim and viewer logic.
          * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
          * 0.71 - Improvement: allow sims to make thrift calls
@@ -46,7 +47,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.90;
+        var version = 0.91;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
