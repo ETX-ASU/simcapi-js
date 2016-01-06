@@ -150,6 +150,9 @@ define(function(require) {
         });
 
         describe('HANDSHAKE_RESPONSE', function() {
+            beforeEach(function() {
+              transporter.notifyOnReady();
+            });
 
             it('should ignore HANDSHAKE_RESPONSE when requestToken does not match', function() {
 
@@ -171,6 +174,46 @@ define(function(require) {
                 expect(transporter.sendMessage.called).to.be(false);
             });
 
+            it('should invoke handshake callbacks on HANDSHAKE_RESPONSE when requestToken does match', function() {
+                var callback = sandbox.stub();
+                transporter.addHandshakeCompleteListener(callback);
+
+                // create a handshakeResponse message with correct request token
+                var handshakeResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
+                    }
+                });
+
+                // mock out postMessage for ON_READY. This shouldn't be called
+                mockPostMessage(function() {});
+
+                transporter.capiMessageHandler(handshakeResponse);
+
+                expect(transporter.sendMessage.called).to.be(true);
+                expect(callback.called).to.be(true);
+            });
+
+            it('should throw if listen added after handshake completed', function() {
+                // create a handshakeResponse message with correct request token
+                var handshakeResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
+                    }
+                });
+
+                // mock out postMessage for ON_READY. This shouldn't be called
+                mockPostMessage(function() {});
+                transporter.capiMessageHandler(handshakeResponse);
+
+                expect(function() {
+                  transporter.addHandshakeCompleteListener(function(){});
+                }).to.throwException();
+            });
         });
 
         describe('ON_READY', function() {

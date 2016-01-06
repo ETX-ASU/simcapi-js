@@ -14,6 +14,8 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.92 - Added a way to define callbacks to be invoked when the handshake is completed
+         * 0.91 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
          * 0.90 - SimcapiHandler was moved into core, separating the sim and viewer logic.
          * 0.80 - Added the ability to bind a sim's capi property to a capi property external to the sim
          * 0.71 - Improvement: allow sims to make thrift calls
@@ -46,7 +48,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.90;
+        var version = 0.92;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
@@ -63,6 +65,7 @@ define(['jquery',
         //The list of change listeners
         var changeListeners = [];
         var initialSetupCompleteListeners = [];
+        var handshakeListeners = [];
 
         // Authentication handshake used for communicating to viewer
         var handshake = {
@@ -198,6 +201,14 @@ define(['jquery',
                 handler: listener,
                 once: once
             });
+        };
+
+        var handshakeComplete = false;
+        this.addHandshakeCompleteListener = function(listener) {
+            if (handshakeComplete) {
+                throw new Error('Handshake already complete. This listener will never be called');
+            }
+            handshakeListeners.push(listener);
         };
 
         /*
@@ -469,6 +480,12 @@ define(['jquery',
                 // send the message to the viewer
                 self.sendMessage(onReadyMsg);
                 pendingOnReady = false;
+
+                handshakeListeners.forEach(function(listener) {
+                  listener(handshake);
+                });
+                handshakeComplete = true;
+                handshakeListeners = [];
 
                 // send initial value snapshot
                 self.notifyValueChange();
