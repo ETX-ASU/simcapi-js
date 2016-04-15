@@ -5,8 +5,9 @@ define(['jquery',
     'api/snapshot/SimCapiMessage',
     'check',
     'api/snapshot/SimCapiValue',
-    './ApiInterface'
-], function($, _, uuid, SimCapiMessage, check, SimCapiValue, ApiInterface) {
+    './ApiInterface',
+    './LocalData'
+], function($, _, uuid, SimCapiMessage, check, SimCapiValue, ApiInterface, LocalData) {
 
     $.noConflict();
     _.noConflict();
@@ -14,6 +15,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.93 - Add fake data persistence when the sim is not in an iFrame or is in the authoring tool
          * 0.92 - Added a way to define callbacks to be invoked when the handshake is completed
          * 0.91 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
          * 0.90 - SimcapiHandler was moved into core, separating the sim and viewer logic.
@@ -260,6 +262,11 @@ define(['jquery',
             onSuccess = onSuccess || function() {};
             onError = onError || function() {};
 
+            if(!isInIframe() || isInAuthor()) {
+                LocalData.getData(simId, key, onSuccess);
+                return true;
+            }
+                
             var getDataRequestMsg = new SimCapiMessage({
                 type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
                 handshake: handshake,
@@ -306,6 +313,11 @@ define(['jquery',
             onSuccess = onSuccess || function() {};
             onError = onError || function() {};
 
+            if(!isInIframe() || isInAuthor()) {
+                LocalData.setData(simId, key, value, onSuccess);
+                return true;
+            }
+            
             var setDataRequestMsg = new SimCapiMessage({
                 type: SimCapiMessage.TYPES.SET_DATA_REQUEST,
                 handshake: handshake,
@@ -628,6 +640,10 @@ define(['jquery',
         };
         var isInIframe = function() {
             return window !== window.parent;
+        };
+
+        var isInAuthor = function(){
+            return document.referrer.indexOf('/bronte/author') !== -1;
         };
 
         // Calls all the changeListeners
