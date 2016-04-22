@@ -1,4 +1,4 @@
-/*globals window, setTimeout*/
+/*globals window, setTimeout, console*/
 define(function(){
     var LocalData = {
         getData: function(simId, key, onSuccess){
@@ -15,7 +15,9 @@ define(function(){
                     response.exists = true;
                 }
             }
-            catch(err){}
+            catch(err){
+                console.warn('An error occurred while reading the date from sessionStorage.');
+            }
             asyncResponse(response, onSuccess);
         },
         setData: function(simId, key, value, onSuccess){
@@ -24,7 +26,9 @@ define(function(){
                 simData[key] = value;
                 window.sessionStorage.setItem(simId, JSON.stringify(simData));
             }
-            catch(err){}
+            catch(err){
+                console.warn('An error occurred while trying to save the data to sessionStorage.');
+            }
             asyncResponse(null, onSuccess);
         }
     };
