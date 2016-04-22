@@ -541,6 +541,15 @@ define(function(require) {
         });
 
         describe('GET_DATA_REQUEST', function() {
+            var realParent;
+            beforeEach(function(){
+                realParent = window.parent;
+                window.parent = {};
+            });
+            
+            afterEach(function(){
+                window.parent = realParent;
+            });
 
             it('should place a get data request in pendingQueue', function() {
 
@@ -585,9 +594,52 @@ define(function(require) {
 
             });
 
+            describe('when not running inside an iFrame', function(){
+                beforeEach(function(){
+                    window.parent = window;
+                });
+
+                it('should get the data from sessionStorage if it exists', function(){
+                    var callback = function(response){
+                        expect(response.exists).to.be(true);
+                        expect(response.value).to.be('testValue');
+                    };
+
+                    sandbox.stub(window, 'setTimeout');
+
+                    window.sessionStorage.setItem('simId', JSON.stringify({key: 'testValue'}));
+                    transporter.getDataRequest('simId', 'key', callback);
+                    expect(window.setTimeout.callCount).to.be(1);
+                    window.setTimeout.getCall(0).args[0]();
+                    window.sessionStorage.removeItem('simId');
+                });
+
+                it('should say the the key does not exist if no key is found', function(){
+                    var callback = function(response){
+                        expect(response.exists).to.be(false);
+                        expect(response.value).to.be(null);
+                    };
+
+                    sandbox.stub(window, 'setTimeout');
+
+                    transporter.getDataRequest('simId', 'key', callback);
+                    expect(window.setTimeout.callCount).to.be(1);
+                    window.setTimeout.getCall(0).args[0]();
+                });
+            });
         });
 
         describe('GET_DATA_RESPONSE', function() {
+            var realParent;
+            beforeEach(function(){
+                realParent = window.parent;
+                window.parent = {};
+            });
+
+            afterEach(function(){
+                window.parent = realParent;
+            });
+
             it('should receive a get data response of success', function() {
                 transporter.getDataRequest('sim', 'key', function(tData) {
                     expect(tData.key).to.equal('key');
@@ -632,6 +684,15 @@ define(function(require) {
         });
 
         describe('SET_DATA_REQUEST', function() {
+            var realParent;
+            beforeEach(function(){
+                realParent = window.parent;
+                window.parent = {};
+            });
+
+            afterEach(function(){
+                window.parent = realParent;
+            });
 
             it('should place a set data request in pendingQueue', function() {
 
@@ -676,9 +737,55 @@ define(function(require) {
 
             });
 
+            describe('when not running inside an iFrame', function(){
+                beforeEach(function(){
+                    window.parent = window;
+                });
+
+                it('should set the data on sessionStorage', function(){
+                    transporter.setDataRequest('simId', 'key', 'testValue');
+                    expect(window.window.sessionStorage.getItem('simId')).to.be(JSON.stringify({key: 'testValue'}));
+                    window.sessionStorage.removeItem('simId');
+                });
+
+                it('should add to the existing simID', function(){
+                    transporter.setDataRequest('simId', 'key', 'testValue');
+                    transporter.setDataRequest('simId', 'key1', 'testValue1');
+                    expect(window.window.sessionStorage.getItem('simId')).to.be(JSON.stringify({key: 'testValue', key1: 'testValue1'}));
+                    window.sessionStorage.removeItem('simId');
+                });
+
+                it('should override existing values', function(){
+                    transporter.setDataRequest('simId', 'key', 'testValue');
+                    transporter.setDataRequest('simId', 'key', 'testValue1');
+                    expect(window.window.sessionStorage.getItem('simId')).to.be(JSON.stringify({key: 'testValue1'}));
+                    window.sessionStorage.removeItem('simId');
+                });
+
+                it('should async call the success callback', function(){
+                    var callback = sandbox.stub();
+
+                    sandbox.stub(window, 'setTimeout');
+                    transporter.setDataRequest('simId', 'key', 'testValue', callback);
+                    expect(window.setTimeout.callCount).to.be(1);
+                    window.setTimeout.getCall(0).args[0]();
+                    expect(callback.callCount).to.be(1);
+                    window.sessionStorage.removeItem('simId');
+                });
+            });
+
         });
 
         describe('SET_DATA_RESPONSE', function() {
+            var realParent;
+            beforeEach(function(){
+                realParent = window.parent;
+                window.parent = {};
+            });
+
+            afterEach(function(){
+                window.parent = realParent;
+            });
             it('should receive a set data response of success', function() {
                 transporter.setDataRequest('sim', 'key', 'value', function(tData) {
                     expect(tData.key).to.equal('key');
