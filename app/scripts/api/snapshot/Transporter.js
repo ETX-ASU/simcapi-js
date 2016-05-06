@@ -97,7 +97,7 @@ define(['jquery',
             getData: null
         };
 
-        /* can be used to uniquely identified messages */
+        /* can be used to uniquely identify messages */
         this.lastMessageId = 0;
 
         /* can be used to keep track of the success and error callbacks for a given message */
@@ -550,7 +550,7 @@ define(['jquery',
         this.requestParentContainerResize = function(options, onSuccess) {
             onSuccess = onSuccess || function() {};
 
-            var messageId = ++this.lastMessageId;
+            var messageId = ++self.lastMessageId;
 
             var message = new SimCapiMessage({
                 type: SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_REQUEST,
