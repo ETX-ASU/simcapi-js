@@ -1012,5 +1012,65 @@ define(function(require) {
                 expect(exposedProperty.value).to.equal(false);
             });
         });
+
+        describe('RESIZE_PARENT_CONTAINER request and response', function() {
+            var options, onSuccess;
+            beforeEach(function() {
+                options = {
+                  width: {
+                    type: 'relative',
+                    value: -10
+                  },
+                  height: {
+                    type: 'absolute',
+                    value: 300
+                  }
+                };
+                onSuccess = sandbox.stub();
+
+                sandbox.stub(transporter, 'sendMessage');
+                transporter.lastMessageId = 11;
+            });
+
+            it('should send the request when authToken', function() {
+                doHandShake();
+
+                transporter.requestParentContainerResize(options, onSuccess);
+
+                expect(transporter.sendMessage.callCount).to.be(1);
+                expect(transporter.sendMessage.firstCall.args.length).to.be(1);
+
+                var message = transporter.sendMessage.firstCall.args[0];
+                expect(message.type).to.be(SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_REQUEST);
+                expect(message.handshake).to.be.ok();
+                expect(message.values.messageId).to.be(12);
+                expect(message.values.width).to.be(options.width);
+                expect(message.values.height).to.be(options.height);
+
+                expect(transporter.lastMessageId).to.be(12);
+                expect(transporter.messageCallbacks[12].onSuccess).to.be(onSuccess);
+            });
+
+            it('handles response', function() {
+                doHandShake();
+                transporter.requestParentContainerResize(options, onSuccess);
+
+                var response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_RESPONSE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
+                    },
+                    values: {
+                        messageId: 12,
+                        responseType: 'success'
+                    }
+                });
+
+                transporter.capiMessageHandler(response);
+
+                expect(onSuccess.callCount).to.be(1);
+            });
+        });
     });
 });

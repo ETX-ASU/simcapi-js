@@ -15,6 +15,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.94 - Update simcapi to allow the sim to request its parent container should resize
          * 0.93 - Add fake data persistence when the sim is not in an iFrame or is in the authoring tool
          * 0.92 - Added a way to define callbacks to be invoked when the handshake is completed
          * 0.91 - Added DataSyncAPI and DeviceAPI methods to the list of allowed thrift calls
@@ -50,7 +51,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.92;
+        var version = 0.94;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
@@ -95,6 +96,12 @@ define(['jquery',
             },
             getData: null
         };
+
+        /* can be used to uniquely identified messages */
+        this.lastMessageId = 0;
+
+        /* can be used to keep track of the success and error callbacks for a given message */
+        this.messageCallbacks = {};
 
         /*
          * Gets/SetsRequest callbacks
@@ -150,6 +157,9 @@ define(['jquery',
                     break;
                 case SimCapiMessage.TYPES.INITIAL_SETUP_COMPLETE:
                     handleInitialSetupComplete(message);
+                    break;
+                case SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_RESPONSE:
+                    handleResizeParentContainerResponse(message);
                     break;
             }
         };
@@ -535,6 +545,43 @@ define(['jquery',
 
             //Ensure that there are no more set value calls to be able to send the message.
             self.notifyValueChange();
+        };
+
+        this.requestParentContainerResize = function(options, onSuccess) {
+            onSuccess = onSuccess || function() {};
+
+            var messageId = ++this.lastMessageId;
+
+            var message = new SimCapiMessage({
+                type: SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_REQUEST,
+                handshake: handshake,
+                values: {
+                    messageId: messageId,
+                    width: options.width,
+                    height: options.height
+                }
+            });
+
+            this.messageCallbacks[messageId] = {
+              onSuccess: onSuccess
+            };
+
+            if (!handshake.authToken) {
+                pendingMessages.forHandshake.push(message);
+            } else {
+                self.sendMessage(message);
+            }
+        };
+
+        var handleResizeParentContainerResponse = function(message) {
+            var messageId = message.values.messageId;
+
+            var callbacks = self.messageCallbacks[messageId];
+            delete self.messageCallbacks[messageId];
+
+            if (message.values.responseType === 'success') {
+                callbacks.onSuccess();
+            }
         };
 
         /*
