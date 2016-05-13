@@ -479,6 +479,32 @@ define(function(require) {
 
             });
 
+            it('should send out value change event with unexposed properties', function() {
+                var message = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.VALUE_CHANGE,
+                    handshake: {
+                        requestToken: requestToken,
+                        authToken: authToken
+                    },
+                    values: {
+                        'unexposed': new SimCapiValue({
+                            key: 'unexposed',
+                            type: SimCapiTypes.TYPES.NUMBER,
+                            value: 10
+                        })
+                    }
+                });
+                var stub = sinon.stub();
+                transporter.addChangeListener(stub);
+
+                transporter.capiMessageHandler(message);
+
+                expect(stub.callCount).to.equal(1);
+                var changes = stub.getCall(0).args[0];
+                expect(changes.length).to.equal(1);
+                expect(changes[0].key).to.equal('unexposed');
+                expect(changes[0].value).to.equal(10);
+            });
         });
 
         describe('VALUE_CHANGE_REQUEST', function() {

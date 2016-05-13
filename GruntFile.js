@@ -135,7 +135,12 @@ module.exports = function(grunt) {
         'requirejs:sim_exploded']);
 
   // Loading plugins
-  grunt.loadNpmTasks('grunt-contrib');
+  grunt.loadNpmTasks("grunt-contrib-clean");
+  grunt.loadNpmTasks("grunt-contrib-copy");
+  grunt.loadNpmTasks("grunt-contrib-jshint");
+  grunt.loadNpmTasks("grunt-contrib-less");
+  grunt.loadNpmTasks("grunt-contrib-watch");
+  grunt.loadNpmTasks("grunt-contrib-requirejs");
   grunt.loadNpmTasks('grunt-mocha');
   grunt.loadTasks('grunt-lib');
 
