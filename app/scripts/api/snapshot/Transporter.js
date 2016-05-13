@@ -437,6 +437,7 @@ define(['jquery',
                         } else if (!outgoingMap[key]) {
                             //key hasn't been exposed yet. Could be a dynamic capi property.
                             toBeApplied[key] = capiValue.value;
+                            changed.push(new SimCapiValue({ value: capiValue.value, key: key }));
                         }
                     }
                 });
