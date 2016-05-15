@@ -1,23 +1,23 @@
-Pipit
+SimCapi
 --------
 
-Pipit is an interface used by simulations to communicate between AELP (Smart Sparrow's Adaptive eLearning Platform) and the Simulation (Sim).
+SimCapi is an interface used by simulations to communicate between AELP (Smart Sparrow's Adaptive eLearning Platform) and the Simulation (Sim).
 
 
 ## Why? ##
 
-Teachers are generally looking to do two things with a sim;
+Educators and Learning Designers are generally looking to do two things with a sim;
 1. Set it up in a specific way for a specific question (eg. disable certain controls or pre-fill certain fields), and
 2. Determine what the student has done in the sim so they can provide appropriate feedback.
 
-Pipit allows you to make both these things happen. In other words, by including Pipit in your simulation, you can allow AELP (and therefore the teacher) to control the sim.
+SimCapi allows you to make both these things happen. In other words, by including SimCapi in your simulation, you can allow AELP (and therefore the teacher) to control the sim.
 
 
 ## How? ##
 
-The first half of pipit is the `CapiModel`. You can create variables on this data object which notify other objects whenever they've been changed.
+The first half of SimCapi is the `CapiModel`. You can create variables on this data object which notify other objects whenever they've been changed.
 
-The second half of Pipit is the `CapiAdapter`, which is responsible for exposing variables on a `CapiModel` to AELP.
+The second half of SimCapi is the `CapiAdapter`, which is responsible for exposing variables on a `CapiModel` to AELP.
 
 Together, a connection is created between AELP and the model where the variables are keep in sync.
 
@@ -26,7 +26,7 @@ In this way, a teacher can set an initial condition via AELP which will be sent 
 
 ## Backbone ##
 
-For those who use Backbone.js. It's possible to use Backbone Models instead of CapiModels. Pipit also supplies a `BackboneAdapter`.
+For those who use Backbone.js. It's possible to use Backbone Models instead of CapiModels. SimCapi also supplies a `BackboneAdapter`.
 
 
 ## Installation ##
@@ -34,13 +34,13 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://smartsparrow.global.ssl.fastly.net/js/pipit-0.90.min.js"></script>
+<script src= "https://smartsparrow.global.ssl.fastly.net/js/simcapi-<%= version%>.min.js"></script>
 ```
 
 
 ## How to setup ##
 
-There are three phases to setup Pipit, _setup data_, _expose data_ and _finalise setup_.
+There are three phases to setup SimCapi, _setup data_, _expose data_ and _finalise setup_.
 
 
 ### Setup Data ###
@@ -50,7 +50,7 @@ In the setup data phase, you just have to create a `CapiModel`.
 For example:
 
 ```
-var simModel = new pipit.CapiAdapter.CapiModel({
+var simModel = new simcapi.CapiAdapter.CapiModel({
     demoMode: true,
     studentResponse: "5",
     simEnabled: true
@@ -64,7 +64,7 @@ This `CapiModel` has two variables inside it that can be exposed to AELP.
 In this phase, you must tell the `CapiAdapter` what you want to expose from the `CapiModel`.
 
 ```
-pipit.CapiAdapter.expose(variableName, model, options);
+simcapi.CapiAdapter.expose(variableName, model, options);
 ```
 
 Here is the list of what you must pass to _expose_.
@@ -72,7 +72,7 @@ Here is the list of what you must pass to _expose_.
 * variableName - String    - name of the variable on the model
 * model        - CapiModel - the model that the variable belongs to.
 * options      - Object
-  * type       - SimCapiTypes.TYPES  - the type of the variable. By default, pipit will detect the type of the variable.
+  * type       - SimCapiValue.TYPES  - the type of the variable. By default, simcapi will detect the type of the variable.
   * alias      - String              - nickname of the variable that is only shown via AELP. Having '.' in the nickname will group variables that have the same prefix.
   * readonly   - Boolean             - if the variable is read-only
   * writeonly  - Boolean             - if the variable is write-only
@@ -81,7 +81,7 @@ Here is the list of what you must pass to _expose_.
 Inversely, if you want to unexpose your data, you can tell the `CapiAdapter`.
 
 ```
-pipit.CapiAdapter.unexpose(variableName, model);
+simcapi.CapiAdapter.unexpose(variableName, model);
 ```
 
 Here is the list of what you must pass to _unexpose_.
@@ -92,14 +92,14 @@ Here is the list of what you must pass to _unexpose_.
 
 ### Finalise Setup ###
 
-This phase require you to tell Pipit you have finished setting up the `Capimodel`. This is with the command below:
+This phase require you to tell SimCapi you have finished setting up the `Capimodel`. This is with the command below:
 
 
 ```
-pipit.Controller.notifyOnReady();
+simcapi.Controller.notifyOnReady();
 ```
 
-This must be called when the model has finished being setup. It is to tell Pipit that the `CapiModel` is ready to sync with the AELP. If this is not called, AELP will not sync to the `CapiModel` because it thinks the `CapiModel` is not ready.
+This must be called when the model has finished being setup. It is to tell SimCapi that the `CapiModel` is ready to sync with the AELP. If this is not called, AELP will not sync to the `CapiModel` because it thinks the `CapiModel` is not ready.
 
 
 
@@ -112,7 +112,7 @@ Apart from syncing, there may be other functionality that can be used via the `C
 Sims can have the ability to trigger `check` events the same way when a student clicks on the `check` button on AELP.
 
 ```
-pipit.Controller.triggerCheck();
+simcapi.Controller.triggerCheck();
 ```
 
 The above code will click `check` on behave of the user when they interact with a sim in a certain way.
@@ -120,7 +120,7 @@ The above code will click `check` on behave of the user when they interact with 
 It is also possible to pass a callback function to the `triggerCheck` that will be executed when the feedback panel is closed.
 
 ```
-pipit.Controller.triggerCheck({
+simcapi.Controller.triggerCheck({
     complete: function(){
         //Do something when feedback panel is closed.
     }
@@ -129,7 +129,7 @@ pipit.Controller.triggerCheck({
 
 ### A simple example ###
 ```
-var simModel = new pipit.CapiAdapter.CapiModel({
+var simModel = new simcapi.CapiAdapter.CapiModel({
     demoMode: true,
     studentResponse: "5",
     simEnabled: true
@@ -137,21 +137,21 @@ var simModel = new pipit.CapiAdapter.CapiModel({
 
 ...
 
-pipit.CapiAdapter.expose("demoMode", simModel,
+simcapi.CapiAdapter.expose("demoMode", simModel,
                                      {readonly: false});
-pipit.CapiAdapter.expose("studentResponse", simModel,
+simcapi.CapiAdapter.expose("studentResponse", simModel,
                                             {alias: "studentAnswer",
                                            readonly: true});
-pipit.CapiAdapter.expose("simEnabled", simModel,
+simcapi.CapiAdapter.expose("simEnabled", simModel,
                                        {writeonly: true});
 
 ...
 
-pipit.Controller.notifyOnReady();
+simcapi.Transporter.notifyOnReady();
 ```
 
 
-For Pipit to work, you must use the following functions on the `CapiModel`:
+For SimCapi to work, you must use the following functions on the `CapiModel`:
 
 
 #### Get ####
@@ -211,22 +211,22 @@ var simModel = new SimModel();
 
 ...
 
-pipit.BackboneAdapter.expose("demoMode", simModel,
+simcapi.BackboneAdapter.expose("demoMode", simModel,
                                               {readonly: false});
-pipit.BackboneAdapter.expose("studentResponse", simModel,
+simcapi.BackboneAdapter.expose("studentResponse", simModel,
                                                {alias: "studentAnswer",
                                                 readonly: true});
-pipit.CapiAdapter.expose("simEnabled", simModel,
+simcapi.CapiAdapter.expose("simEnabled", simModel,
                                        {writeonly: true});
 
 ...
 
-pipit.Controller.notifyOnReady();
+simcapi.Transporter.notifyOnReady();
 ```
 
 ### AllowedValues ###
 
-It's possible for pipit to supply the teacher with a choice of options for a particular property on a sim if it is possible.
+It's possible for SimCapi to supply the teacher with a choice of options for a particular property on a sim if it is possible.
 
 For example, you have a capi property named _color_ and depending whether the teacher inputs the strings 'red', 'blue', or 'green',
 the background will change to that color.
@@ -237,15 +237,15 @@ Getting the teacher to type up the color may cause issues like spelling mistakes
 
 ```
 
-var simModel = new pipit.CapiAdapter.CapiModel({
+var simModel = new simcapi.CapiAdapter.CapiModel({
     color: 'red'
 });
 
-pipit.CapiAdapter.expose("color", simModel, {allowedValues: ['red', 'blue', 'green']});
+simcapi.CapiAdapter.expose("color", simModel, {allowedValues: ['red', 'blue', 'green']});
 
 ...
 
-pipit.Controller.notifyOnReady();
+simcapi.Transporter.notifyOnReady();
 
 ```
 
@@ -263,11 +263,11 @@ For example, you have a capi property named _numberOfColors_. For each color, yo
 
 ```
 
-var simModel = new pipit.CapiAdapter.CapiModel({
+var simModel = new simcapi.CapiAdapter.CapiModel({
     numberOfColors: 0
 });
 
-pipit.CapiAdapter.expose("numberOfColors", simModel);
+simcapi.CapiAdapter.expose("numberOfColors", simModel);
 
 simModel.on('change:numberOfColors', function(m, attributes){
     for(var i = 0; i< attributes.numberOfColors; ++i){
@@ -280,13 +280,13 @@ simModel.on('change:numberOfColors', function(m, attributes){
 
 function createProperty(name, defaultValue){
     simModel.set(name, defaultValue);
-    pipit.CapiAdapter.expose(name, simModel);
+    simcapi.CapiAdapter.expose(name, simModel);
 }
 
 ...
 
-pipit.Controller.notifyOnReady();
+simcapi.Transporter.notifyOnReady();
 
 ```
 
-Take note that when numberOfColors change, we create the variables on the model and expose those values via pipit.
+Take note that when numberOfColors change, we create the variables on the model and expose those values via Simcapi.
