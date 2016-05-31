@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   // Project configuration.
   grunt.initConfig({
     pkg: '<json:package.json>',
-    version: '0.95.0',
+    version: '0.96',
 
     // Clean
     clean: {
