@@ -15,6 +15,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.96 - Added InchRepoService search method to the list of allowed thrift calls
          * 0.95 - Update simcapi to send out value changed messages for properties that haven't been exposed
          * 0.94 - Update simcapi to allow the sim to request its parent container should resize
          * 0.93 - Add fake data persistence when the sim is not in an iFrame or is in the authoring tool
@@ -52,7 +53,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.95;
+        var version = 0.96;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
