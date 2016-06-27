@@ -724,7 +724,7 @@ define(function(require) {
 
                 mockPostMessage(function() {});
 
-                transporter.getDataRequest('sim', 'key', 'value');
+                transporter.setDataRequest('sim', 'key', 'value');
 
                 expect(transporter.sendMessage.called).to.be(false);
             });
@@ -747,13 +747,13 @@ define(function(require) {
                 var failed = true;
                 var failed2 = true;
                 try {
-                    transporter.getDataRequest(undefined, 'key');
+                    transporter.setDataRequest(undefined, 'key');
                 } catch (err) {
                     failed = false;
                 }
 
                 try {
-                    transporter.getDataRequest('simId', undefined);
+                    transporter.setDataRequest('simId', undefined);
                 } catch (err) {
                     failed2 = false;
                 }
@@ -761,6 +761,32 @@ define(function(require) {
                 expect(failed).to.be(false);
                 expect(failed2).to.be(false);
 
+            });
+
+            it('should allow a setDataRequest call during the success callback', function() {
+                doHandShake();
+                mockPostMessage(function() {});
+
+                transporter.setDataRequest('sim', 'key', 'value', function() {
+                    transporter.setDataRequest('sim', 'key', 'value2');
+                });
+
+                var setDataResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
+                    },
+                    values: {
+                        responseType: "success",
+                        simId: 'sim',
+                        key: 'key',
+                        value: 'value'
+                    }
+                });
+
+                transporter.capiMessageHandler(setDataResponse);
+
+                expect(transporter.sendMessage.callCount).to.equal(2);
             });
 
             describe('when not running inside an iFrame', function(){
