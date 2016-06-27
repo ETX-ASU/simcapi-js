@@ -15,6 +15,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.97 - Allow setDataRequest to be called from a setDataRequest callback
          * 0.96 - Added InchRepoService search method to the list of allowed thrift calls
          * 0.95 - Update simcapi to send out value changed messages for properties that haven't been exposed
          * 0.94 - Update simcapi to allow the sim to request its parent container should resize
@@ -53,7 +54,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.96;
+        var version = 0.97;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
@@ -250,15 +251,16 @@ define(['jquery',
          */
         var handleSetDataResponse = function(message) {
             if (message.handshake.authToken === handshake.authToken) {
+                var callbacks = setRequests[message.values.simId][message.values.key];
+                delete setRequests[message.values.simId][message.values.key];
                 if (message.values.responseType === 'success') {
-                    setRequests[message.values.simId][message.values.key].onSuccess({
+                    callbacks.onSuccess({
                         key: message.values.key,
                         value: message.values.value
                     });
                 } else if (message.values.responseType === 'error') {
-                    setRequests[message.values.simId][message.values.key].onError(message.values.error);
+                    callbacks.onError(message.values.error);
                 }
-                delete setRequests[message.values.simId][message.values.key];
             }
         };
 
