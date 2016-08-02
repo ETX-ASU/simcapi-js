@@ -214,6 +214,23 @@ define(function(require) {
                   transporter.addHandshakeCompleteListener(function(){});
                 }).to.not.throwException();
             });
+
+            it('should call the listener', function() {
+
+               var handshakeResponse = new SimCapiMessage({
+                   type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                   handshake: {
+                       requestToken: requestToken,
+                       authToken: authToken
+                   }
+               });
+               var first = sinon.stub();
+
+               transporter.capiMessageHandler(handshakeResponse);
+               transporter.addHandshakeCompleteListener(first);
+
+                expect(first.called, 'first listener called').to.equal(true);
+            });
         });
 
         describe('ON_READY', function() {
