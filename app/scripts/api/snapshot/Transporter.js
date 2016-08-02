@@ -221,7 +221,8 @@ define(['jquery',
         var handshakeComplete = false;
         this.addHandshakeCompleteListener = function(listener) {
             if (handshakeComplete) {
-                throw new Error('Handshake already complete. This listener will never be called');
+                listener(handshake);
+                return;
             }
             handshakeListeners.push(listener);
         };
