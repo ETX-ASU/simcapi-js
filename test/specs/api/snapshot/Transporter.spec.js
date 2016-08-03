@@ -196,7 +196,7 @@ define(function(require) {
                 expect(callback.called).to.be(true);
             });
 
-            it('should throw if listen added after handshake completed', function() {
+            it('should not throw error if listen added after handshake completed', function() {
                 // create a handshakeResponse message with correct request token
                 var handshakeResponse = new SimCapiMessage({
                     type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
@@ -212,7 +212,24 @@ define(function(require) {
 
                 expect(function() {
                   transporter.addHandshakeCompleteListener(function(){});
-                }).to.throwException();
+                }).to.not.throwException();
+            });
+
+            it('should call the listener', function() {
+
+               var handshakeResponse = new SimCapiMessage({
+                   type: SimCapiMessage.TYPES.HANDSHAKE_RESPONSE,
+                   handshake: {
+                       requestToken: requestToken,
+                       authToken: authToken
+                   }
+               });
+               var first = sinon.stub();
+
+               transporter.capiMessageHandler(handshakeResponse);
+               transporter.addHandshakeCompleteListener(first);
+
+                expect(first.called, 'first listener called').to.equal(true);
             });
         });
 
