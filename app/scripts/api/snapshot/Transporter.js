@@ -15,6 +15,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 0.99 - SimCapiValue of type string will cast values as a string
          * 0.98 - Removed the error thrown while trying to add a listener after handshake complete and added the listener
          * 0.97 - Allow setDataRequest to be called from a setDataRequest callback
          * 0.96 - Added InchRepoService search method to the list of allowed thrift calls
