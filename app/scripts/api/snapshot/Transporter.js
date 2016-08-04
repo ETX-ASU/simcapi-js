@@ -56,7 +56,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.97;
+        var version = 0.99;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
