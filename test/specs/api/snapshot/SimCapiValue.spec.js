@@ -122,6 +122,117 @@ define(function(require) {
             }).to.not.throwError();
         });
 
+        it('should not throw when type is string but value is not of type string', function() {
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: [],
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: 44,
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: true,
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: "enum1",
+                    allowedValues: "enum1",
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: '0.000984=\editable{}\times10^{\editable{}}',
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+
+            expect(function() {
+                new SimCapiValue({
+                    key: 'test',
+                    value: "(8;57),(9;39),(8.25;53),(7.25;40),(8.50;45),(7.75;59),(7;29),(9.25;28),(9;36),(7.25;36)",
+                    type: SimCapiTypes.TYPES.STRING
+                });
+            }).to.not.throwError();
+        });
+
+        it('should parse array as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: [],
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal("");
+        });
+
+        it('should parse a number as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: 44,
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal("44");
+        });
+
+        it('should parse a boolean as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: true,
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal("true");
+        });
+
+        it('should parse an enum as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: "enum1",
+                allowedValues: "enum1",
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal("enum1");
+        });
+
+        it('should parse a math expression as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: '0.000984=\editable{}\times10^{\editable{}}',
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal('0.000984=\editable{}\times10^{\editable{}}');
+        });
+
+        it('should parse a point array as a string when type is set to string', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: "(8;57),(9;39),(8.25;53),(7.25;40),(8.50;45),(7.75;59),(7;29),(9.25;28),(9;36),(7.25;36)",
+                type: SimCapiTypes.TYPES.STRING
+            });
+
+            expect(simCapiValue.value).to.equal("(8;57),(9;39),(8.25;53),(7.25;40),(8.50;45),(7.75;59),(7;29),(9.25;28),(9;36),(7.25;36)");
+        });
     });
 
 });

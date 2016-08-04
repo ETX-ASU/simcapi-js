@@ -66,7 +66,7 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
                     value = parseFloat(value);
                     break;
                 case SimCapiTypes.TYPES.STRING:
-                    check(value).isString();
+                    value = String(value);
                     break;
                 case SimCapiTypes.TYPES.BOOLEAN:
                     value = parseBoolean(value);
