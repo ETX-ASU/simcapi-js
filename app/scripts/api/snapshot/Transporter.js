@@ -1,4 +1,4 @@
-/*global window, document, setTimeout */
+/*global window, document, setTimeout*/
 define(['jquery',
     'underscore',
     'api/snapshot/util/uuid',
@@ -6,8 +6,9 @@ define(['jquery',
     'check',
     'api/snapshot/SimCapiValue',
     './ApiInterface',
-    './LocalData'
-], function($, _, uuid, SimCapiMessage, check, SimCapiValue, ApiInterface, LocalData) {
+    './LocalData',
+    './util/domain'
+], function($, _, uuid, SimCapiMessage, check, SimCapiValue, ApiInterface, LocalData, domainUtil) {
 
     $.noConflict();
     _.noConflict();
@@ -165,6 +166,9 @@ define(['jquery',
                     break;
                 case SimCapiMessage.TYPES.RESIZE_PARENT_CONTAINER_RESPONSE:
                     handleResizeParentContainerResponse(message);
+                    break;
+                case SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS:
+                    setDomainToShortform();
                     break;
             }
         };
@@ -590,6 +594,14 @@ define(['jquery',
             if (message.values.responseType === 'success') {
                 callbacks.onSuccess();
             }
+        };
+
+        var setDomainToShortform = function() {
+            var originalDomain = domainUtil.getDomain();
+            if (originalDomain.indexOf("smartsparrow.com") === -1) { return; }
+
+            domainUtil.setDomain("smartsparrow.com");
+            setTimeout(function() { domainUtil.setDomain(originalDomain); }, 50);
         };
 
         /*

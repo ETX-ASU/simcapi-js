@@ -26,7 +26,7 @@ define(function(require) {
 
     /*
      * Define message type enums as a class variable.
-     * Next number is 20
+     * Next number is 21
      */
     SimCapiMessage.TYPES = {
         HANDSHAKE_REQUEST: 1,
@@ -46,7 +46,8 @@ define(function(require) {
         API_CALL_REQUEST: 16,
         API_CALL_RESPONSE: 17,
         RESIZE_PARENT_CONTAINER_REQUEST: 18,
-        RESIZE_PARENT_CONTAINER_RESPONSE: 19
+        RESIZE_PARENT_CONTAINER_RESPONSE: 19,
+        ALLOW_INTERNAL_ACCESS: 20
     };
 
     return SimCapiMessage;
