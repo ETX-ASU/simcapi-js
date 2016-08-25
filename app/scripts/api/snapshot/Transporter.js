@@ -16,7 +16,8 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
-         * 0.100 - New SimCapiMessage Type: ALLOW_INTERNAL_ACCESS for sims and lessons to gain temporary access to each others documents
+         * 1.00 - New SimCapiMessage Type: ALLOW_INTERNAL_ACCESS
+         *        New public transporter method: requestInternalViewerAccess
          * 0.99 - SimCapiValue of type string will cast values as a string
          * 0.98 - Removed the error thrown while trying to add a listener after handshake complete and added the listener
          * 0.97 - Allow setDataRequest to be called from a setDataRequest callback
@@ -58,7 +59,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 0.100;
+        var version = 1.00;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
@@ -603,6 +604,15 @@ define(['jquery',
 
             domainUtil.setDomain("smartsparrow.com");
             setTimeout(function() { domainUtil.setDomain(originalDomain); }, 50);
+        };
+
+        this.requestInternalViewerAccess = function() {
+            var message = new SimCapiMessage({
+                type: SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS,
+                handshake: this.getHandshake()
+            });
+
+            self.sendMessage(message);
         };
 
         /*

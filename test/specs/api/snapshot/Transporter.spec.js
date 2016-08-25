@@ -1191,5 +1191,29 @@ define(function(require) {
                 expect(DomainUtils.setDomain.callCount).to.equal(0);
             });
         });
+
+        describe('method: requestInternalViewerAccess', function() {
+            beforeEach(function() {
+                doHandShake();
+                sandbox.stub(transporter, 'sendMessage');
+            });
+
+            it('should call the internal sendMessage function', function() {
+                transporter.requestInternalViewerAccess();
+
+                expect(transporter.sendMessage.called).to.be(true);
+            });
+
+            it('should pass a pre-defined message', function() {
+                transporter.requestInternalViewerAccess();
+
+                var message = transporter.sendMessage.getCall(0).args[0];
+
+                expect(message.type).to.equal(SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS);
+                expect(message.handshake).to.not.equal(undefined);
+                expect(message.handshake.requestToken).to.equal(requestToken);
+                expect(message.handshake.authToken).to.equal(authToken);
+            });
+        });
     });
 });
