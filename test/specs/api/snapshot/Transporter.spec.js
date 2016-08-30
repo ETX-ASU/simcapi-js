@@ -5,6 +5,7 @@ define(function(require) {
     var SimCapiValue   = require('api/snapshot/SimCapiValue');
     var SimCapiMessage = require('api/snapshot/SimCapiMessage');
     var SimCapiTypes   = require('api/snapshot/SimCapiTypes');
+    var DomainUtils    = require('api/snapshot/util/domain');
     require('sinon');
 
     describe('Transporter', function() {
@@ -1139,6 +1140,79 @@ define(function(require) {
                 transporter.capiMessageHandler(response);
 
                 expect(onSuccess.callCount).to.be(1);
+            });
+        });
+
+        describe('ALLOW_INTERNAL_ACCESS', function() {
+            var fakeGoodDomain, fakeBadDomain, response;
+            beforeEach(function() {
+                response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS,
+                    handshake: {
+                        authToken: authToken
+                    }
+                });
+
+                fakeGoodDomain = 'https://aelp.smartsparrow.com/w/lessons';
+                fakeBadDomain = 'https://store.randomcompany.com/w/lessons';
+
+                sandbox.stub(DomainUtils, 'getDomain');
+                sandbox.stub(DomainUtils, 'setDomain');
+            });
+            
+            it('should set domain to "smartsparrow.com" if it is a valid domain', function() {
+                DomainUtils.getDomain.returns(fakeGoodDomain);
+
+                transporter.capiMessageHandler(response);
+
+                expect(DomainUtils.setDomain.callCount).to.equal(1);
+                expect(DomainUtils.setDomain.getCall(0).args[0]).to.equal("smartsparrow.com");
+            });
+
+            it('should return the domain to its original after setting it after 50ms', function() {
+                DomainUtils.getDomain.returns(fakeGoodDomain);
+
+                transporter.capiMessageHandler(response);
+
+                expect(DomainUtils.setDomain.callCount).to.equal(1);
+                expect(DomainUtils.setDomain.getCall(0).args[0]).to.equal("smartsparrow.com");
+
+                clock.tick(50);
+
+                expect(DomainUtils.setDomain.callCount).to.equal(2);
+                expect(DomainUtils.setDomain.getCall(1).args[0]).to.equal(fakeGoodDomain);
+            });
+
+            it('should not set any domain if the current domain is not valid', function() {
+                DomainUtils.getDomain.returns(fakeBadDomain);
+
+                transporter.capiMessageHandler(response);
+
+                expect(DomainUtils.setDomain.callCount).to.equal(0);
+            });
+        });
+
+        describe('method: requestInternalViewerAccess', function() {
+            beforeEach(function() {
+                doHandShake();
+                sandbox.stub(transporter, 'sendMessage');
+            });
+
+            it('should call the internal sendMessage function', function() {
+                transporter.requestInternalViewerAccess();
+
+                expect(transporter.sendMessage.called).to.be(true);
+            });
+
+            it('should pass a pre-defined message', function() {
+                transporter.requestInternalViewerAccess();
+
+                var message = transporter.sendMessage.getCall(0).args[0];
+
+                expect(message.type).to.equal(SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS);
+                expect(message.handshake).to.not.equal(undefined);
+                expect(message.handshake.requestToken).to.equal(requestToken);
+                expect(message.handshake.authToken).to.equal(authToken);
             });
         });
     });
