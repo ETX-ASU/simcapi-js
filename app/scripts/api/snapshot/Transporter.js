@@ -16,6 +16,7 @@ define(['jquery',
     var Transporter = function(options) {
         /*
          * Transporter versions:
+         * 1.01 - No longer reverts domain to its original when granting access
          * 1.00 - New SimCapiMessage Type: ALLOW_INTERNAL_ACCESS
          *        New public transporter method: requestInternalViewerAccess
          * 0.99 - SimCapiValue of type string will cast values as a string
@@ -59,7 +60,7 @@ define(['jquery',
          * 0.2  - Rewrite of the client slide implementation
          * 0.1  - Added support for SimCapiMessage.TYPES.VALUE_CHANGE_REQUEST message allowing the handler to provoke the sim into sending all of its properties.
          */
-        var version = 1.00;
+        var version = 1.01;
 
         // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
         // null checks
@@ -599,11 +600,9 @@ define(['jquery',
         };
 
         var setDomainToShortform = function() {
-            var originalDomain = domainUtil.getDomain();
-            if (originalDomain.indexOf("smartsparrow.com") === -1) { return; }
+            if (domainUtil.getDomain().indexOf("smartsparrow.com") === -1) { return; }
 
             domainUtil.setDomain("smartsparrow.com");
-            setTimeout(function() { domainUtil.setDomain(originalDomain); }, 50);
         };
 
         this.requestInternalViewerAccess = function() {
