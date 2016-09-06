@@ -1169,20 +1169,6 @@ define(function(require) {
                 expect(DomainUtils.setDomain.getCall(0).args[0]).to.equal("smartsparrow.com");
             });
 
-            it('should return the domain to its original after setting it after 50ms', function() {
-                DomainUtils.getDomain.returns(fakeGoodDomain);
-
-                transporter.capiMessageHandler(response);
-
-                expect(DomainUtils.setDomain.callCount).to.equal(1);
-                expect(DomainUtils.setDomain.getCall(0).args[0]).to.equal("smartsparrow.com");
-
-                clock.tick(50);
-
-                expect(DomainUtils.setDomain.callCount).to.equal(2);
-                expect(DomainUtils.setDomain.getCall(1).args[0]).to.equal(fakeGoodDomain);
-            });
-
             it('should not set any domain if the current domain is not valid', function() {
                 DomainUtils.getDomain.returns(fakeBadDomain);
 
