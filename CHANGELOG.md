@@ -4,6 +4,7 @@
 
 
 ### Old Version ###
+1.02 - Adding PeerResponseAPI calls 
 1.01 - No longer reverts domain to its original when granting access
 1.00 - New SimCapiMessage Type: ALLOW_INTERNAL_ACCESS
        New public transporter method: requestInternalViewerAccess
