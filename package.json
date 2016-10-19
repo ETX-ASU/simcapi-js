@@ -1,5 +1,5 @@
 {
-  "name": "simcapi",
+  "name": "simcapi-js",
   "description": "Allows the communication between the HTMLViewer and the Sims.",
   "version": "1.0.1",
   "license": "Apache-2.0",
