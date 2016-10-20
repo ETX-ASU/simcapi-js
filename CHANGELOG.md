@@ -1,7 +1,7 @@
 ## Release History
 
 - Unreleased
-
+    - Adding PeerResponseAPI calls
 
 ### Old Version ###
 1.01 - No longer reverts domain to its original when granting access
