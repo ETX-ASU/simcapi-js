@@ -701,7 +701,7 @@ define(function(require) {
                 var message = JSON.parse(event.data);
                 self.capiMessageHandler(message);
             } catch (e) {
-                //silently ignore - occuring in test
+                window.console.log(e);
             }
 
         };
