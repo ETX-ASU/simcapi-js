@@ -35,7 +35,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src= "https://lib.smartsparrow.com/simcapi-js-1.2.0.min.js"></script>
+<script src='https://lib.smartsparrow.com/simcapi-js-1.2.0.min.js'></script>
 ```
 
 
@@ -53,7 +53,7 @@ For example:
 ```
 var simModel = new simcapi.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: "5",
+    studentResponse: '5',
     simEnabled: true
 });
 ```
@@ -164,9 +164,9 @@ function onError(error) {
     //Do something when request fails
 }
 
-var simId = "yourSim";
-var key = "some data key";
-var value = "data you want to store";
+var simId = 'yourSim';
+var key = 'some data key';
+var value = 'data you want to store';
 
 simcapi.Transporter.setDataRequest(simId, key, value, onSuccess, onError);
 ```
@@ -186,8 +186,8 @@ function onError(error) {
     //Do something when request fails
 }
 
-var simId = "yourSim";
-var key = "some data key";
+var simId = 'yourSim';
+var key = 'some data key';
 
 simcapi.Transporter.getDataRequest(simId, key, onSuccess, onError);
 ```
@@ -198,18 +198,18 @@ simcapi.Transporter.getDataRequest(simId, key, onSuccess, onError);
 ```
 var simModel = new simcapi.CapiAdapter.CapiModel({
     demoMode: true,
-    studentResponse: "5",
+    studentResponse: '5',
     simEnabled: true
 });
 
 ...
 
-simcapi.CapiAdapter.expose("demoMode", simModel,
+simcapi.CapiAdapter.expose('demoMode', simModel,
                                      {readonly: false});
-simcapi.CapiAdapter.expose("studentResponse", simModel,
-                                            {alias: "studentAnswer",
+simcapi.CapiAdapter.expose('studentResponse', simModel,
+                                            {alias: 'studentAnswer',
                                            readonly: true});
-simcapi.CapiAdapter.expose("simEnabled", simModel,
+simcapi.CapiAdapter.expose('simEnabled', simModel,
                                        {writeonly: true});
 
 ...
@@ -268,7 +268,7 @@ For SimCapi to work, you must use the following functions on the `CapiModel`:
 var SimModel = Backbone.Model.extend({
   defaults:{
     demoMode: true,
-    studentResponse: "5",
+    studentResponse: '5',
     simEnabled: true
   }
 });
@@ -278,12 +278,12 @@ var simModel = new SimModel();
 
 ...
 
-simcapi.BackboneAdapter.expose("demoMode", simModel,
+simcapi.BackboneAdapter.expose('demoMode', simModel,
                                               {readonly: false});
-simcapi.BackboneAdapter.expose("studentResponse", simModel,
-                                               {alias: "studentAnswer",
+simcapi.BackboneAdapter.expose('studentResponse', simModel,
+                                               {alias: 'studentAnswer',
                                                 readonly: true});
-simcapi.CapiAdapter.expose("simEnabled", simModel,
+simcapi.CapiAdapter.expose('simEnabled', simModel,
                                        {writeonly: true});
 
 ...
@@ -308,7 +308,7 @@ var simModel = new simcapi.CapiAdapter.CapiModel({
     color: 'red'
 });
 
-simcapi.CapiAdapter.expose("color", simModel, {allowedValues: ['red', 'blue', 'green']});
+simcapi.CapiAdapter.expose('color', simModel, {allowedValues: ['red', 'blue', 'green']});
 
 ...
 
@@ -334,7 +334,7 @@ var simModel = new simcapi.CapiAdapter.CapiModel({
     numberOfColors: 0
 });
 
-simcapi.CapiAdapter.expose("numberOfColors", simModel);
+simcapi.CapiAdapter.expose('numberOfColors', simModel);
 
 simModel.on('change:numberOfColors', function(m, attributes){
     for(var i = 0; i< attributes.numberOfColors; ++i){
