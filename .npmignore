@@ -1,0 +1,10 @@
+.jenkins
+.jshintrc
+.jshintignore
+bower.json
+Gruntfile.js
+test
+.idea
+bower_components
+dist
+temp
