@@ -1,7 +1,7 @@
 {
     "name": "simcapi",
     "description": "Allows the communication between the HTMLViewer and the Sims.",
-    "version": "1.2.0",
+    "version": "1.2.1",
     "license": "Apache-2.0",
     "author": {
         "name": "Smart Sparrow"
