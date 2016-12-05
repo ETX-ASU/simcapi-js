@@ -88,6 +88,9 @@ define(function(require) {
         /* can be used to keep track of the success and error callbacks for a given message */
         this.messageCallbacks = {};
 
+        /* stored callbacks for registerLocalDataListener */
+        this.localDataChangedCallbacks = {};
+
         /*
          * Gets/SetsRequest callbacks
          * simId -> { key -> { onSucess -> function, onError -> function } }
@@ -147,6 +150,9 @@ define(function(require) {
                     break;
                 case SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS:
                     setDomainToShortform();
+                    break;
+                case SimCapiMessage.TYPES.LOCAL_DATA_CHANGED:
+                    handleLocalDataChange(message);
                     break;
             }
         };
@@ -303,7 +309,7 @@ define(function(require) {
          * @since 0.5
          * Sends the GET_DATA Request
          */
-        this.setDataRequest = function(simId, key, value, onSuccess, onError) {
+        this.setDataRequest = function(simId, key, value, onSuccess, onError, options) {
 
             check(simId).isString();
             check(key).isString();
@@ -324,7 +330,8 @@ define(function(require) {
                     key: key,
                     value: value,
                     simId: simId
-                }
+                },
+                options: options
             });
 
             if (!setRequests[simId]) {
@@ -578,6 +585,31 @@ define(function(require) {
                 handshake: this.getHandshake()
             });
             self.sendMessage(message);
+        };
+
+        var handleLocalDataChange = function(message) {
+            if (self.localDataChangedCallbacks[message.values.simId] && self.localDataChangedCallbacks[message.values.simId][message.values.key]) {
+                    self.localDataChangedCallbacks[message.values.simId][message.values.key](message.values.value);
+                }
+        };
+
+        /*
+         * Register the sim to be notified when local data changes
+         */
+        this.registerLocalDataListener = function(simId, key, callback) {
+            var message = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.REGISTER_LOCAL_DATA_CHANGE_LISTENER,
+                    handshake: this.getHandshake(),
+                    values: {
+                        key: key,
+                            simId: simId
+                    }
+            });
+
+            self.localDataChangedCallbacks[simId] = self.localDataChangedCallbacks[simId] || {};
+            self.localDataChangedCallbacks[simId][key] = callback;
+
+                self.sendMessage(message);
         };
 
         /*
