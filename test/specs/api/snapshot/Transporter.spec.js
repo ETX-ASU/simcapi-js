@@ -691,13 +691,28 @@ define(function(require) {
                     window.setTimeout.getCall(0).args[0]();
                 });
             });
+
+            describe('if there is already a pending request', function() {
+                beforeEach(function() {
+                    doHandShake();
+                    mockPostMessage(function() {});
+
+                    transporter.getDataRequest('sim', 'key');
+                });
+
+                it('should queue the next request, replacing any other request in the queue (UNTESTED) - and return false', function() {
+                    expect(transporter.getDataRequest('sim', 'key')).to.be(false);
+                });
+            });
         });
 
         describe('GET_DATA_RESPONSE', function() {
             var realParent;
             beforeEach(function(){
                 realParent = window.parent;
-                window.parent = {};
+                window.parent = {
+                    postMessage: sandbox.stub()
+                };
             });
 
             afterEach(function(){
@@ -744,6 +759,36 @@ define(function(require) {
 
                 transporter.capiMessageHandler(getDataResponse);
                 expect(error.called).to.equal(true);
+            });
+
+            it('should call the next queued getDataRequest if it exists', function() {
+                var firstSuccessCallback = sandbox.stub();
+                var secondSuccessCallback = sandbox.stub();
+
+                transporter.getDataRequest('sim', 'key', firstSuccessCallback);
+                transporter.getDataRequest('sim', 'key', secondSuccessCallback);
+
+                doHandShake();
+                var getDataResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.GET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
+                    },
+                    values: {
+                        responseType: "success",
+                        simId: 'sim',
+                        key: 'key'
+                    }
+                });
+
+                sandbox.spy(transporter, 'getDataRequest');
+
+                transporter.capiMessageHandler(getDataResponse);
+
+                expect(transporter.getDataRequest.callCount).to.equal(1);
+                expect(transporter.getDataRequest.getCall(0).args[0]).to.equal('sim');
+                expect(transporter.getDataRequest.getCall(0).args[1]).to.equal('key');
+                expect(transporter.getDataRequest.getCall(0).args[2]).to.equal(secondSuccessCallback);
             });
         });
 
@@ -864,13 +909,27 @@ define(function(require) {
                 });
             });
 
+            describe('if there is already a pending request', function() {
+                beforeEach(function() {
+                    doHandShake();
+                    mockPostMessage(function() {});
+
+                    transporter.setDataRequest('sim', 'key', 'newValue');
+                });
+
+                it('should queue the next request, replacing any other request in the queue (UNTESTED) - and return false', function() {
+                    expect(transporter.setDataRequest('sim', 'key', 'newValue')).to.be(false);
+                });
+            });
         });
 
         describe('SET_DATA_RESPONSE', function() {
             var realParent;
             beforeEach(function(){
                 realParent = window.parent;
-                window.parent = {};
+                window.parent = {
+                    postMessage: sandbox.stub()
+                };
             });
 
             afterEach(function(){
@@ -917,6 +976,38 @@ define(function(require) {
 
                 transporter.capiMessageHandler(setDataResponse);
                 expect(error.called).to.equal(true);
+            });
+
+            it('should call the next queued setDataRequest if it exists', function() {
+                var firstSuccessCallback = sandbox.stub();
+                var secondSuccessCallback = sandbox.stub();
+
+                transporter.setDataRequest('sim', 'key', 'value1', firstSuccessCallback);
+                transporter.setDataRequest('sim', 'key', 'value2', secondSuccessCallback);
+
+                doHandShake();
+                var setDataResponse = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.SET_DATA_RESPONSE,
+                    handshake: {
+                        authToken: authToken
+                    },
+                    values: {
+                        responseType: "success",
+                        simId: 'sim',
+                        key: 'key',
+                        value: 'value1'
+                    }
+                });
+
+                sandbox.spy(transporter, 'setDataRequest');
+
+                transporter.capiMessageHandler(setDataResponse);
+
+                expect(transporter.setDataRequest.callCount).to.equal(1);
+                expect(transporter.setDataRequest.getCall(0).args[0]).to.equal('sim');
+                expect(transporter.setDataRequest.getCall(0).args[1]).to.equal('key');
+                expect(transporter.setDataRequest.getCall(0).args[2]).to.equal('value2');
+                expect(transporter.setDataRequest.getCall(0).args[3]).to.equal(secondSuccessCallback);
             });
         });
 
@@ -1219,6 +1310,75 @@ define(function(require) {
                 expect(message.handshake).to.not.equal(undefined);
                 expect(message.handshake.requestToken).to.equal(requestToken);
                 expect(message.handshake.authToken).to.equal(authToken);
+            });
+        });
+
+        describe('LOCAL_DATA_CHANGED', function() {
+            var response, localDataChangeCallback;
+            beforeEach(function() {
+                response = new SimCapiMessage({
+                    type: SimCapiMessage.TYPES.LOCAL_DATA_CHANGED,
+                    handshake: {
+                        authToken: authToken
+                    },
+                    values: {
+                        simId: 'sim',
+                        key: 'key',
+                        value: 'newValue'
+                    }
+                });
+
+                localDataChangeCallback = sandbox.stub();
+
+                transporter.localDataChangedCallbacks['sim'] = {};
+                transporter.localDataChangedCallbacks['sim']['key'] = localDataChangeCallback;
+            });
+
+            it('should call the callback associated with the sim and key pair', function() {
+                transporter.capiMessageHandler(response);
+
+                expect(localDataChangeCallback.callCount).to.equal(1);
+            });
+
+            it('should call pass the new value to the callback', function() {
+                transporter.capiMessageHandler(response);
+
+                expect(localDataChangeCallback.getCall(0).args[0]).to.equal('newValue');
+            });
+        });
+
+        describe('method: registerLocalDataListener', function() {
+            var callbackStub;
+
+            beforeEach(function() {
+                doHandShake();
+                sandbox.stub(transporter, 'sendMessage');
+                callbackStub = sandbox.stub();
+            });
+
+            it('should call the internal sendMessage function', function() {
+                transporter.registerLocalDataListener('sim', 'key', callbackStub);
+
+                expect(transporter.sendMessage.called).to.be(true);
+            });
+
+            it('should pass a pre-defined message', function() {
+                transporter.registerLocalDataListener('sim', 'key', callbackStub);
+
+                var message = transporter.sendMessage.getCall(0).args[0];
+
+                expect(message.type).to.equal(SimCapiMessage.TYPES.REGISTER_LOCAL_DATA_CHANGE_LISTENER);
+                expect(message.handshake).to.not.equal(undefined);
+                expect(message.handshake.requestToken).to.equal(requestToken);
+                expect(message.handshake.authToken).to.equal(authToken);
+                expect(message.values.key).to.equal('key');
+                expect(message.values.simId).to.equal('sim');
+            });
+            
+            it('should store the callback in the local data changed callback map under the simId and key pair', function() {
+                transporter.registerLocalDataListener('sim', 'key', callbackStub);
+
+                expect(transporter.localDataChangedCallbacks['sim']['key']).to.be(callbackStub);
             });
         });
     });

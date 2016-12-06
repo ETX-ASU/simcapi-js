@@ -114,6 +114,8 @@ define(function(require) {
          * Helper to route messages to appropriate handlers
          */
         this.capiMessageHandler = function(message) {
+            if (!message.handshake) { return; }
+
             switch (message.type) {
                 case SimCapiMessage.TYPES.HANDSHAKE_RESPONSE:
                     handleHandshakeResponse(message);
@@ -218,7 +220,7 @@ define(function(require) {
         };
 
         /*
-         *   @since 0.5
+         *   @since 0.5, queueing behaviour since 2.0
          *   Handles the get data message
          */
         var handleGetDataResponse = function(message) {
@@ -232,32 +234,45 @@ define(function(require) {
                 } else if (message.values.responseType === 'error') {
                     getRequests[message.values.simId][message.values.key].onError(message.values.error);
                 }
+
+                var nextQueuedRequest = getRequests[message.values.simId][message.values.key].inQueue;
+
                 delete getRequests[message.values.simId][message.values.key];
+
+                if (nextQueuedRequest) {
+                    self.getDataRequest(message.values.simId, message.values.key, nextQueuedRequest.onSuccess, nextQueuedRequest.onError);
+                }
             }
         };
 
         /*
-         *   @since 0.5
+         *   @since 0.5, queueing behaviour since 2.0
          *   Handles the set data message
          */
         var handleSetDataResponse = function(message) {
             if (message.handshake.authToken === handshake.authToken) {
-                var callbacks = setRequests[message.values.simId][message.values.key];
-                delete setRequests[message.values.simId][message.values.key];
                 if (message.values.responseType === 'success') {
-                    callbacks.onSuccess({
+                    setRequests[message.values.simId][message.values.key].onSuccess({
                         key: message.values.key,
                         value: message.values.value
                     });
                 } else if (message.values.responseType === 'error') {
-                    callbacks.onError(message.values.error);
+                    setRequests[message.values.simId][message.values.key].onError(message.values.error);
+                }
+
+                var nextQueuedRequest = setRequests[message.values.simId][message.values.key].inQueue;
+
+                delete setRequests[message.values.simId][message.values.key];
+
+                if (nextQueuedRequest) {
+                    self.setDataRequest(message.values.simId, message.values.key, nextQueuedRequest.value, nextQueuedRequest.onSuccess, nextQueuedRequest.onError, nextQueuedRequest.options);
                 }
             }
         };
 
 
         /*
-         * @since 0.5
+         * @since 0.5, queueing behaviour since 2.0
          * Sends the GET_DATA Request
          */
         this.getDataRequest = function(simId, key, onSuccess, onError) {
@@ -281,13 +296,15 @@ define(function(require) {
                 }
             });
 
-            if (!getRequests[simId]) {
-                getRequests[simId] = {};
-            }
+            getRequests[simId] = getRequests[simId] || {};
 
             if (getRequests[simId][key]) {
-                //indicating that there is the same request in progress
-                return new Error('Get data request of ' + key + ' already in progress.');
+                getRequests[simId][key].inQueue = {
+                    onSuccess: onSuccess,
+                    onError: onError
+                };
+
+                return false;
             }
 
             getRequests[simId][key] = {
@@ -306,8 +323,8 @@ define(function(require) {
         };
 
         /*
-         * @since 0.5
-         * Sends the GET_DATA Request
+         * @since 0.5, queueing behaviour since 2.0
+         * Sends the SET_DATA Request
          */
         this.setDataRequest = function(simId, key, value, onSuccess, onError, options) {
 
@@ -334,13 +351,17 @@ define(function(require) {
                 options: options
             });
 
-            if (!setRequests[simId]) {
-                setRequests[simId] = {};
-            }
+            setRequests[simId] = setRequests[simId] || {};
 
             if (setRequests[simId][key]) {
-                //indicating that there is the same request in progress
-                return new Error('Set data request of ' + key + ' already in progress.');
+                setRequests[simId][key].inQueue = {
+                    value: value,
+                    onSuccess: onSuccess,
+                    onError: onError,
+                    options: options
+                };
+
+                return false;
             }
 
             setRequests[simId][key] = {
@@ -589,8 +610,8 @@ define(function(require) {
 
         var handleLocalDataChange = function(message) {
             if (self.localDataChangedCallbacks[message.values.simId] && self.localDataChangedCallbacks[message.values.simId][message.values.key]) {
-                    self.localDataChangedCallbacks[message.values.simId][message.values.key](message.values.value);
-                }
+                self.localDataChangedCallbacks[message.values.simId][message.values.key](message.values.value);
+            }
         };
 
         /*
@@ -598,18 +619,18 @@ define(function(require) {
          */
         this.registerLocalDataListener = function(simId, key, callback) {
             var message = new SimCapiMessage({
-                    type: SimCapiMessage.TYPES.REGISTER_LOCAL_DATA_CHANGE_LISTENER,
-                    handshake: this.getHandshake(),
-                    values: {
-                        key: key,
-                            simId: simId
-                    }
+                type: SimCapiMessage.TYPES.REGISTER_LOCAL_DATA_CHANGE_LISTENER,
+                handshake: this.getHandshake(),
+                values: {
+                    key: key,
+                    simId: simId
+                }
             });
 
             self.localDataChangedCallbacks[simId] = self.localDataChangedCallbacks[simId] || {};
             self.localDataChangedCallbacks[simId][key] = callback;
 
-                self.sendMessage(message);
+            self.sendMessage(message);
         };
 
         /*
@@ -729,13 +750,16 @@ define(function(require) {
 
         // handler for postMessages received from the viewer
         var messageEventHandler = function(event) {
+            var message;
             try {
-                var message = JSON.parse(event.data);
-                self.capiMessageHandler(message);
+                message = JSON.parse(event.data);
             } catch (e) {
                 window.console.log(e);
             }
 
+            if (message) {
+                self.capiMessageHandler(message);
+            }
         };
 
         // we have to wait until the dom is ready to attach anything or sometimes the js files
