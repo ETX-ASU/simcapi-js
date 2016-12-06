@@ -7,7 +7,7 @@
         "name": "Smart Sparrow"
     },
     "bugs": {
-        "url": "https://jira.smartsparrow.com/"
+        "url": "https://github.com/SmartSparrow/simcapi-js/issues"
     },
     "engines": {
         "node": "*"
