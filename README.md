@@ -35,7 +35,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src='https://lib.smartsparrow.com/simcapi-js-1.2.0.min.js'></script>
+<script src='https://lib.smartsparrow.com/simcapi-js-1.2.2.min.js'></script>
 ```
 
 

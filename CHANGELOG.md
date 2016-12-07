@@ -6,6 +6,10 @@
         - addConfigChangeListener(callback) returns unsubscribe function(). callback signature is function(config).
         - removeAllConfigChangeListeners()
     - Modified addChangeListener to return unsubscribe function();
+- 1.2.2 (06 Dec 2016)
+    - More cleanup. No new functionality added.
+- 1.2.1 (05 Dec 2016)
+    - Some clean up and making the project Jenkins ready.
 - 1.2.0 (21 Oct 2016)
     - Adding PeerResponseAPI calls
 
