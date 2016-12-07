@@ -52,7 +52,8 @@ define(function(require) {
         var toBeApplied = options.toBeApplied || {};
 
         //The list of change listeners
-        var changeListeners = [];
+        var changeListeners = {};
+        var configChangeListeners = {};
         var initialSetupCompleteListeners = [];
         var handshakeListeners = [];
 
@@ -151,11 +152,44 @@ define(function(require) {
             }
         };
 
+        /*
+         * @since 1.3.0
+         * Ability to remove a change listener
+         *
+         */
+        function removeChangeListener(id) {
+            delete changeListeners[id];
+        }
+
         this.addChangeListener = function(changeListener) {
-            changeListeners.push(changeListener);
+            var id = uuid();
+            changeListeners[id] = changeListener;
+            return removeChangeListener.bind(this, id);
         };
+
         this.removeAllChangeListeners = function() {
-            changeListeners = [];
+            changeListeners = {};
+        };
+
+        /*
+         * @since 1.3.0
+         * Allows sims to listen for changes to config
+         *
+         */
+        function removeConfigChangeListener(id) {
+            if (configChangeListeners.hasOwnProperty(id)) {
+                delete configChangeListeners[id];
+            }
+        }
+
+        this.addConfigChangeListener = function(changeListener) {
+            var id = uuid();
+            configChangeListeners[id] = changeListener;
+            return removeConfigChangeListener.bind(this, id);
+        };
+
+        this.removeAllConfigChangeListeners = function() {
+            configChangeListeners = {};
         };
 
         /*
@@ -393,6 +427,7 @@ define(function(require) {
         var handleConfigChangeMessage = function(message) {
             if (message.handshake.authToken === handshake.authToken) {
                 handshake.config = message.handshake.config;
+                callConfigChangeListeners(handshake.config);
             }
         };
 
@@ -460,6 +495,9 @@ define(function(require) {
                     }
                     pendingMessages.forHandshake = [];
                 }
+
+
+                callConfigChangeListeners(handshake.config);
             }
         };
 
@@ -686,6 +724,13 @@ define(function(require) {
         var callChangeListeners = function(values) {
             _.each(changeListeners, function(changeListener) {
                 changeListener(values);
+            });
+        };
+
+        // Calls all the configChangeListeners
+        var callConfigChangeListeners = function(config) {
+            _.each(configChangeListeners, function(changeListener) {
+                changeListener(config);
             });
         };
 

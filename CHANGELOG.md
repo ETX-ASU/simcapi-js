@@ -1,6 +1,11 @@
 ## Release History
 
 - Unreleased
+- 1.3.0 (Unreleased)
+    - Add ability to listen to change in config object
+        - addConfigChangeListener(callback) returns unsubscribe function(). callback signature is function(config).
+        - removeAllConfigChangeListeners()
+    - Modified addChangeListener to return unsubscribe function();
 - 1.2.0 (21 Oct 2016)
     - Adding PeerResponseAPI calls
 
