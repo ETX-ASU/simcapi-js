@@ -177,9 +177,7 @@ define(function(require) {
          *
          */
         function removeConfigChangeListener(id) {
-            if (configChangeListeners.hasOwnProperty(id)) {
-                delete configChangeListeners[id];
-            }
+            delete configChangeListeners[id];
         }
 
         this.addConfigChangeListener = function(changeListener) {

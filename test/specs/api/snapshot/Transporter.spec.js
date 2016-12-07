@@ -213,6 +213,12 @@ define(function(require) {
                 expect(callback2.called).to.be(false);
             });
 
+            it('should not throw error if unsubscribe called multiple times', function() {
+                var callback = sandbox.stub();
+                var unlisten = transporter.addConfigChangeListener(callback);
+                unlisten();
+                expect(unlisten).to.not.throwException();
+            });
         });
 
         describe('HANDSHAKE_RESPONSE', function() {
@@ -517,6 +523,13 @@ define(function(require) {
 
                 expect(callback1.called).to.be(false);
                 expect(callback2.called).to.be(false);
+            });
+
+            it('should not throw error if unsubscribe called multiple times', function() {
+                var callback = sandbox.stub();
+                var unlisten = transporter.addChangeListener(callback);
+                unlisten();
+                expect(unlisten).to.not.throwException();
             });
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function() {
