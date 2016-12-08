@@ -73,7 +73,7 @@ define(function(require) {
         RESIZE_PARENT_CONTAINER_RESPONSE: 19,
         ALLOW_INTERNAL_ACCESS: 20,
         REGISTER_LOCAL_DATA_CHANGE_LISTENER: 21,
-        LOCAL_DATA_CHANGED: 22
+        REGISTERED_LOCAL_DATA_CHANGED: 22
     };
 
     return SimCapiMessage;

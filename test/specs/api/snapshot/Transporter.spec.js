@@ -1401,11 +1401,11 @@ define(function(require) {
             });
         });
 
-        describe('LOCAL_DATA_CHANGED', function() {
+        describe('REGISTERED_LOCAL_DATA_CHANGED', function() {
             var response, localDataChangeCallback;
             beforeEach(function() {
                 response = new SimCapiMessage({
-                    type: SimCapiMessage.TYPES.LOCAL_DATA_CHANGED,
+                    type: SimCapiMessage.TYPES.REGISTERED_LOCAL_DATA_CHANGED,
                     handshake: {
                         authToken: authToken
                     },

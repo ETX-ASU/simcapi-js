@@ -154,7 +154,7 @@ define(function(require) {
                 case SimCapiMessage.TYPES.ALLOW_INTERNAL_ACCESS:
                     setDomainToShortform();
                     break;
-                case SimCapiMessage.TYPES.LOCAL_DATA_CHANGED:
+                case SimCapiMessage.TYPES.REGISTERED_LOCAL_DATA_CHANGED:
                     handleLocalDataChange(message);
                     break;
             }
