@@ -168,6 +168,57 @@ define(function(require) {
                 expect(transporter.getConfig()).to.be(updatedConfig);
             });
 
+            it('should call all listeners', function() {
+                var callback1 = sandbox.stub();
+                var callback2 = sandbox.stub();
+                transporter.addConfigChangeListener(callback1);
+                transporter.addConfigChangeListener(callback2);
+                updateConfig(authToken);
+
+                expect(callback1.calledOnce).to.be(true);
+                expect(callback1.calledWith(transporter.getConfig())).to.be(true);
+                expect(callback2.calledOnce).to.be(true);
+                expect(callback2.calledWith(transporter.getConfig())).to.be(true);
+            });
+
+            it('should call listeners with updated config', function() {
+                var callback = sandbox.stub();
+                transporter.addConfigChangeListener(callback);
+                updateConfig(authToken);
+
+                expect(callback.calledWith(updatedConfig)).to.be(true);
+            });
+
+            it('should not call any removed listeners', function() {
+                var callback1 = sandbox.stub();
+                var callback2 = sandbox.stub();
+                var unlisten1 = transporter.addConfigChangeListener(callback1);
+                transporter.addConfigChangeListener(callback2);
+                unlisten1();
+                updateConfig(authToken);
+
+                expect(callback1.called).to.be(false);
+                expect(callback2.called).to.be(true);
+            });
+
+            it('should not call any listeners when all removed', function() {
+                var callback1 = sandbox.stub();
+                var callback2 = sandbox.stub();
+                transporter.addConfigChangeListener(callback1);
+                transporter.addConfigChangeListener(callback2);
+                transporter.removeAllConfigChangeListeners();
+                updateConfig(authToken);
+
+                expect(callback1.called).to.be(false);
+                expect(callback2.called).to.be(false);
+            });
+
+            it('should not throw error if unsubscribe called multiple times', function() {
+                var callback = sandbox.stub();
+                var unlisten = transporter.addConfigChangeListener(callback);
+                unlisten();
+                expect(unlisten).to.not.throwException();
+            });
         });
 
         describe('HANDSHAKE_RESPONSE', function() {
@@ -442,6 +493,43 @@ define(function(require) {
                 transporter.capiMessageHandler(valueChangeMsg);
 
                 expect(failed).to.be(false);
+            });
+
+            it('should not call any removed listeners', function() {
+                var callback1 = sandbox.stub();
+                var callback2 = sandbox.stub();
+                var unlisten1 = transporter.addChangeListener(callback1);
+                transporter.addChangeListener(callback2);
+                unlisten1();
+
+                var valueChangeMsg = createGoodValueChangeMessage();
+
+                transporter.capiMessageHandler(valueChangeMsg);
+
+                expect(callback1.called).to.be(false);
+                expect(callback2.called).to.be(true);
+            });
+
+            it('should not call any listeners when all removed', function() {
+                var callback1 = sandbox.stub();
+                var callback2 = sandbox.stub();
+                transporter.addChangeListener(callback1);
+                transporter.addChangeListener(callback2);
+                transporter.removeAllChangeListeners();
+
+                var valueChangeMsg = createGoodValueChangeMessage();
+
+                transporter.capiMessageHandler(valueChangeMsg);
+
+                expect(callback1.called).to.be(false);
+                expect(callback2.called).to.be(false);
+            });
+
+            it('should not throw error if unsubscribe called multiple times', function() {
+                var callback = sandbox.stub();
+                var unlisten = transporter.addChangeListener(callback);
+                unlisten();
+                expect(unlisten).to.not.throwException();
             });
 
             it('should give false when a Boolean false VALUE_CHANGE is recieved', function() {
