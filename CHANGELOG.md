@@ -1,7 +1,6 @@
 ## Release History
 
 - Unreleased
-- 1.3.0 (Unreleased)
     - Add ability to listen to change in config object
         - addConfigChangeListener(callback) returns unsubscribe function(). callback signature is function(config).
         - removeAllConfigChangeListeners()

@@ -152,11 +152,6 @@ define(function(require) {
             }
         };
 
-        /*
-         * @since 1.3.0
-         * Ability to remove a change listener
-         *
-         */
         function removeChangeListener(id) {
             delete changeListeners[id];
         }
@@ -171,11 +166,6 @@ define(function(require) {
             changeListeners = {};
         };
 
-        /*
-         * @since 1.3.0
-         * Allows sims to listen for changes to config
-         *
-         */
         function removeConfigChangeListener(id) {
             delete configChangeListeners[id];
         }
