@@ -640,6 +640,10 @@ define(function(require) {
             }
         };
 
+        function unregisterLocalDataListener(simId, key) {
+            delete self.localDataChangedCallbacks[simId][key];
+        }
+
         /*
          * Register the sim to be notified when local data changes
          */
@@ -660,6 +664,8 @@ define(function(require) {
             self.localDataChangedCallbacks[simId][key] = callback;
 
             self.sendMessage(message);
+
+            return unregisterLocalDataListener.bind(this, simId, key);
         };
 
         /*

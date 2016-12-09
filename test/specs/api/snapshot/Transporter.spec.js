@@ -1502,6 +1502,16 @@ define(function(require) {
 
                 expect(transporter.localDataChangedCallbacks['sim']['key']).to.be(callbackStub);
             });
+
+            it('should return a function to unregister the listener', function() {
+                var unregister = transporter.registerLocalDataListener('sim', 'key', callbackStub);
+
+                expect(transporter.localDataChangedCallbacks['sim']['key']).to.be(callbackStub);
+
+                unregister();
+
+                expect(transporter.localDataChangedCallbacks['sim']['key']).to.be(undefined);
+            });
         });
     });
 });
