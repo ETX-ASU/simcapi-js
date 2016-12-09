@@ -644,6 +644,9 @@ define(function(require) {
          * Register the sim to be notified when local data changes
          */
         this.registerLocalDataListener = function(simId, key, callback) {
+            check(simId).isString();
+            check(key).isString();
+
             var message = new SimCapiMessage({
                 type: SimCapiMessage.TYPES.REGISTER_LOCAL_DATA_CHANGE_LISTENER,
                 handshake: this.getHandshake(),

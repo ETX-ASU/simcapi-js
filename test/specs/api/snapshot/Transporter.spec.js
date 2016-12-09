@@ -99,6 +99,40 @@ define(function(require) {
             };
         };
 
+        describe('on window message', function() {
+            var messageEventHandler, fakeMessageEvent;
+            beforeEach(function() {
+                messageEventHandler = window.addEventListener.getCall(0).args[1];
+
+                var message = {
+                    type: SimCapiMessage.TYPES.GET_DATA_REQUEST,
+                    handshake: 'handshake',
+                    values: {
+                        key: 'key',
+                        simId: 'simId'
+                    }
+                };
+
+                fakeMessageEvent = { data: JSON.stringify(message) };
+
+                sandbox.stub(transporter, 'capiMessageHandler');
+            });
+
+            it('should call the capiMessageHandler', function() {
+                messageEventHandler(fakeMessageEvent);
+
+                expect(transporter.capiMessageHandler.callCount).to.equal(1);
+            });
+
+            it('should do nothing if it was not a valid JSON string', function() {
+                fakeMessageEvent.data = 'not a valid JSON you dummy';
+
+                messageEventHandler(fakeMessageEvent);
+
+                expect(transporter.capiMessageHandler.callCount).to.equal(0);
+            });
+        });
+
         describe('HANDSHAKE_REQUEST', function() {
 
             it('should send a requestHandshake when trying to send ON_READY notification', function() {
