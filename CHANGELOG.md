@@ -1,6 +1,7 @@
 ## Release History
 
 - Unreleased
+- 1.3.0
     - Added enumerations representing the context the sim is running in.
     - Add ability to listen to change in config object
         - addConfigChangeListener(callback) returns unsubscribe function(). callback signature is function(config).
