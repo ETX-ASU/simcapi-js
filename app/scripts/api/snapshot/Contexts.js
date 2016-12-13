@@ -24,9 +24,9 @@ define(function(require) {
    * sim is being used.
    **/
   var contexts = {
-    VIEWER: 1,
-    AUTHOR: 2,
-    REPORT: 3
+    VIEWER: 'VIEWER',
+    AUTHOR: 'AUTHOR',
+    REPORT: 'REPORT'
   };
 
   return contexts;
