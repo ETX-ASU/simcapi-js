@@ -35,7 +35,7 @@ For those who use Backbone.js. It's possible to use Backbone Models instead of C
 AMD compatible or use the following script tag:
 
 ```
-<script src='https://lib.smartsparrow.com/simcapi-js-1.2.2.min.js'></script>
+<script src='https://lib.smartsparrow.com/simcapi-js-1.3.0.min.js'></script>
 ```
 
 
@@ -192,6 +192,11 @@ var key = 'some data key';
 simcapi.Transporter.getDataRequest(simId, key, onSuccess, onError);
 ```
 
+### Sim Context ###
+Sims may run in different contexts, such as a when when an instructor is configuring the sim, as to when a student is viewing the sim.  A sim can discern its context by the property `simcapi.Transporter.getConfig().context`, where the value will be one of:
+* VIEWER, sim is either being used by the student or previewed by an instructor
+* AUTHOR, sim is being used by the instructor in an authoring environment
+* REPORT, sim is being used to report previous input from a student
 
 
 ### A simple example ###
