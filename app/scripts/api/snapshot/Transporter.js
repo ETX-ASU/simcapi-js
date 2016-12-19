@@ -242,7 +242,6 @@ define(function(require) {
         };
 
         /*
-         *   @since 0.5, queueing behaviour since 2.0
          *   Handles the get data message
          */
         var handleGetDataResponse = function(message) {
@@ -268,7 +267,6 @@ define(function(require) {
         };
 
         /*
-         *   @since 0.5, queueing behaviour since 2.0
          *   Handles the set data message
          */
         var handleSetDataResponse = function(message) {
@@ -294,7 +292,6 @@ define(function(require) {
 
 
         /*
-         * @since 0.5, queueing behaviour since 2.0
          * Sends the GET_DATA Request
          */
         this.getDataRequest = function(simId, key, onSuccess, onError) {
@@ -345,7 +342,6 @@ define(function(require) {
         };
 
         /*
-         * @since 0.5, queueing behaviour since 2.0
          * Sends the SET_DATA Request
          */
         this.setDataRequest = function(simId, key, value, onSuccess, onError, options) {
