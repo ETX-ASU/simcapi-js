@@ -40,10 +40,10 @@ define(function(require) {
 
     ApiInterface.prototype.apiCall = function(api, method, params, callback) {
         if (!apiList[api]) {
-            throw new Error('Invalid api name provided');
+            throw new Error('Invalid api name provided: ' + api);
         }
         if (apiList[api].indexOf(method) === -1) {
-            throw new Error('Method does not exist on the api');
+            throw new Error('Method does not exist on the api: ' + method);
         }
 
         var uid = ++this.apiCallUid;

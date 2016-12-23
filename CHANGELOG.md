@@ -1,5 +1,12 @@
 ## Release History
 
+- Unreleased
+    - Remove try-catch block surrounding response callbacks (BREAKING CHANGE)
+    - Queueing (single latest) requests for get/setData while an existing request is running
+    - New SimCapiMessage Types:
+        - REGISTER_LOCAL_DATA_CHANGE_LISTENER,
+        - REGISTERED_LOCAL_DATA_CHANGED
+    - New public transporter method: registerLocalDataListener
 - 1.3.0
     - Added enumerations representing the context the sim is running in.
     - Add ability to listen to change in config object

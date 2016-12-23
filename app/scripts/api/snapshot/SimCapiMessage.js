@@ -19,20 +19,20 @@
 
 define(function(require) {
 
-    var SimCapiMessage = function(options) {
+    var SimCapiMessage = function(params) {
 
-        // Ensure that options is initialized. This is just making code cleaner by avoiding lots of
+        // Ensure that params is initialized. This is just making code cleaner by avoiding lots of
         // null checks
-        options = options || {};
+        params = params || {};
 
         // The message type. Select from TYPES.
-        this.type = options.type || null;
+        this.type = params.type || null;
 
         /*
          * This is needed to create a handshake between stage and iframe. Without a handshake,
          * we can't identify the IFrame from which a message was sent.
          */
-        this.handshake = options.handshake || {
+        this.handshake = params.handshake || {
             requestToken: null,
             authToken: null
         };
@@ -40,12 +40,17 @@ define(function(require) {
         /*
          * Values is a map containing (key, CapiValue) pairs.
          */
-        this.values = options.values || {};
+        this.values = params.values || {};
+
+        /*
+         * Optional options object to be passed to the viewer
+         */
+        this.options = params.options || {};
     };
 
     /*
      * Define message type enums as a class variable.
-     * Next number is 21
+     * Next number is 23
      */
     SimCapiMessage.TYPES = {
         HANDSHAKE_REQUEST: 1,
@@ -66,7 +71,9 @@ define(function(require) {
         API_CALL_RESPONSE: 17,
         RESIZE_PARENT_CONTAINER_REQUEST: 18,
         RESIZE_PARENT_CONTAINER_RESPONSE: 19,
-        ALLOW_INTERNAL_ACCESS: 20
+        ALLOW_INTERNAL_ACCESS: 20,
+        REGISTER_LOCAL_DATA_CHANGE_LISTENER: 21,
+        REGISTERED_LOCAL_DATA_CHANGED: 22
     };
 
     return SimCapiMessage;
