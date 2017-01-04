@@ -1,6 +1,7 @@
 ## Release History
 
 - Unreleased
+    - Adding 'search' to ChemicalAPI
     - Remove try-catch block surrounding response callbacks (BREAKING CHANGE)
     - Queueing (single latest) requests for get/setData while an existing request is running
     - New SimCapiMessage Types:
