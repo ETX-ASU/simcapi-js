@@ -29,36 +29,25 @@ define(['underscore'], function(_) {
          */
         this._eventsMap = {};
 
-        this._bindGetterAndSetter = function(value, prop) {
-            var getter = function() {
-                return this.attributes[prop];
-            };
-
-            var setter = _.bind(function(val) {
-                if (this.attributes[prop] !== val) {
-                    this.attributes[prop] = val;
-                    this.trigger('change:' + prop);
-                }
-            }, this);
-
-
+        var bindGetterAndSetter = function(value, prop) {
             Object.defineProperty(this, prop, {
-                get: getter,
-                set: setter,
-                enumerable: true,
-                configurable: true
+                get: function() {
+                    return this.attributes[prop];
+                },
+                set: function(val) {
+                    if (this.attributes[prop] !== val) {
+                        this.attributes[prop] = val;
+                        this.trigger('change:' + prop);
+                    }
+                },
+                enumerable: true
             });
-        };
-
-        /* Converts all attribute to getters and setters */
-        this._setupAttributes = function() {
-            _.each(this.attributes, this._bindGetterAndSetter, this);
         };
 
         this.set = function(attrName, value) {
             if(!this.has(attrName)) {
                 this.attributes[attrName] = value;
-                this._bindGetterAndSetter(value, attrName);
+                bindGetterAndSetter.call(this, value, attrName);
                 this.trigger('change:' + attrName);
             } else {
                 this[attrName] = value;
@@ -113,7 +102,8 @@ define(['underscore'], function(_) {
             }
         };
 
-        this._setupAttributes();
+        /* Converts all attribute to getters and setters */
+        _.each(this.attributes, bindGetterAndSetter, this);
 
         if (this.initialize) {
             this.initialize();
