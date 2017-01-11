@@ -24,43 +24,45 @@ define(['underscore'], function(_) {
         this.attributes = _.clone(attrs || {});
 
         /*
-    key: change:prop
-    value: Array of functions
-  */
+         * key: change:prop
+         * value: Array of functions
+         */
         this._eventsMap = {};
 
-        /*Converts all attribute to getters and setters*/
-        this._setupAttributes = function() {
+        this._bindGetterAndSetter = function(value, prop) {
+            var getter = function() {
+                return this.attributes[prop];
+            };
 
-            _.each(this.attributes, function(value, prop) {
-
-                var getter = function() {
-                    return this.attributes[prop];
-                };
-
-                var setter = _.bind(function(val) {
-                    if (this.attributes[prop] !== val) {
-                        this.attributes[prop] = val;
-                        this.trigger('change:' + prop);
-                    }
-
-                }, this);
-
-
-                Object.defineProperty(this, prop, {
-                    get: getter,
-                    set: setter,
-                    enumerable: true,
-                    configurable: true
-                });
-
+            var setter = _.bind(function(val) {
+                if (this.attributes[prop] !== val) {
+                    this.attributes[prop] = val;
+                    this.trigger('change:' + prop);
+                }
             }, this);
-        };
-        this._setupAttributes();
 
+
+            Object.defineProperty(this, prop, {
+                get: getter,
+                set: setter,
+                enumerable: true,
+                configurable: true
+            });
+        };
+
+        /* Converts all attribute to getters and setters */
+        this._setupAttributes = function() {
+            _.each(this.attributes, this._bindGetterAndSetter, this);
+        };
 
         this.set = function(attrName, value) {
-            this[attrName] = value;
+            if(!this.has(attrName)) {
+                this.attributes[attrName] = value;
+                this._bindGetterAndSetter(value, attrName);
+                this.trigger('change:' + attrName);
+            } else {
+                this[attrName] = value;
+            }
         };
 
         this.get = function(attrName) {
@@ -104,10 +106,14 @@ define(['underscore'], function(_) {
         this.trigger = function(eventName) {
             if (this._eventsMap[eventName]) {
                 _.each(this._eventsMap[eventName], function(funct) {
-                    funct.call(this, this, this.attributes);
+                    var propName = eventName.replace('change:', '');
+
+                    funct.call(this, this, this.get(propName));
                 }, this);
             }
         };
+
+        this._setupAttributes();
 
         if (this.initialize) {
             this.initialize();
