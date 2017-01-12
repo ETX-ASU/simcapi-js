@@ -45,7 +45,7 @@ define(['underscore'], function(_) {
         };
 
         this.set = function(attrName, value) {
-            if(!this.has(attrName)) {
+            if(!this.has(attrName) && !this.hasOwnProperty(attrName)) {
                 this.attributes[attrName] = value;
                 bindGetterAndSetter.call(this, value, attrName);
                 this.trigger('change:' + attrName);

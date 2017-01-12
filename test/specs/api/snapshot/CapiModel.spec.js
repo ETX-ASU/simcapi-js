@@ -134,6 +134,13 @@ define(function(require) {
 
                 expect(model.has('testKey1')).to.equal(false);
             });
+
+            it('should allow setting of a previously existing key', function() {
+                model.set('testKey1', undefined);
+                model.set('testKey1', 'Im back!');
+
+                expect(model.has('testKey1')).to.equal(true);
+            });
         });
 
         describe('using on method', function() {
