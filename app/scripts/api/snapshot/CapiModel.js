@@ -24,43 +24,34 @@ define(['underscore'], function(_) {
         this.attributes = _.clone(attrs || {});
 
         /*
-    key: change:prop
-    value: Array of functions
-  */
+         * key: change:prop
+         * value: Array of functions
+         */
         this._eventsMap = {};
 
-        /*Converts all attribute to getters and setters*/
-        this._setupAttributes = function() {
-
-            _.each(this.attributes, function(value, prop) {
-
-                var getter = function() {
+        var bindGetterAndSetter = function(value, prop) {
+            Object.defineProperty(this, prop, {
+                get: function() {
                     return this.attributes[prop];
-                };
-
-                var setter = _.bind(function(val) {
+                },
+                set: function(val) {
                     if (this.attributes[prop] !== val) {
                         this.attributes[prop] = val;
                         this.trigger('change:' + prop);
                     }
-
-                }, this);
-
-
-                Object.defineProperty(this, prop, {
-                    get: getter,
-                    set: setter,
-                    enumerable: true,
-                    configurable: true
-                });
-
-            }, this);
+                },
+                enumerable: true
+            });
         };
-        this._setupAttributes();
-
 
         this.set = function(attrName, value) {
-            this[attrName] = value;
+            if(!this.has(attrName) && !this.hasOwnProperty(attrName)) {
+                this.attributes[attrName] = value;
+                bindGetterAndSetter.call(this, value, attrName);
+                this.trigger('change:' + attrName);
+            } else {
+                this[attrName] = value;
+            }
         };
 
         this.get = function(attrName) {
@@ -104,10 +95,15 @@ define(['underscore'], function(_) {
         this.trigger = function(eventName) {
             if (this._eventsMap[eventName]) {
                 _.each(this._eventsMap[eventName], function(funct) {
-                    funct.call(this, this, this.attributes);
+                    var propName = eventName.replace('change:', '');
+
+                    funct.call(this, this, this.get(propName));
                 }, this);
             }
         };
+
+        /* Converts all attribute to getters and setters */
+        _.each(this.attributes, bindGetterAndSetter, this);
 
         if (this.initialize) {
             this.initialize();

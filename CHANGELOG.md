@@ -1,5 +1,11 @@
 ## Release History
 
+- Unreleased
+    - (BREAKING CHANGE) Fixed bug in CapiModel where change events were not being fired for keys added after model instantiation
+    listeners registered with 'on' in CapiModel
+    now receive parameters [model, < value of key that changed >] (how Backbone does it)
+    used to receive [model, model.attributes]
+
 - 2.0.0 (10 Jan 2017)
     - Adding 'search' to ChemicalAPI
     - Remove try-catch block surrounding response callbacks
