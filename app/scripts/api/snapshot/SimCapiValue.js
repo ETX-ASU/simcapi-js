@@ -24,7 +24,7 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
         if (check(value).passive().isBoolean()) {
             return value;
         } else if (check(value).passive().isString()) {
-            return value === 'true' ? true : false;
+            return value === 'true';
         }
         return value;
     }
@@ -36,9 +36,13 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
             var newArray = [];
 
             var elements = value.substring(1, value.length - 1).split(',');
+            
+            var isEmpty = elements.length === 1 && elements[0].match(/^\s*$/);
 
-            for (var i = 0; i < elements.length; ++i) {
-                newArray.push(elements[i].trim());
+            if(!isEmpty) {
+                for (var i = 0; i < elements.length; ++i) {
+                    newArray.push(elements[i].trim());
+                }
             }
 
             return newArray;
