@@ -791,9 +791,7 @@ define(function(require) {
             var message;
             try {
                 message = JSON.parse(event.data);
-            } catch (e) {
-                window.console.log(e);
-            }
+            } catch (e) {}
 
             if (message) {
                 self.capiMessageHandler(message);
