@@ -1,5 +1,7 @@
 ## Release History
 
+- Unreleased
+    - Fixed SimCapiValue parsing empty array as an array with one empty string element
 - 3.0.0 (16 Jan 2017)
     - Fixed bug in CapiModel where change events were not being
     fired for keys added after model instantiation

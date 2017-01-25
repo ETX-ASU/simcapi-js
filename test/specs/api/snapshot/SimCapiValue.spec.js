@@ -202,6 +202,19 @@ define(function(require) {
             expect(simCapiValue.value).to.equal("");
         });
 
+        it('should parse empty array string as an array with zero elements', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: '[]'
+            });
+
+            expect(simCapiValue.value).to.eql([]);
+            
+            simCapiValue.setValue('[    ]');
+
+            expect(simCapiValue.value).to.eql([]);
+        });
+
         it('should parse a number as a string when type is set to string', function() {
             var simCapiValue = new SimCapiValue({
                 key: 'test',
