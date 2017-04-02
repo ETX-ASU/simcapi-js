@@ -1,6 +1,6 @@
 ## Release History
 
-- Unreleased
+- 3.0.2 (03 Apr 2017)
     - Fixed situation where CapiAdapter does not update model
 - 3.0.1 (25 Jan 2017)
     - Fixed SimCapiValue parsing empty array as an array with one empty string element
