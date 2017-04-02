@@ -65,10 +65,10 @@ define(['underscore',
                     capiValue.value = '[' + parent.get(originalName).toString() + ']';
                 }
 
-                var watchFunc = _.bind(function(m, values) {
+                var watchFunc = _.bind(function(m, value) {
                     var capiValue = new SimCapiValue({
                         key: alias,
-                        value: values[originalName],
+                        value: value,
                         type: simCapiParams.type,
                         readonly: simCapiParams.readonly,
                         writeonly: simCapiParams.writeonly,

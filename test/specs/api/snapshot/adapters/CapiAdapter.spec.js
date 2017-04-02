@@ -53,7 +53,7 @@ define(function(require) {
                     return modelAttributes[varName];
                 },
                 set: function() {},
-                on: function() {},
+                on: sinon.stub(),
                 has: function(varName) {
                     return varName;
                 },
@@ -86,6 +86,22 @@ define(function(require) {
             });
 
             expect(transporter.expose.callCount).to.be(1);
+        });
+
+        it('should set new value of property when changed', function(){
+            sandbox.stub(transporter, 'setValue', function(capiValue){
+                expect(capiValue).to.be.a(SimCapiValue);
+                expect(capiValue.value).to.equal(10);
+            });
+            
+            adapter.expose('attr1', model, {
+                readonly: false
+            });
+
+            modelAttributes['attr1'] = 10;
+            model.on.getCall(0).args[1](model, modelAttributes['attr1']);
+
+            expect(transporter.setValue.callCount).to.be(1);
         });
 
         it('should create SimCapiValues properly when of type array', function() {
