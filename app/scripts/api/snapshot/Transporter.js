@@ -26,6 +26,7 @@ define(function(require) {
     var SimCapiMessage = require('./SimCapiMessage');
     var check = require('check');
     var SimCapiValue = require('./SimCapiValue');
+    var SimCapiTypes = require('./SimCapiTypes');
     var ApiInterface = require('./ApiInterface');
     var LocalData = require('./LocalData');
     var domainUtil = require('./util/domain');
@@ -725,6 +726,11 @@ define(function(require) {
 
             if (overwriteValue !== undefined) {
                 simCapiValue.setValue(overwriteValue);
+                
+                // if (overwriteValue instanceof Array && (simCapiValue.type === SimCapiTypes.TYPES.ARRAY || simCapiValue.type === SimCapiTypes.TYPES.ARRAY_POINT)) {
+                //     simCapiValue.value = '[' + overwriteValue.toString() + ']';
+                // }
+                
                 callChangeListeners([simCapiValue]);
             }
 

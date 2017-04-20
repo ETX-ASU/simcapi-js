@@ -1316,6 +1316,27 @@ define(function(require) {
             });
         });
 
+        describe('Exposing a value that was waiting to be applied', function() {
+            it('should stringify the array before sending the message to the platform', function() {
+                var toBeAppliedCapiArray = new SimCapiValue({
+                    key: 'arrayProp',
+                    type: SimCapiTypes.TYPES.ARRAY,
+                    value: [1,2,3]
+                });
+                
+                var toBeApplied = {};
+                toBeApplied[toBeAppliedCapiArray.key] = toBeAppliedCapiArray;
+                
+                var transporter = new Transporter({
+                    toBeApplied: toBeApplied
+                });
+                
+                transporter.expose(toBeAppliedCapiArray);
+
+                //expect(exposedProperty.value).to.equal(10);
+            });
+        });
+
         describe('RESIZE_PARENT_CONTAINER request and response', function() {
             var options, onSuccess;
             beforeEach(function() {
