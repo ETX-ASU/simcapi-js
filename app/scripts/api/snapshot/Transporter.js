@@ -726,12 +726,11 @@ define(function(require) {
 
             if (overwriteValue !== undefined) {
                 simCapiValue.setValue(overwriteValue);
-                
-                // if (overwriteValue instanceof Array && (simCapiValue.type === SimCapiTypes.TYPES.ARRAY || simCapiValue.type === SimCapiTypes.TYPES.ARRAY_POINT)) {
-                //     simCapiValue.value = '[' + overwriteValue.toString() + ']';
-                // }
-                
                 callChangeListeners([simCapiValue]);
+
+                 if (overwriteValue instanceof Array && (simCapiValue.type === SimCapiTypes.TYPES.ARRAY || simCapiValue.type === SimCapiTypes.TYPES.ARRAY_POINT)) {
+                     simCapiValue.value = simCapiValue.value.toString();
+                 }
             }
 
             outgoingMap[key] = simCapiValue;
