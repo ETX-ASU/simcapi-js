@@ -1,6 +1,8 @@
 ## Release History
 
-- 3.0.4 (1 May 2017)
+- 3.0.4 (2 May 2017)
+    - Bug fix for stringifying arrays
+- 3.0.3 (27 Apr 2017)
     - Should stringify arrays when exposing after a value change from the platform
 - 3.0.2 (03 Apr 2017)
     - Fixed situation where CapiAdapter does not update model
