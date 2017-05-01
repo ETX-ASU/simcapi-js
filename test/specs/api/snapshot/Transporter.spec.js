@@ -1337,7 +1337,7 @@ define(function(require) {
                 clock.tick(25);
 
                 var changedValues = transporter.sendMessage.getCall(0).args[0].values;
-                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal(toBeAppliedCapiArray.value.toString());
+                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal('[1,2,3]');
             });
 
             it('should not change a value that is already a string containing an array', function() {
@@ -1360,7 +1360,7 @@ define(function(require) {
                 clock.tick(25);
 
                 var changedValues = transporter.sendMessage.getCall(0).args[0].values;
-                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal(toBeAppliedCapiArray.value);
+                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal('[foo bye,bar,baz]');
             });
         });
 
