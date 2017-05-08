@@ -1337,7 +1337,7 @@ define(function(require) {
                 clock.tick(25);
 
                 var changedValues = transporter.sendMessage.getCall(0).args[0].values;
-                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal(toBeAppliedCapiArray.value.toString());
+                expect(changedValues['arrayProp'].value).to.equal('[1,2,3]');
             });
 
             it('should not change a value that is already a string containing an array', function() {
@@ -1360,7 +1360,26 @@ define(function(require) {
                 clock.tick(25);
 
                 var changedValues = transporter.sendMessage.getCall(0).args[0].values;
-                expect(changedValues[toBeAppliedCapiArray.key].value).to.equal(toBeAppliedCapiArray.value);
+                expect(changedValues['arrayProp'].value).to.equal('[foo bye,bar,baz]');
+            });
+
+            it('should stringify the array correctly when an array property has been exposed twice', function() {
+                var transporter = new Transporter({ authToken: 'token' });
+                sandbox.stub(transporter, 'sendMessage');
+                
+                var simCapiValue = new SimCapiValue({
+                    key: 'arrayProp',
+                    type: SimCapiTypes.TYPES.ARRAY,
+                    value: [1,2,3]
+                });
+                simCapiValue.value = simCapiValue.toString(); // mimic adapter functionality, where arrays are stringified before reaching the transporter
+                
+                transporter.expose(simCapiValue);
+                clock.tick(25); // wait till first value change timeout has completed
+                transporter.expose(simCapiValue);
+                clock.tick(25);
+                
+                expect(transporter.sendMessage.getCall(1).args[0].values['arrayProp'].value).to.equal('[1,2,3]');
             });
         });
 

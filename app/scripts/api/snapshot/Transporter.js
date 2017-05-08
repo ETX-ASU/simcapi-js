@@ -728,8 +728,8 @@ define(function(require) {
                 simCapiValue.setValue(overwriteValue);
                 callChangeListeners([simCapiValue]);
 
-                 if (overwriteValue instanceof Array && (simCapiValue.type === SimCapiTypes.TYPES.ARRAY || simCapiValue.type === SimCapiTypes.TYPES.ARRAY_POINT)) {
-                     simCapiValue.value = simCapiValue.value.toString();
+                 if (simCapiValue.value instanceof Array && (simCapiValue.type === SimCapiTypes.TYPES.ARRAY || simCapiValue.type === SimCapiTypes.TYPES.ARRAY_POINT)) {
+                     simCapiValue.value = simCapiValue.toString();
                  }
             }
 
