@@ -22,8 +22,9 @@ define(['underscore',
     'api/snapshot/SimCapiMessage',
     'api/snapshot/SimCapiValue',
     'api/snapshot/SimCapiTypes',
+    'api/snapshot/DescriptorRegistry',
     'check'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, SimCapiTypes, check) {
+], function(_, Transporter, SimCapiMessage, SimCapiValue, SimCapiTypes, DescriptorRegistry, check) {
 
     var BackboneAdapter = function(options) {
         options = options || {};
@@ -98,7 +99,7 @@ define(['underscore',
                     exposeFunc: exposeFunc
                 };
 
-
+                DescriptorRegistry.register(varName, params, capiValue);
                 _transporter.expose(capiValue);
             }
 

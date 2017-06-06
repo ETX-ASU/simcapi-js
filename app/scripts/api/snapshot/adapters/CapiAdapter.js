@@ -21,10 +21,11 @@ define(['underscore',
     'api/snapshot/Transporter',
     'api/snapshot/SimCapiMessage',
     'api/snapshot/SimCapiValue',
+    'api/snapshot/DescriptorRegistry',
     'check',
     'api/snapshot/CapiModel',
     'api/snapshot/SimCapiTypes'
-], function(_, Transporter, SimCapiMessage, SimCapiValue, check, CapiModel, SimCapiTypes) {
+], function(_, Transporter, SimCapiMessage, SimCapiValue, DescriptorRegistry, check, CapiModel, SimCapiTypes) {
 
     var CapiAdapter = function(options) {
         options = options || {};
@@ -92,7 +93,7 @@ define(['underscore',
                     watchFunc: watchFunc
                 };
 
-
+                DescriptorRegistry.register(varName, params, capiValue);
                 _transporter.expose(capiValue);
 
             }
