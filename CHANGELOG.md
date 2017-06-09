@@ -1,5 +1,7 @@
 ## Release History
 
+- 3.0.5 (9 June 2017)
+    - Bug fix for an array of a string of spaces
 - 3.0.4 (2 May 2017)
     - Bug fix for stringifying arrays
 - 3.0.3 (27 Apr 2017)
