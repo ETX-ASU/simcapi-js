@@ -35,8 +35,15 @@ define(['check', './SimCapiTypes'], function(check, SimCapiTypes) {
         } else if (isArray(value)) {
             var elements = value.substring(1, value.length - 1).split(',');
             var isEmpty = elements.length === 1 && elements[0] === '';
+            var parsedArray = isEmpty ? [] : elements;
             
-            return isEmpty ? [] : elements;
+            return parsedArray.map(function(element) {
+                if(element.match(/^\s+$/)) {
+                    return element;
+                } else {
+                    return element.trim();
+                }
+            });
         }
 
         return value;

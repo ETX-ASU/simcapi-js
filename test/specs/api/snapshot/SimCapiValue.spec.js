@@ -219,6 +219,15 @@ define(function(require) {
             expect(simCapiValue.value).to.eql(['    ']);
         });
 
+        it('should trim strings inside arrays that are are not just space characters', function() {
+            var simCapiValue = new SimCapiValue({
+                key: 'test',
+                value: '[foo, ,   , baz, boo ]'
+            });
+
+            expect(simCapiValue.value).to.eql(["foo", " ", "   ", "baz", "boo"]);
+        });
+        
         it('should parse a number as a string when type is set to string', function() {
             var simCapiValue = new SimCapiValue({
                 key: 'test',
