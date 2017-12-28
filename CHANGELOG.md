@@ -1,5 +1,6 @@
 ## Release History
-
+- Unreleased
+	- Capi should not throw error when a value change handler unsubscribes another change handler [LDS-5926]
 - 3.0.6 (21 June 2017)
     - Should still trim strings inside arrays
 - 3.0.5 (9 June 2017)

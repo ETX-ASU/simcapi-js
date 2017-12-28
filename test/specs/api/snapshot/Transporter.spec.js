@@ -253,6 +253,7 @@ define(function(require) {
                 unlisten();
                 expect(unlisten).to.not.throwException();
             });
+
         });
 
         describe('HANDSHAKE_RESPONSE', function() {
@@ -514,6 +515,19 @@ define(function(require) {
                     }
                 });
             };
+
+            it('should not throw error if a callback triggers an unsubscribe', function() {
+                var calltarget = {};
+                var callback2 = sandbox.stub();
+                var callback1 = function() {
+                    calltarget.unsub();
+                };
+                transporter.addChangeListener(callback1);
+                calltarget.unsub = transporter.addChangeListener(callback2);
+                var valueChangeMsg = createGoodValueChangeMessage();
+                expect(function() {transporter.capiMessageHandler(valueChangeMsg);}).not.to.throwException();
+            });
+
 
             it('should attempt to update the model when a VALUE_CHANGE message is recieved', function() {
 
