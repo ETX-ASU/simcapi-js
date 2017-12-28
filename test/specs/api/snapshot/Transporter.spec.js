@@ -528,7 +528,6 @@ define(function(require) {
                 expect(function() {transporter.capiMessageHandler(valueChangeMsg);}).not.to.throwException();
             });
 
-
             it('should attempt to update the model when a VALUE_CHANGE message is recieved', function() {
 
                 var valueChangeMsg = createGoodValueChangeMessage();

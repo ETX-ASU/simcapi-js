@@ -16,7 +16,7 @@
 - 3.0.0 (16 Jan 2017)
     - Fixed bug in CapiModel where change events were not being
     fired for keys added after model instantiation
-- 2.0.0 (10 Jan 2017)l
+- 2.0.0 (10 Jan 2017)
     - Adding 'search' to ChemicalAPI
     - Remove try-catch block surrounding response callbacks
     - Queueing (single latest) requests for get/setData while an existing request is running
