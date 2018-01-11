@@ -34,7 +34,5 @@
         "grunt-update-json": "0.2.1",
         "grunt-template": "0.2.3"
     },
-    "dependencies": {
-        "unzip": "^0.1.6-alpha"
-    }
+    "keywords": []
 }
