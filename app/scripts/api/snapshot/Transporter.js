@@ -774,7 +774,7 @@ define(function(require) {
         // Calls all the changeListeners
         var callChangeListeners = function(values) {
             _.each(changeListeners, function(changeListener) {
-                changeListener(values);
+                if (changeListener) { changeListener(values); }
             });
         };
 
