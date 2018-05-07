@@ -1,5 +1,5 @@
 ## Release History
-- Unreleased
+- 3.0.7 (07 May 2018)
     - Capi should not throw error when a value change handler unsubscribes another change handler
 - 3.0.6 (21 June 2017)
     - Should still trim strings inside arrays
