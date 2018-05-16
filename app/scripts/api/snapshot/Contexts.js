@@ -25,6 +25,7 @@ define(function(require) {
    **/
   var contexts = {
     VIEWER: 'VIEWER',
+    REVIEW: 'REVIEW',
     AUTHOR: 'AUTHOR',
     REPORT: 'REPORT'
   };
