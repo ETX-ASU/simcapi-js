@@ -1,4 +1,6 @@
 ## Release History
+- Unreleased
+    - Add new Sim Context **REVIEW**, for when a sim is being viewed by a student on a historical screen
 - 3.0.7 (07 May 2018)
     - Capi should not throw error when a value change handler unsubscribes another change handler
 - 3.0.6 (21 June 2017)
