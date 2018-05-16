@@ -1,13 +1,13 @@
 ## Release History
-- Unreleased
+- 3.1.0 (16 May 2018)
     - Add new Sim Context **REVIEW**, for when a sim is being viewed by a student on a historical screen
 - 3.0.7 (07 May 2018)
     - Capi should not throw error when a value change handler unsubscribes another change handler
 - 3.0.6 (21 June 2017)
     - Should still trim strings inside arrays
-- 3.0.5 (9 June 2017)
+- 3.0.5 (09 June 2017)
     - Bug fix for an array of a string of spaces
-- 3.0.4 (2 May 2017)
+- 3.0.4 (02 May 2017)
     - Bug fix for stringifying arrays
 - 3.0.3 (27 Apr 2017)
     - Should stringify arrays when exposing after a value change from the platform
