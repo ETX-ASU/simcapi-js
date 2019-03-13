@@ -58,7 +58,7 @@ var simModel = new simcapi.CapiAdapter.CapiModel({
 });
 ```
 
-This `CapiModel` has two variables inside it that can be exposed to AELP.
+This `CapiModel` has three variables inside it that can be exposed to AELP.
 
 ### Expose Data ###
 
